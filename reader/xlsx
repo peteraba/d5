@@ -22,10 +22,13 @@ def main(argv):
         if len(row) < row_length:
             break
 
-        data.append([cell.value for cell in row[0:row_length]])
+        data.append([cell.value if cell.value else "" for cell in row[0:row_length]])
 
-    print(dumps(data[1:]))
-
+    if len(argv) >= 3 and argv[2]=='pretty':
+        print(dumps(data[1:], sort_keys=True, indent=4, separators=(',', ': ')))
+    else:
+        print(dumps(data[1:]))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
