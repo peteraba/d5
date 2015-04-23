@@ -1,11 +1,17 @@
 package main
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 
 	"gopkg.in/mgo.v2"
 )
+
+type Translater interface {
+}
 
 type Meaning struct {
 	Main        string `bson:"main" json:"main"`
@@ -97,6 +103,22 @@ func NewAdjective(german, english, third string) Adjective {
 	}
 }
 
+func (w *Word) GetGerman() string {
+	return w.German
+}
+
+func (w *Word) GetEnglish() []Meaning {
+	return w.English
+}
+
+func (w *Word) GetThird() []Meaning {
+	return w.Third
+}
+
+func (w *Word) GetCategory() string {
+	return w.Category
+}
+
 func main() {
 	session, err := mgo.Dial("localhost")
 	if err != nil {
@@ -106,45 +128,71 @@ func main() {
 
 	session.SetMode(mgo.Monotonic, true)
 
-	c5 := session.DB("test").C("meaning")
-	err = c5.Insert(Meaning{"abc", "d"}, Meaning{"qwe", "r"})
-	if err != nil {
-		log.Fatal(err)
+	file, e := ioutil.ReadFile("./test.json")
+	if e != nil {
+		fmt.Printf("File error: %v\n", e)
+		os.Exit(1)
 	}
 
-	w1 := NewWord("h runternehmen, runternahmen, runtergenommen, runternimmst, runternimmt", "to take down", "levenni vmit (föntről)", "verb")
-	w2 := NewWord("schlecht sein + für (A)", "to do wrong to sth", "rosszat tenni vminek", "verb")
-	w3 := NewWord("h scheren, schoren/scherten, geschoren/geschert", "to shear (sheep), to cut, to trim (hair)", "nyírni, lenyírni", "verb")
-	c1 := session.DB("test").C("word")
-	err = c1.Insert(&w1, &w2, &w3, w1, w2, w3)
-	if err != nil {
-		log.Fatal(err)
+	//m := new(Dispatch)
+	//var m interface{}
+	dictionary := [][4]string{}
+	json.Unmarshal(file, &dictionary)
+	//fmt.Printf("Results: %v\n", dictionary)
+
+	words := []Translater{}
+
+	for _, word := range dictionary {
+		switch word[3] {
+		case "adj":
+			words = append(words, NewAdjective(word[0], word[1], word[2]))
+			break
+		case "noun":
+			words = append(words, NewNoun(word[0], word[1], word[2]))
+			break
+		case "verb":
+			words = append(words, NewVerb(word[0], word[1], word[2]))
+			break
+		default:
+			words = append(words, NewWord(word[0], word[1], word[2], word[3]))
+
+		}
 	}
 
-	v1 := NewVerb("h runternehmen, runternahmen, runtergenommen, runternimmst, runternimmt", "to take down", "levenni vmit (föntről)")
-	v2 := NewVerb("schlecht sein + für (A)", "to do wrong to sth", "rosszat tenni vminek")
-	v3 := NewVerb("h scheren, schoren/scherten, geschoren/geschert", "to shear (sheep), to cut, to trim (hair)", "nyírni, lenyírni")
-	c2 := session.DB("test").C("verb")
-	err = c2.Insert(&v1, &v2, &v3)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Printf("Results: %v\n", words)
+	/*
+		w1 := NewWord("h runternehmen, runternahmen, runtergenommen, runternimmst, runternimmt", "to take down", "levenni vmit (föntről)", "verb")
+		w2 := NewWord("schlecht sein + für (A)", "to do wrong to sth", "rosszat tenni vminek", "verb")
+		w3 := NewWord("h scheren, schoren/scherten, geschoren/geschert", "to shear (sheep), to cut, to trim (hair)", "nyírni, lenyírni", "verb")
+		c1 := session.DB("test").C("word")
+		err = c1.Insert(&w1, &w2, &w3, w1, w2, w3)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	n1 := NewNoun("r Arbeitsplatz,⍨e", "work place (both abstract or concrete)", "munkahely (absztrakt vagy konkrét)")
-	n2 := NewNoun("r/s Hot Dog,~s", "hotdog", "hotdog")
-	n3 := NewNoun("s Jurastudium, Jurastudien", "law studies", "jogi tanulmány")
-	c3 := session.DB("test").C("noun")
-	err = c3.Insert(&n1, &n2, &n3)
-	if err != nil {
-		log.Fatal(err)
-	}
+		v1 := NewVerb("h runternehmen, runternahmen, runtergenommen, runternimmst, runternimmt", "to take down", "levenni vmit (föntről)")
+		v2 := NewVerb("schlecht sein + für (A)", "to do wrong to sth", "rosszat tenni vminek")
+		v3 := NewVerb("h scheren, schoren/scherten, geschoren/geschert", "to shear (sheep), to cut, to trim (hair)", "nyírni, lenyírni")
+		c2 := session.DB("test").C("verb")
+		err = c2.Insert(&v1, &v2, &v3)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	a1 := NewAdjective("weich,~er,~esten", "soft", "puha")
-	a2 := NewAdjective("ständig,-", "persistent; permanent", "állandó; állandóan, folyton")
-	a3 := NewAdjective("schmal,~er/⍨er,~sten/⍨sten", "narrow", "keskeny, szűk")
-	c4 := session.DB("test").C("adjective")
-	err = c4.Insert(a1, a2, a3)
-	if err != nil {
-		log.Fatal(err)
-	}
+		n1 := NewNoun("r Arbeitsplatz,⍨e", "work place (both abstract or concrete)", "munkahely (absztrakt vagy konkrét)")
+		n2 := NewNoun("r/s Hot Dog,~s", "hotdog", "hotdog")
+		n3 := NewNoun("s Jurastudium, Jurastudien", "law studies", "jogi tanulmány")
+		c3 := session.DB("test").C("noun")
+		err = c3.Insert(&n1, &n2, &n3)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		a1 := NewAdjective("weich,~er,~esten", "soft", "puha")
+		a2 := NewAdjective("ständig,-", "persistent; permanent", "állandó; állandóan, folyton")
+		a3 := NewAdjective("schmal,~er/⍨er,~sten/⍨sten", "narrow", "keskeny, szűk")
+		c4 := session.DB("test").C("adjective")
+		err = c4.Insert(a1, a2, a3	if err != nil {
+			log.Fatal(err)
+		}*/
 }
