@@ -10,39 +10,16 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-type Translater interface {
+type Word interface {
+	GetGerman() string
+	GetEnglish() []Meaning
+	GetThird() []Meaning
+	GetCategory() string
 }
 
 type Meaning struct {
 	Main        string `bson:"main" json:"main"`
 	Paranthases string `bson:"paranthases" json:"paranthases"`
-}
-
-type Word struct {
-	German   string    `bson:"german" json:"german"`
-	English  []Meaning `bson:"english" json:"english"`
-	Third    []Meaning `bson:"third" json:"third"`
-	Category string    `bson:"category" json:"category"`
-}
-
-type Verb struct {
-	Word           `bson:"word" json:"word"`
-	Auxiliary      []string `bson:"auxiliary" json:"auxiliary"`
-	PastParticiple string   `bson:"pastParticiple" json:"pastParticiple"`
-	Preterite      string   `bson:"preterite" json:"preterite"`
-	Du             string   `bson:"du" json:"du"`
-	Er             string   `bson:"er" json:"er"`
-}
-
-type Noun struct {
-	Word   `bson:"word" json:"word"`
-	Plural []string `bson:"plural" json:"plural"`
-}
-
-type Adjective struct {
-	Word        `bson:"word" json:"word"`
-	Comparative []string `bson:"comparative" json:"comparative"`
-	Superlative []string `bson:"superlative" json:"superlative"`
 }
 
 func NewMeanings(allMeanings string) []Meaning {
@@ -55,19 +32,55 @@ func NewMeanings(allMeanings string) []Meaning {
 	return meanings
 }
 
-func NewWord(german, english, third, category string) Word {
-	return Word{german, NewMeanings(english), NewMeanings(third), category}
+type DefaultWord struct {
+	German   string    `bson:"german" json:"german"`
+	English  []Meaning `bson:"english" json:"english"`
+	Third    []Meaning `bson:"third" json:"third"`
+	Category string    `bson:"category" json:"category"`
 }
 
-func NewVerb(german, english, third string) Verb {
+func NewDefaultWord(german, english, third, category string) DefaultWord {
+	return DefaultWord{german, NewMeanings(english), NewMeanings(third), category}
+}
+
+func NewWord(german, english, third, category string) *DefaultWord {
+	return &DefaultWord{german, NewMeanings(english), NewMeanings(third), category}
+}
+
+func (w *DefaultWord) GetGerman() string {
+	return w.German
+}
+
+func (w *DefaultWord) GetEnglish() []Meaning {
+	return w.English
+}
+
+func (w *DefaultWord) GetThird() []Meaning {
+	return w.Third
+}
+
+func (w *DefaultWord) GetCategory() string {
+	return w.Category
+}
+
+type Verb struct {
+	DefaultWord    `bson:"word" json:"word"`
+	Auxiliary      []string `bson:"auxiliary" json:"auxiliary"`
+	PastParticiple string   `bson:"pastParticiple" json:"pastParticiple"`
+	Preterite      string   `bson:"preterite" json:"preterite"`
+	Du             string   `bson:"du" json:"du"`
+	Er             string   `bson:"er" json:"er"`
+}
+
+func NewVerb(german, english, third string) *Verb {
 	auxiliary := []string{}
 	pastParticiple := ""
 	preterite := ""
 	du := ""
 	er := ""
 
-	return Verb{
-		NewWord(german, english, third, "verb"),
+	return &Verb{
+		NewDefaultWord(german, english, third, "verb"),
 		auxiliary,
 		pastParticiple,
 		preterite,
@@ -76,14 +89,25 @@ func NewVerb(german, english, third string) Verb {
 	}
 }
 
-func NewNoun(german, english, third string) Noun {
-	return Noun{
-		NewWord(german, english, third, "noun"),
+type Noun struct {
+	DefaultWord `bson:"word" json:"word"`
+	Plural      []string `bson:"plural" json:"plural"`
+}
+
+func NewNoun(german, english, third string) *Noun {
+	return &Noun{
+		NewDefaultWord(german, english, third, "noun"),
 		[]string{},
 	}
 }
 
-func NewAdjective(german, english, third string) Adjective {
+type Adjective struct {
+	DefaultWord `bson:"word" json:"word"`
+	Comparative []string `bson:"comparative" json:"comparative"`
+	Superlative []string `bson:"superlative" json:"superlative"`
+}
+
+func NewAdjective(german, english, third string) *Adjective {
 	adjectiveParts := strings.Split(german, ",")
 
 	comparative := []string{}
@@ -96,27 +120,11 @@ func NewAdjective(german, english, third string) Adjective {
 		superlative = strings.Split(adjectiveParts[2], "/")
 	}
 
-	return Adjective{
-		NewWord(german, english, third, "adjective"),
+	return &Adjective{
+		NewDefaultWord(german, english, third, "adjective"),
 		comparative,
 		superlative,
 	}
-}
-
-func (w *Word) GetGerman() string {
-	return w.German
-}
-
-func (w *Word) GetEnglish() []Meaning {
-	return w.English
-}
-
-func (w *Word) GetThird() []Meaning {
-	return w.Third
-}
-
-func (w *Word) GetCategory() string {
-	return w.Category
 }
 
 func main() {
@@ -140,7 +148,7 @@ func main() {
 	json.Unmarshal(file, &dictionary)
 	//fmt.Printf("Results: %v\n", dictionary)
 
-	words := []Translater{}
+	words := []Word{}
 
 	for _, word := range dictionary {
 		switch word[3] {
