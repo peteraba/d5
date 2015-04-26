@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
+)
 
-	"gopkg.in/mgo.v2"
+type Sich int
+
+const (
+	Without Sich = iota
+	Acusative
+	Dative
 )
 
 type Word interface {
@@ -33,18 +40,21 @@ func NewMeanings(allMeanings string) []Meaning {
 }
 
 type DefaultWord struct {
-	German   string    `bson:"german" json:"german"`
-	English  []Meaning `bson:"english" json:"english"`
-	Third    []Meaning `bson:"third" json:"third"`
-	Category string    `bson:"category" json:"category"`
+	German     string    `bson:"german" json:"german"`
+	English    []Meaning `bson:"english" json:"english"`
+	Third      []Meaning `bson:"third" json:"third"`
+	Category   string    `bson:"category" json:"category"`
+	User       string    `bson:"user" json:"user"`
+	Multiplier int       `bson:"multiplier" json:"multiplier"`
+	Ok         bool      `bson:"ok", json:"ok"`
 }
 
-func NewDefaultWord(german, english, third, category string) DefaultWord {
-	return DefaultWord{german, NewMeanings(english), NewMeanings(third), category}
+func NewDefaultWord(german, english, third, category, user string, multiplier int) DefaultWord {
+	return DefaultWord{german, NewMeanings(english), NewMeanings(third), category, user, multiplier, true}
 }
 
-func NewWord(german, english, third, category string) *DefaultWord {
-	return &DefaultWord{german, NewMeanings(english), NewMeanings(third), category}
+func NewWord(german, english, third, category, user string, multiplier int, ok bool) *DefaultWord {
+	return &DefaultWord{german, NewMeanings(english), NewMeanings(third), category, user, multiplier, ok}
 }
 
 func (w *DefaultWord) GetGerman() string {
@@ -70,22 +80,65 @@ type Verb struct {
 	Preterite      string   `bson:"preterite" json:"preterite"`
 	Du             string   `bson:"du" json:"du"`
 	Er             string   `bson:"er" json:"er"`
+	Sich           Sich     `bson:"sich" json:"sich"`
+	Arguments      []string `bson:"arguments" json:"arguments"`
 }
 
-func NewVerb(german, english, third string) *Verb {
-	auxiliary := []string{}
+func NewVerb(german, english, third, user string, multiplier int, verbRegexp *regexp.Regexp) *Verb {
 	pastParticiple := ""
 	preterite := ""
 	du := ""
 	er := ""
+	sich := Without
+	arguments := []string{}
+
+	matches := verbRegexp.FindStringSubmatch(german)
+
+	auxiliary := strings.Split(matches[1], "/")
+
+	main := strings.Split(matches[2], ",")
+
+	german = main[0]
+
+	if len(main) == 2 || len(main) == 4 || len(main) > 5 {
+		return nil
+	}
+	if len(main) > 2 {
+		pastParticiple = main[1]
+		preterite = main[2]
+	}
+	if len(main) > 3 {
+		du = main[3]
+		er = main[4]
+	}
+
+	if matches[3] != "" {
+		arguments = strings.Split(matches[3], "+")
+
+		if strings.Contains(arguments[0], "sich (A)") {
+			arguments = arguments[1:]
+			sich = Acusative
+		}
+
+		if strings.Contains(arguments[0], "sich (D)") {
+			arguments = arguments[1:]
+			sich = Dative
+		}
+
+		if strings.Contains(arguments[0], "sich") {
+			return nil
+		}
+	}
 
 	return &Verb{
-		NewDefaultWord(german, english, third, "verb"),
+		NewDefaultWord(german, english, third, "verb", user, multiplier),
 		auxiliary,
 		pastParticiple,
 		preterite,
 		du,
 		er,
+		sich,
+		arguments,
 	}
 }
 
@@ -94,9 +147,13 @@ type Noun struct {
 	Plural      []string `bson:"plural" json:"plural"`
 }
 
-func NewNoun(german, english, third string) *Noun {
+func NewNoun(german, english, third, user string, multiplier int, nounRegexp *regexp.Regexp) *Noun {
+	matches := nounRegexp.FindAllStringSubmatch(german, -1)
+
+	fmt.Printf("Matches: %q\n", matches)
+
 	return &Noun{
-		NewDefaultWord(german, english, third, "noun"),
+		NewDefaultWord(german, english, third, "noun", user, multiplier),
 		[]string{},
 	}
 }
@@ -107,7 +164,7 @@ type Adjective struct {
 	Superlative []string `bson:"superlative" json:"superlative"`
 }
 
-func NewAdjective(german, english, third string) *Adjective {
+func NewAdjective(german, english, third, user string, multiplier int) *Adjective {
 	adjectiveParts := strings.Split(german, ",")
 
 	comparative := []string{}
@@ -121,20 +178,25 @@ func NewAdjective(german, english, third string) *Adjective {
 	}
 
 	return &Adjective{
-		NewDefaultWord(german, english, third, "adjective"),
+		NewDefaultWord(german, english, third, "adjective", user, multiplier),
 		comparative,
 		superlative,
 	}
 }
 
 func main() {
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
+	/*
+		session, err := mgo.Dial("localhost")
+		if err != nil {
+			panic(err)
+		}
+		defer session.Close()
 
-	session.SetMode(mgo.Monotonic, true)
+		session.SetMode(mgo.Monotonic, true)
+	*/
+	nounRegexp := regexp.MustCompile("^([ers/]+) ([^,]+),(.*)")
+
+	verbRegexp := regexp.MustCompile("^([sh/]+) ([^+]*)([+](.*))$")
 
 	file, e := ioutil.ReadFile("./test.json")
 	if e != nil {
@@ -150,24 +212,41 @@ func main() {
 
 	words := []Word{}
 
+	multiplier := 5
+
+	user := "peteraba"
+
 	for _, word := range dictionary {
+		var w Word
+
 		switch word[3] {
 		case "adj":
-			words = append(words, NewAdjective(word[0], word[1], word[2]))
+			w = NewAdjective(word[0], word[1], word[2], user, multiplier)
 			break
 		case "noun":
-			words = append(words, NewNoun(word[0], word[1], word[2]))
+			if nounRegexp.MatchString(word[0]) {
+				w = NewNoun(word[0], word[1], word[2], user, multiplier, nounRegexp)
+			}
 			break
 		case "verb":
-			words = append(words, NewVerb(word[0], word[1], word[2]))
+			if verbRegexp.MatchString(word[0]) {
+				w = NewVerb(word[0], word[1], word[2], user, multiplier, verbRegexp)
+			}
 			break
 		default:
-			words = append(words, NewWord(word[0], word[1], word[2], word[3]))
-
+			w = NewWord(word[0], word[1], word[2], word[3], user, multiplier, true)
 		}
+
+		if w == nil {
+			w = NewWord(word[0], word[1], word[2], word[3], user, multiplier, false)
+		}
+
+		words = append(words, w)
 	}
 
-	fmt.Printf("Results: %v\n", words)
+	/*for _, w := range words {
+		fmt.Printf("Results: %v\n", w)
+	}
 	/*
 		w1 := NewWord("h runternehmen, runternahmen, runtergenommen, runternimmst, runternimmt", "to take down", "levenni vmit (föntről)", "verb")
 		w2 := NewWord("schlecht sein + für (A)", "to do wrong to sth", "rosszat tenni vminek", "verb")
@@ -203,4 +282,8 @@ func main() {
 		err = c4.Insert(a1, a2, a3	if err != nil {
 			log.Fatal(err)
 		}*/
+}
+
+func log(err error) {
+	fmt.Println(err)
 }
