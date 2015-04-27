@@ -22,7 +22,7 @@ def main(argv):
     doc = opendoc(argv[0])
     sheet = doc.sheets[0]
 
-    row_length = int(argv[1]) if len(argv) >= 2 and argv[1].isdigit() else 5
+    row_length = int(argv[1]) if len(argv) >= 2 and argv[1].isdigit() else 6
 
     if row_length > len(COLS) or row_length > sheet.ncols():
         raise Exception("Column was unexpected: %s" % x)
