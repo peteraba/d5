@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Sich string
@@ -25,6 +27,8 @@ const (
 	Die         = "e"
 	Das         = "s"
 )
+
+const learnedForm = "2006-01-02"
 
 type Word interface {
 	GetGerman() string
@@ -49,21 +53,38 @@ func NewMeanings(allMeanings string) []Meaning {
 }
 
 type DefaultWord struct {
-	German     string    `bson:"german" json:"german"`
-	English    []Meaning `bson:"english" json:"english"`
-	Third      []Meaning `bson:"third" json:"third"`
-	Category   string    `bson:"category" json:"category"`
-	User       string    `bson:"user" json:"user"`
-	Multiplier int       `bson:"multiplier" json:"multiplier"`
-	Ok         bool      `bson:"ok", json:"ok"`
+	German   string    `bson:"german" json:"german"`
+	English  []Meaning `bson:"english" json:"english"`
+	Third    []Meaning `bson:"third" json:"third"`
+	Category string    `bson:"category" json:"category"`
+	User     string    `bson:"user" json:"user"`
+	Learned  time.Time `bson:"learned" json:"learned"`
+	Score    int       `bson:"score" json:"score"`
+	Ok       bool      `bson:"ok", json:"ok"`
 }
 
-func NewDefaultWord(german, english, third, category, user string, multiplier int) DefaultWord {
-	return DefaultWord{german, NewMeanings(english), NewMeanings(third), category, user, multiplier, true}
+func NewDefaultWord(german, english, third, category, user, learned, score string) DefaultWord {
+	englishMeanings, thirdMeanings := NewMeanings(english), NewMeanings(third)
+
+	scoreParsed, err := strconv.ParseInt(score, 0, 0)
+	if err != nil || scoreParsed < 0 || scoreParsed > 10 {
+		scoreParsed = 5
+	}
+
+	learnedParsed, err := time.Parse(learnedForm, learned)
+	if err != nil {
+		learnedParsed = time.Now()
+	}
+
+	return DefaultWord{german, englishMeanings, thirdMeanings, category, user, learnedParsed, int(scoreParsed), true}
 }
 
-func NewWord(german, english, third, category, user string, multiplier int, ok bool) *DefaultWord {
-	return &DefaultWord{german, NewMeanings(english), NewMeanings(third), category, user, multiplier, ok}
+func NewWord(german, english, third, category, user, learned, score string, ok bool) *DefaultWord {
+	d := NewDefaultWord(german, english, third, category, user, learned, score)
+
+	d.Ok = ok
+
+	return &d
 }
 
 func (w *DefaultWord) GetGerman() string {
@@ -101,7 +122,7 @@ type Superverb struct {
 	Verb `bson:"verb" json:"verb"`
 }
 
-func NewVerb(german, english, third, user string, multiplier int, verbRegexp *regexp.Regexp) *Verb {
+func NewVerb(german, english, third, user, learned, score string, verbRegexp *regexp.Regexp) *Verb {
 	pastParticiple := ""
 	preterite := ""
 	ich := ""
@@ -137,7 +158,7 @@ func NewVerb(german, english, third, user string, multiplier int, verbRegexp *re
 	}
 
 	return &Verb{
-		NewDefaultWord(german, english, third, "verb", user, multiplier),
+		NewDefaultWord(german, english, third, "verb", user, learned, score),
 		strings.Split(matches[1], "/"),
 		strings.Split(pastParticiple, "/"),
 		strings.Split(preterite, "/"),
@@ -179,7 +200,7 @@ type Noun struct {
 	Plural      []string  `bson:"plural" json:"plural"`
 }
 
-func NewNoun(german, english, third, user string, multiplier int, nounRegexp *regexp.Regexp) *Noun {
+func NewNoun(german, english, third, user, learned, score string, nounRegexp *regexp.Regexp) *Noun {
 	matches := nounRegexp.FindStringSubmatch(german)
 
 	articles := []Article{}
@@ -200,7 +221,7 @@ func NewNoun(german, english, third, user string, multiplier int, nounRegexp *re
 	}
 
 	return &Noun{
-		NewDefaultWord(german, english, third, "noun", user, multiplier),
+		NewDefaultWord(german, english, third, "noun", user, learned, score),
 		articles,
 		strings.Split(matches[3], "/"),
 	}
@@ -212,7 +233,7 @@ type Adjective struct {
 	Superlative []string `bson:"superlative" json:"superlative"`
 }
 
-func NewAdjective(german, english, third, user string, multiplier int) *Adjective {
+func NewAdjective(german, english, third, user, learned, score string) *Adjective {
 	adjectiveParts := strings.Split(german, ",")
 
 	comparative := []string{}
@@ -226,7 +247,7 @@ func NewAdjective(german, english, third, user string, multiplier int) *Adjectiv
 	}
 
 	return &Adjective{
-		NewDefaultWord(german, english, third, "adjective", user, multiplier),
+		NewDefaultWord(german, english, third, "adjective", user, learned, score),
 		comparative,
 		superlative,
 	}
@@ -254,13 +275,11 @@ func main() {
 
 	//m := new(Dispatch)
 	//var m interface{}
-	dictionary := [][4]string{}
+	dictionary := [][6]string{}
 	json.Unmarshal(file, &dictionary)
 	//fmt.Printf("Results: %v\n", dictionary)
 
 	words := []Word{}
-
-	multiplier := 5
 
 	user := "peteraba"
 
@@ -273,25 +292,25 @@ func main() {
 
 		switch word[3] {
 		case "adj":
-			w = NewAdjective(word[0], word[1], word[2], user, multiplier)
+			w = NewAdjective(word[0], word[1], word[2], user, word[4], word[5])
 			break
 		case "noun":
 			if nounRegexp.MatchString(word[0]) {
-				w = NewNoun(word[0], word[1], word[2], user, multiplier, nounRegexp)
+				w = NewNoun(word[0], word[1], word[2], user, word[4], word[5], nounRegexp)
 			}
 			break
 		case "verb":
 			if verbRegexp.MatchString(word[0]) {
-				w = NewVerb(word[0], word[1], word[2], user, multiplier, verbRegexp)
+				w = NewVerb(word[0], word[1], word[2], user, word[4], word[5], verbRegexp)
 			}
 			break
 		default:
-			w = NewWord(word[0], word[1], word[2], word[3], user, multiplier, true)
+			w = NewWord(word[0], word[1], word[2], word[3], user, word[4], word[5], true)
 		}
 
 		if w == nil {
 			fmt.Printf("Failed: %v\n", word[0])
-			w = NewWord(word[0], word[1], word[2], word[3], user, multiplier, false)
+			w = NewWord(word[0], word[1], word[2], word[3], user, word[4], word[5], false)
 		}
 
 		words = append(words, w)
