@@ -11,7 +11,7 @@ def main(argv):
     doc = load_workbook(filename=argv[0], read_only=True)
     sheet = doc.active
 
-    row_length = int(argv[1]) if len(argv) >= 2 and argv[1].isdigit() else 4
+    row_length = int(argv[1]) if len(argv) >= 2 and argv[1].isdigit() else 5
 
     data = []
 
