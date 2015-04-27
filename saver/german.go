@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,12 +10,20 @@ import (
 	"strings"
 )
 
-type Sich int
+type Sich string
 
 const (
-	Without Sich = iota
-	Acusative
-	Dative
+	Without   Sich = ""
+	Acusative      = "a"
+	Dative         = "d"
+)
+
+type Article string
+
+const (
+	Der Article = "r"
+	Die         = "e"
+	Das         = "s"
 )
 
 type Word interface {
@@ -76,85 +85,124 @@ func (w *DefaultWord) GetCategory() string {
 type Verb struct {
 	DefaultWord    `bson:"word" json:"word"`
 	Auxiliary      []string `bson:"auxiliary" json:"auxiliary"`
-	PastParticiple string   `bson:"pastParticiple" json:"pastParticiple"`
-	Preterite      string   `bson:"preterite" json:"preterite"`
-	Du             string   `bson:"du" json:"du"`
-	Er             string   `bson:"er" json:"er"`
+	PastParticiple []string `bson:"pastParticiple" json:"pastParticiple"`
+	Preterite      []string `bson:"preterite" json:"preterite"`
+	Ich            []string `bson:"ich" json:"ich"`
+	Du             []string `bson:"du" json:"du"`
+	Er             []string `bson:"er" json:"er"`
+	Wir            []string `bson:"wir" json:"wir"`
+	Ihr            []string `bson:"ihr" json:"ihr"`
+	Sie            []string `bson:"sie" json:"sie"`
 	Sich           Sich     `bson:"sich" json:"sich"`
 	Arguments      []string `bson:"arguments" json:"arguments"`
+}
+
+type Superverb struct {
+	Verb `bson:"verb" json:"verb"`
 }
 
 func NewVerb(german, english, third, user string, multiplier int, verbRegexp *regexp.Regexp) *Verb {
 	pastParticiple := ""
 	preterite := ""
+	ich := ""
 	du := ""
 	er := ""
-	sich := Without
-	arguments := []string{}
+	wir := ""
+	ihr := ""
+	sie := ""
 
 	matches := verbRegexp.FindStringSubmatch(german)
 
-	auxiliary := strings.Split(matches[1], "/")
-
 	main := strings.Split(matches[2], ",")
-
-	german = main[0]
-
-	if len(main) == 2 || len(main) == 4 || len(main) > 5 {
+	switch len(main) {
+	case 1:
+		german = main[0]
+		break
+	case 3:
+		german, pastParticiple, preterite = main[0], main[1], main[2]
+		break
+	case 5:
+		german, pastParticiple, preterite, du, er = main[0], main[1], main[2], main[3], main[4]
+		break
+	case 9:
+		german, ich, du, er, wir, ihr, sie, pastParticiple, preterite = main[0], main[1], main[2], main[3], main[4], main[5], main[6], main[7], main[8]
+		break
+	default:
 		return nil
 	}
-	if len(main) > 2 {
-		pastParticiple = main[1]
-		preterite = main[2]
-	}
-	if len(main) > 3 {
-		du = main[3]
-		er = main[4]
-	}
 
-	if matches[3] != "" {
-		arguments = strings.Split(matches[3], "+")
-
-		if strings.Contains(arguments[0], "sich (A)") {
-			arguments = arguments[1:]
-			sich = Acusative
-		}
-
-		if strings.Contains(arguments[0], "sich (D)") {
-			arguments = arguments[1:]
-			sich = Dative
-		}
-
-		if strings.Contains(arguments[0], "sich") {
-			return nil
-		}
+	sich, arguments, err := parseArguments(matches[3])
+	if err != nil {
+		return nil
 	}
 
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, multiplier),
-		auxiliary,
-		pastParticiple,
-		preterite,
-		du,
-		er,
+		strings.Split(matches[1], "/"),
+		strings.Split(pastParticiple, "/"),
+		strings.Split(preterite, "/"),
+		strings.Split(ich, "/"),
+		strings.Split(du, "/"),
+		strings.Split(er, "/"),
+		strings.Split(wir, "/"),
+		strings.Split(ihr, "/"),
+		strings.Split(sie, "/"),
 		sich,
 		arguments,
 	}
 }
 
+func parseArguments(rawArguments string) (Sich, []string, error) {
+	if rawArguments == "" {
+		return Without, []string{}, nil
+	}
+	arguments := strings.Split(rawArguments, "+")
+
+	if strings.Contains(arguments[0], "sich (A)") {
+		return Acusative, arguments[1:], nil
+	}
+
+	if strings.Contains(arguments[0], "sich (D)") {
+		return Dative, arguments[1:], nil
+	}
+
+	if strings.Contains(arguments[0], "sich") {
+		return Without, []string{}, errors.New("Sich definition is invalid")
+	}
+
+	return Without, []string{}, nil
+}
+
 type Noun struct {
 	DefaultWord `bson:"word" json:"word"`
-	Plural      []string `bson:"plural" json:"plural"`
+	Articles    []Article `bson:"article" json:"article"`
+	Plural      []string  `bson:"plural" json:"plural"`
 }
 
 func NewNoun(german, english, third, user string, multiplier int, nounRegexp *regexp.Regexp) *Noun {
-	matches := nounRegexp.FindAllStringSubmatch(german, -1)
+	matches := nounRegexp.FindStringSubmatch(german)
 
-	fmt.Printf("Matches: %q\n", matches)
+	articles := []Article{}
+	for _, article := range strings.Split(matches[1], "/") {
+		switch article {
+		case "r":
+			articles = append(articles, Der)
+			break
+		case "e":
+			articles = append(articles, Die)
+			break
+		case "s":
+			articles = append(articles, Das)
+			break
+		default:
+			return nil
+		}
+	}
 
 	return &Noun{
 		NewDefaultWord(german, english, third, "noun", user, multiplier),
-		[]string{},
+		articles,
+		strings.Split(matches[3], "/"),
 	}
 }
 
@@ -196,7 +244,7 @@ func main() {
 	*/
 	nounRegexp := regexp.MustCompile("^([ers/]+) ([^,]+),(.*)")
 
-	verbRegexp := regexp.MustCompile("^([sh/]+) ([^+]*)([+](.*))$")
+	verbRegexp := regexp.MustCompile("^([sh/]+) ([^+]*)([+](.*))?$")
 
 	file, e := ioutil.ReadFile("./test.json")
 	if e != nil {
@@ -219,6 +267,10 @@ func main() {
 	for _, word := range dictionary {
 		var w Word
 
+		if word[1] == "" {
+			continue
+		}
+
 		switch word[3] {
 		case "adj":
 			w = NewAdjective(word[0], word[1], word[2], user, multiplier)
@@ -238,6 +290,7 @@ func main() {
 		}
 
 		if w == nil {
+			fmt.Printf("Failed: %v\n", word[0])
 			w = NewWord(word[0], word[1], word[2], word[3], user, multiplier, false)
 		}
 
