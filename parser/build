@@ -1,0 +1,10 @@
+#! /bin/bash
+
+# Install parser
+cd parser
+go install
+
+# Install persister
+cd ../persister
+go install
+
