@@ -1,24 +1,46 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
+	"strconv"
 
 	"github.com/peteraba/d5/shared"
 )
 
+func readStdInput(logErrors bool) []byte {
+	reader := bufio.NewReader(os.Stdin)
+
+	bytes, err := ioutil.ReadAll(reader)
+
+	if err != nil && logErrors {
+		log.Println(err)
+	}
+
+	return bytes
+}
+
 func main() {
 	var (
-		user       = os.Args[1]
-		input      = []byte{}
-		dictionary = [][6]string{}
-		words      = []shared.Word{}
+		user        = ""
+		logErrors   = false
+		dictionary  = [][6]string{}
+		words       = []shared.Word{}
+		parseErrors = []string{}
 	)
 
-	fmt.Scan(&input)
+	if len(os.Args) > 1 {
+		user = os.Args[1]
+	}
+	if len(os.Args) > 2 {
+		logErrors, _ = strconv.ParseBool(os.Args[1])
+	}
 
-	json.Unmarshal(input, &dictionary)
+	json.Unmarshal(readStdInput(logErrors), &dictionary)
 
 	for _, word := range dictionary {
 		var (
@@ -54,10 +76,23 @@ func main() {
 		}
 
 		if w == nil {
-			fmt.Printf("Failed: %v\n", german)
+			parseErrors = append(parseErrors, german)
 			w = shared.NewWord(german, english, third, category, user, learned, score, false)
 		}
 
 		words = append(words, w)
 	}
+
+	if logErrors && len(parseErrors) > 0 {
+		for _, word := range parseErrors {
+			log.Printf("Failed: %v\n", word)
+		}
+	}
+
+	b, err := json.Marshal(words)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(string(b))
 }
