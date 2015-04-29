@@ -24,23 +24,11 @@ func readStdInput(logErrors bool) []byte {
 	return bytes
 }
 
-func main() {
+func parseDictionary(dictionary [][6]string, user string) ([]shared.Word, []string) {
 	var (
-		user        = ""
-		logErrors   = false
-		dictionary  = [][6]string{}
 		words       = []shared.Word{}
 		parseErrors = []string{}
 	)
-
-	if len(os.Args) > 1 {
-		user = os.Args[1]
-	}
-	if len(os.Args) > 2 {
-		logErrors, _ = strconv.ParseBool(os.Args[1])
-	}
-
-	json.Unmarshal(readStdInput(logErrors), &dictionary)
 
 	for _, word := range dictionary {
 		var (
@@ -82,6 +70,27 @@ func main() {
 
 		words = append(words, w)
 	}
+
+	return words, parseErrors
+}
+
+func main() {
+	var (
+		user       = ""
+		logErrors  = false
+		dictionary = [][6]string{}
+	)
+
+	if len(os.Args) > 1 {
+		user = os.Args[1]
+	}
+	if len(os.Args) > 2 {
+		logErrors, _ = strconv.ParseBool(os.Args[1])
+	}
+
+	json.Unmarshal(readStdInput(logErrors), &dictionary)
+
+	words, parseErrors := parseDictionary(dictionary, user)
 
 	if logErrors && len(parseErrors) > 0 {
 		for _, word := range parseErrors {
