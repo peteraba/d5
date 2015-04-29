@@ -36,6 +36,10 @@ type Word interface {
 	GetEnglish() []Meaning
 	GetThird() []Meaning
 	GetCategory() string
+	GetUser() string
+	GetScore() int
+	GetLearned() time.Time
+	IsOk() bool
 }
 
 type Meaning struct {
@@ -102,6 +106,22 @@ func (w *DefaultWord) GetThird() []Meaning {
 
 func (w *DefaultWord) GetCategory() string {
 	return w.Category
+}
+
+func (w *DefaultWord) GetScore() int {
+	return w.Score
+}
+
+func (w *DefaultWord) GetUser() string {
+	return w.User
+}
+
+func (w *DefaultWord) GetLearned() time.Time {
+	return w.Learned
+}
+
+func (w *DefaultWord) IsOk() bool {
+	return w.Ok
 }
 
 type Verb struct {
