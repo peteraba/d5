@@ -12,16 +12,10 @@ import (
 	"github.com/peteraba/d5/shared"
 )
 
-func readStdInput(logErrors bool) []byte {
+func readStdInput() ([]byte, error) {
 	reader := bufio.NewReader(os.Stdin)
 
-	bytes, err := ioutil.ReadAll(reader)
-
-	if err != nil && logErrors {
-		log.Println(err)
-	}
-
-	return bytes
+	return ioutil.ReadAll(reader)
 }
 
 func parseDictionary(dictionary [][6]string, user string) ([]shared.Word, []string) {
@@ -88,7 +82,12 @@ func main() {
 		logErrors, _ = strconv.ParseBool(os.Args[1])
 	}
 
-	json.Unmarshal(readStdInput(logErrors), &dictionary)
+	input, err := readStdInput()
+	if err != nil && logErrors {
+		log.Println(err)
+	}
+
+	json.Unmarshal(input, &dictionary)
 
 	words, parseErrors := parseDictionary(dictionary, user)
 
