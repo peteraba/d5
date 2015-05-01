@@ -27,10 +27,10 @@ Excel sheets are supposed to have 6 columns and should have a utf-8 encoding. Fi
 Verb is the most complex type in d5. Has many rules:
 
  * There are 5 types based on the regularity of verbs.
-    *# Regular verbs
-    *# Verbs with irregular past tense
-    *# Verbs with irregular conjugation in second/third person in present tense
-    *# Very irregular verbs
+    * Regular verbs
+    * Verbs with irregular past tense
+    * Verbs with irregular conjugation in second/third person in present tense
+    * Very irregular verbs
  * Verbs must have an auxiliary, haben (h) and/or sein (s) as the first word.
  * Verbs may contain a sign of prefix separation by using a pipe in the first conjugation.
  * Any conjugation but the main dictionary form can have multiple versions separated by / characters.
