@@ -72,7 +72,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score strin
 	englishMeanings, thirdMeanings := NewMeanings(english), NewMeanings(third)
 
 	scoreParsed, err := strconv.ParseInt(score, 0, 0)
-	if err != nil || scoreParsed < 0 || scoreParsed > 10 {
+	if err != nil || scoreParsed < 1 || scoreParsed > 10 {
 		scoreParsed = 5
 	}
 
