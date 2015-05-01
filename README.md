@@ -108,7 +108,7 @@ Some verbs are truly irregular in present tense they have 9 words after the auxi
 
 ### Nouns
 
-Nouns are composed of an article (**r:** der, **e:** die, **s:** das) a main word and a notion for plural and optionally for genitive. Plural and genitive notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
+Nouns are composed of an article (**r:** der, **e:** die, **s:** das), a main word and a notion for plural and optionally for genitive. Plural and genitive notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
 | German                                   | English                      | Third                     | Category   | Date       | Score  |
 |------------------------------------------|------------------------------|---------------------------|------------|------------|--------|
@@ -119,7 +119,7 @@ Nouns are composed of an article (**r:** der, **e:** die, **s:** das) a main wor
 
 ### Adjectives
 
-Adjectives are composed of a main word and a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
+Adjectives are composed of a main word, a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
 | German                     | English       | Third           | Category | Date       | Score  |
 |----------------------------|---------------|-----------------|----------|------------|--------|
