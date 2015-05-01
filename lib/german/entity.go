@@ -1,4 +1,4 @@
-package shared
+package german
 
 import (
 	"errors"
@@ -84,14 +84,6 @@ func NewDefaultWord(german, english, third, category, user, learned, score strin
 	return DefaultWord{german, englishMeanings, thirdMeanings, category, user, learnedParsed, int(scoreParsed), true}
 }
 
-func NewWord(german, english, third, category, user, learned, score string, ok bool) *DefaultWord {
-	d := NewDefaultWord(german, english, third, category, user, learned, score)
-
-	d.Ok = ok
-
-	return &d
-}
-
 func (w *DefaultWord) GetGerman() string {
 	return w.German
 }
@@ -137,10 +129,6 @@ type Verb struct {
 	Sie            []string `bson:"sie" json:"sie"`
 	Sich           Sich     `bson:"sich" json:"sich"`
 	Arguments      []string `bson:"arguments" json:"arguments"`
-}
-
-type Superverb struct {
-	Verb `bson:"verb" json:"verb"`
 }
 
 func NewVerb(german, english, third, user, learned, score string) *Verb {
@@ -272,4 +260,16 @@ func NewAdjective(german, english, third, user, learned, score string) *Adjectiv
 		comparative,
 		superlative,
 	}
+}
+
+type Any struct {
+	DefaultWord `bson:"word" json:"word"`
+}
+
+func NewAny(german, english, third, category, user, learned, score string, ok bool) *Any {
+	d := NewDefaultWord(german, english, third, category, user, learned, score)
+
+	d.Ok = ok
+
+	return &Any{d}
 }

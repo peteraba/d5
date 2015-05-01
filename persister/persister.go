@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/peteraba/d5/shared"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	germanLib "github.com/peteraba/d5/lib/german"
 )
 
 func readStdInput() ([]byte, error) {
@@ -18,19 +19,15 @@ func readStdInput() ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-func parseWords(unparsedWords []interface{}) ([]shared.Word, error) {
-	var parsedWords = []shared.Word{}
-
-	return parsedWords, nil
-}
-
 func removeUserCollection(collection *mgo.Collection, user string) error {
-	_, err := collection.RemoveAll(bson.M{"user": user})
+	if _, err := collection.RemoveAll(bson.M{"word.user": user}); err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
-func saveCollection(collection *mgo.Collection, words []shared.Word) error {
+func insertWords(collection *mgo.Collection, words []germanLib.Word) error {
 	var err error
 
 	for _, word := range words {
@@ -42,6 +39,33 @@ func saveCollection(collection *mgo.Collection, words []shared.Word) error {
 	return nil
 }
 
+func saveCollection(words []germanLib.Word, url, databaseName, collectionName string) error {
+	var (
+		collection *mgo.Collection
+		err        error
+	)
+
+	session, err := mgo.Dial(url)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	session.SetMode(mgo.Monotonic, true)
+
+	collection = session.DB(databaseName).C(collectionName)
+
+	if len(words) == 0 {
+		return errors.New("Words list is empty")
+	}
+
+	removeUserCollection(collection, words[0].GetUser())
+
+	insertWords(collection, words)
+
+	return nil
+}
+
 // Args
 //  - program name
 //  - mgo url
@@ -49,40 +73,26 @@ func saveCollection(collection *mgo.Collection, words []shared.Word) error {
 //  - mgo collection
 func main() {
 	var (
-		unparsedWords []interface{}
-		parsedWords   []shared.Word
-		input         []byte
-		err           error
-		collection    *mgo.Collection
+		words []germanLib.Word
+		input []byte
+		err   error
 	)
 
 	if len(os.Args) < 4 {
 		log.Fatalln("Mandatory arguments: mgo url, mgo database, mgo collection")
 	}
 
-	session, err := mgo.Dial(os.Args[1])
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer session.Close()
-
-	session.SetMode(mgo.Monotonic, true)
-
 	if input, err = readStdInput(); err != nil {
 		log.Fatalln(err)
 	}
 
-	if err = json.Unmarshal(input, &unparsedWords); err != nil {
+	words, err = germanLib.ParseWords(input)
+	if err != nil {
 		log.Fatalln(err)
 	}
 
-	parsedWords, err = parseWords(unparsedWords)
-
-	collection = session.DB(os.Args[2]).C(os.Args[3])
-
-	if len(parsedWords) > 0 {
-		removeUserCollection(collection, parsedWords[0].GetUser())
+	err = saveCollection(words, os.Args[1], os.Args[2], os.Args[3])
+	if err != nil {
+		log.Fatalln(err)
 	}
-
-	saveCollection(collection, parsedWords)
 }

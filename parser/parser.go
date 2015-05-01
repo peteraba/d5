@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/peteraba/d5/shared"
+	germanLib "github.com/peteraba/d5/lib/german"
 )
 
 func readStdInput() ([]byte, error) {
@@ -18,15 +18,15 @@ func readStdInput() ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-func parseDictionary(dictionary [][6]string, user string) ([]shared.Word, []string) {
+func parseDictionary(dictionary [][6]string, user string) ([]germanLib.Word, []string) {
 	var (
-		words       = []shared.Word{}
+		words       = []germanLib.Word{}
 		parseErrors = []string{}
 	)
 
 	for _, word := range dictionary {
 		var (
-			w        shared.Word
+			w        germanLib.Word
 			german   = word[0]
 			english  = word[1]
 			third    = word[2]
@@ -41,25 +41,26 @@ func parseDictionary(dictionary [][6]string, user string) ([]shared.Word, []stri
 
 		switch category {
 		case "adj":
-			w = shared.NewAdjective(german, english, third, user, learned, score)
+			w = germanLib.NewAdjective(german, english, third, user, learned, score)
 			break
 		case "noun":
-			if shared.NounRegexp.MatchString(german) {
-				w = shared.NewNoun(german, english, third, user, learned, score)
+			if germanLib.NounRegexp.MatchString(german) {
+				w = germanLib.NewNoun(german, english, third, user, learned, score)
 			}
 			break
 		case "verb":
-			if shared.VerbRegexp.MatchString(german) {
-				w = shared.NewVerb(german, english, third, user, learned, score)
+			if germanLib.VerbRegexp.MatchString(german) {
+				w = germanLib.NewVerb(german, english, third, user, learned, score)
 			}
 			break
 		default:
-			w = shared.NewWord(german, english, third, category, user, learned, score, true)
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, true)
 		}
 
 		if w == nil {
 			parseErrors = append(parseErrors, german)
-			w = shared.NewWord(german, english, third, category, user, learned, score, false)
+
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, false)
 		}
 
 		words = append(words, w)
@@ -71,7 +72,7 @@ func parseDictionary(dictionary [][6]string, user string) ([]shared.Word, []stri
 func main() {
 	var (
 		user       = ""
-		logErrors  = false
+		logErrors  = true
 		dictionary = [][6]string{}
 	)
 
@@ -79,7 +80,7 @@ func main() {
 		user = os.Args[1]
 	}
 	if len(os.Args) > 2 {
-		logErrors, _ = strconv.ParseBool(os.Args[1])
+		logErrors, _ = strconv.ParseBool(os.Args[2])
 	}
 
 	input, err := readStdInput()
@@ -93,7 +94,7 @@ func main() {
 
 	if logErrors && len(parseErrors) > 0 {
 		for _, word := range parseErrors {
-			log.Printf("Failed: %v\n", word)
+			fmt.Printf("Failed: %v\n", word)
 		}
 	}
 
