@@ -56,6 +56,12 @@ Regular verbs have only 1 word after the auxiliary and before arguments which is
 
 Verbs with irregular past tense, but regular second and third persons in present have 3 words after the auxiliary and before arguments.
 
+3 words in order:
+
+ * dictionary form (present form for wir)
+ * preterite
+ * past particle
+
 | German                                                   | English  | Third      | Category | Date       | Score  |
 |----------------------------------------------------------|----------|------------|----------|------------|--------|
 | h schreiben, schrieben, geschrieben                      | to write | írni       | verb     | 2014-10-12 | 5      |
@@ -64,6 +70,16 @@ Verbs with irregular past tense, but regular second and third persons in present
 
 #### Verbs with irregular second/third person in present
 
+Verbs with irregular second and third persons in present have 5 words after the auxiliary and before arguments.
+
+5 words in order:
+
+ * dictionary form (present form for wir)
+ * preterite
+ * past particle
+ * present form for du
+ * present form for er
+
 | German                                                  | English  | Third     | Category | Date       | Score  |
 |---------------------------------------------------------|----------|-----------|----------|------------|--------|
 | h verlassen, verließ, verlassen, verlässt, verlässt     | to leave | elhagyni  | verb     | 2014-05-05 | 5      |
@@ -71,12 +87,28 @@ Verbs with irregular past tense, but regular second and third persons in present
 
 #### Very irregular verbs
 
+Some verbs are truly irregular in present tense they have 9 words after the auxiliary and before arguments.
+
+9 words in order:
+
+ * dictionary form (not used for word generation)
+ * present form for ich
+ * present form for du
+ * present form for er
+ * present form for wir
+ * present form for ihr
+ * present form for sie
+ * preterite
+ * past particle
+
 | German                                             | English | Third           | Category | Date       | Score  |
 |----------------------------------------------------|---------|-----------------|----------|------------|--------|
 | h tun, tue, tust, tut, tun, tut, tun, taten, getan | to do   | tenni, csinálni | verb     | 2014-05-01 | 5      |
 
 
 ### Nouns
+
+Nouns are composed of an article (**r:** der, **e:** die, **s:** das) a main word and a notion for plural and optionally for genitive. Plural and genitive notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
 | German                                   | English                      | Third                     | Category   | Date       | Score  |
 |------------------------------------------|------------------------------|---------------------------|------------|------------|--------|
@@ -86,6 +118,8 @@ Verbs with irregular past tense, but regular second and third persons in present
 
 
 ### Adjectives
+
+Adjectives are composed of a main word and a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
 | German                     | English       | Third           | Category | Date       | Score  |
 |----------------------------|---------------|-----------------|----------|------------|--------|
