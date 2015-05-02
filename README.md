@@ -119,7 +119,7 @@ Nouns are composed of an article (**r:** der, **e:** die, **s:** das), a main wo
 
 ### Adjectives
 
-Adjectives are composed of a main word, a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
+Adjectives are composed of a main word, optionally a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
 | German                     | English       | Third           | Category | Date       | Score  |
 |----------------------------|---------------|-----------------|----------|------------|--------|
