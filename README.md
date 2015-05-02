@@ -10,6 +10,7 @@ Using the excel format is only necessary when the the default Excel parsers are 
 
 Excel sheets are supposed to have 6 columns and should have a utf-8 encoding. File types can be .csv, .ods or .xlsx
 
+ - **Article/Auxiliary:** Only used for nouns and verbs. Article notions for nouns, auxiliary for verbs.
  - **German:** German expression to be learned. Doesn't have to be unique, but there should be only one German word in each column
  - **English:** English meaning(s) of the German word. Synonims can be separated by comma, different meanings should be separated by semicolons. Different meanings can have further explanations in paranthases. Since these should help giving context to the translation, synonims can not have their own explanations.
  - **Third:** Can be used for non-english translations, usually in the native language of the learner (Optional)
@@ -18,9 +19,9 @@ Excel sheets are supposed to have 6 columns and should have a utf-8 encoding. Fi
  - **Score:** 1-10 integer that indicates the importance of the word. 10 should be used for the most useful words and 1 for least important ones.
 
 
-| German      | English                | Third               | Category | Date       | Score  |
-|-------------|------------------------|---------------------|----------|------------|--------|
-| passt schon | no problem; never mind | pont passzol; hagyd | exp      | 2014-05-01 | 5      |
+| A/A | German      | English                | Third               | Category | Date       | Score  |
+|-----|-------------|------------------------|---------------------|----------|------------|--------|
+|     | passt schon | no problem; never mind | pont passzol; hagyd | exp      | 2014-05-01 | 5      |
 
 ### Verbs
 
@@ -39,34 +40,34 @@ Verb is the most complex type in d5. Has many rules:
 
 #### Regular verbs
 
-Regular verbs have only 1 word after the auxiliary and before arguments which is the tipical dictionary form 
+Regular verbs define only 1 word which is the plural, first person conjugation (us/wir).
 
-| German                                | English                    | Third                                    | Category | Date       | Score  |
-|---------------------------------------|----------------------------|------------------------------------------|----------|------------|--------|
-| h ausprobieren                        | to try out                 | kipróbálni                               | verb     | 2015-03-29 | 5      |
-| h/s durch|drehen                      | to freak out               | megőrülni; meghülyülni                   | verb     | 2014-06-04 | 5      |
-| h diskutieren + über (A)              | to discuss sth             | megvitatni vmit; megbeszélni vmit        | verb     | 2014-05-08 | 5      |
-| h beeilen + sich (A)                  | to hurry                   | sietni                                   | verb     | 2014-08-20 | 5      |
-| h Sorgen machen + sich (A) + über (A) | to worry about sth.        | aggódni vmi miatt                        | verb     | 2014-05-10 | 5      |
-| h verlassen + sich (A) + auf (A)      | to trust, to rely on       | elhagyni                                 | verb     | 2014-05-05 | 5      |
-| h vor|machen + (D)                    | to fool, to deceive (coll) | megtéveszteni vkit                       | verb     | 2014-08-31 | 5      |
-| h vor|machen + sich (D)               | to lie to oneself          | beképzelni magának vmit, hazudni magának | verb     | 2014-08-31 | 5      |
+| A/A | German                              | English                    | Third                                    | Category | Date       | Score  |
+|-----|-------------------------------------|----------------------------|------------------------------------------|----------|------------|--------|
+| h   | ausprobieren                        | to try out                 | kipróbálni                               | verb     | 2015-03-29 | 5      |
+| h/s | durch|drehen                        | to freak out               | megőrülni; meghülyülni                   | verb     | 2014-06-04 | 5      |
+| h   | diskutieren + über (A)              | to discuss sth             | megvitatni vmit; megbeszélni vmit        | verb     | 2014-05-08 | 5      |
+| h   | beeilen + sich (A)                  | to hurry                   | sietni                                   | verb     | 2014-08-20 | 5      |
+| h   | Sorgen machen + sich (A) + über (A) | to worry about sth.        | aggódni vmi miatt                        | verb     | 2014-05-10 | 5      |
+| h   | verlassen + sich (A) + auf (A)      | to trust, to rely on       | elhagyni                                 | verb     | 2014-05-05 | 5      |
+| h   | vor|machen + (D)                    | to fool, to deceive (coll) | megtéveszteni vkit                       | verb     | 2014-08-31 | 5      |
+| h   | vor|machen + sich (D)               | to lie to oneself          | beképzelni magának vmit, hazudni magának | verb     | 2014-08-31 | 5      |
 
 #### Verbs with irregular past tense
 
-Verbs with irregular past tense, but regular second and third persons in present have 3 words after the auxiliary and before arguments.
+Verbs with irregular past tense, but regular second and third persons in present tense are defined by 3 conjugations.
 
-3 words in order:
+3 conjugations in order:
 
- * dictionary form (present form for wir)
+ * dictionary form (present form for we)
  * preterite
  * past particle
 
-| German                                                   | English  | Third      | Category | Date       | Score  |
-|----------------------------------------------------------|----------|------------|----------|------------|--------|
-| h schreiben, schrieben, geschrieben                      | to write | írni       | verb     | 2014-10-12 | 5      |
-| h/s sport treiben, sport trieben, sport getrieben        | to sport | sportolni  | verb     | 2014-05-01 | 5      |
-| h treffen, trafen, getroffen, triffst, trifft + sich (A) | to meet  | találkozni | verb     | 2014-10-08 | 5      |
+| A/A | German                                                 | English  | Third      | Category | Date       | Score  |
+|-----|--------------------------------------------------------|----------|------------|----------|------------|--------|
+| h   | schreiben, schrieben, geschrieben                      | to write | írni       | verb     | 2014-10-12 | 5      |
+| h/s | Sport treiben, trieben, getrieben                      | to sport | sportolni  | verb     | 2014-05-01 | 5      |
+| h   | treffen, trafen, getroffen, triffst, trifft + sich (A) | to meet  | találkozni | verb     | 2014-10-08 | 5      |
 
 #### Verbs with irregular second/third person in present
 
@@ -80,10 +81,10 @@ Verbs with irregular second and third persons in present have 5 words after the 
  * present form for du
  * present form for er
 
-| German                                                  | English  | Third     | Category | Date       | Score  |
-|---------------------------------------------------------|----------|-----------|----------|------------|--------|
-| h verlassen, verließ, verlassen, verlässt, verlässt     | to leave | elhagyni  | verb     | 2014-05-05 | 5      |
-| h verwenden, verwendeten/verwandten, verwendet/verwandt | to use   | használni | verb     | 2014-05-01 | 5      |
+| A/A | German                                                | English  | Third     | Category | Date       | Score  |
+|-----|-------------------------------------------------------|----------|-----------|----------|------------|--------|
+| h   | verlassen, verließ, verlassen, verlässt, verlässt     | to leave | elhagyni  | verb     | 2014-05-05 | 5      |
+| h   | verwenden, verwendeten/verwandten, verwendet/verwandt | to use   | használni | verb     | 2014-05-01 | 5      |
 
 #### Very irregular verbs
 
@@ -92,40 +93,40 @@ Some verbs are truly irregular in present tense they have 9 words after the auxi
 9 words in order:
 
  * dictionary form (not used for word generation)
- * present form for ich
- * present form for du
- * present form for er
- * present form for wir
- * present form for ihr
- * present form for sie
+ * present form for I
+ * present form for you
+ * present form for he
+ * present form for we
+ * present form for you
+ * present form for they
  * preterite
  * past particle
 
-| German                                             | English | Third           | Category | Date       | Score  |
-|----------------------------------------------------|---------|-----------------|----------|------------|--------|
-| h tun, tue, tust, tut, tun, tut, tun, taten, getan | to do   | tenni, csinálni | verb     | 2014-05-01 | 5      |
+| A/A | German                                           | English | Third           | Category | Date       | Score  |
+|-----|--------------------------------------------------|---------|-----------------|----------|------------|--------|
+| h   | tun, tue, tust, tut, tun, tut, tun, taten, getan | to do   | tenni, csinálni | verb     | 2014-05-01 | 5      |
 
 
 ### Nouns
 
 Nouns are composed of an article (**r:** der, **e:** die, **s:** das), a main word and a notion for plural and optionally for genitive. Plural and genitive notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
-| German                                   | English                      | Third                     | Category   | Date       | Score  |
-|------------------------------------------|------------------------------|---------------------------|------------|------------|--------|
-| e Entzündung,~en                         | inflammation                 | gyulladás                 | noun       | 2015-03-04 | 5      |
-| e Trauma,Traumata/Traumen                | trauma                       | trauma                    | noun       | 2015-04-18 | 5      |
-| e Vereinigten Staaten von Amerika,- (pl) | The United States of America | Amerikai Egyesült Államok | noun       | 2014-10-16 | 5      |
+| A/A | German                                 | English                      | Third                     | Category   | Date       | Score  |
+|-----|----------------------------------------|------------------------------|---------------------------|------------|------------|--------|
+| e   | Entzündung,~en                         | inflammation                 | gyulladás                 | noun       | 2015-03-04 | 5      |
+| e   | Trauma,Traumata/Traumen                | trauma                       | trauma                    | noun       | 2015-04-18 | 5      |
+| e   | Vereinigten Staaten von Amerika,- (pl) | The United States of America | Amerikai Egyesült Államok | noun       | 2014-10-16 | 5      |
 
 
 ### Adjectives
 
 Adjectives are composed of a main word, optionally a notion for comparative and optionally for superlative. Comparative and suparlative notions can be full words or extensions of the main word. If notions are extensions only than they are prefixed by `~` or `⍨`. Latter notes that the base word gets an äumlaut in the given form.
 
-| German                     | English       | Third           | Category | Date       | Score  |
-|----------------------------|---------------|-----------------|----------|------------|--------|
-| klug,⍨er,⍨sten             | smart         | okos, értelmes  | adj      | 2014-05-01 | 5      |
-| hochschwanger,-            | very pregnant | terhes (nagyon) | adj      | 2014-05-01 | 5      |
-| schmal,~er/⍨er,~sten/⍨sten | narrow        | keskeny, szűk   | adj      | 2014-05-01 | 5      |
+| A/A | German                     | English       | Third           | Category | Date       | Score  |
+|-----|----------------------------|---------------|-----------------|----------|------------|--------|
+|     | klug,⍨er,⍨sten             | smart         | okos, értelmes  | adj      | 2014-05-01 | 5      |
+|     | hochschwanger,-            | very pregnant | terhes (nagyon) | adj      | 2014-05-01 | 5      |
+|     | schmal,~er/⍨er,~sten/⍨sten | narrow        | keskeny, szűk   | adj      | 2014-05-01 | 5      |
 
 
 
