@@ -135,28 +135,41 @@ Utils
 
 ### Convert Excel to Plain JSON
 
+Convert excel file into a json file.
+
 ```bash
-./spreadsheet/ods spreadsheet/fixture/gerdict.ods
-./spreadsheet/xlsx spreadsheet/fixture/gerdict.xlsx
-./spreadsheet/csv spreadsheet/fixture/gerdict.csv
+# .ods to .json, 8 columns processed, file saved into parser/fixture/gerdict.json
+./spreadsheet/ods spreadsheet/fixture/gerdict.ods 8 > parser/fixture/gerdict.json
+
+# .xlsx to .json, 8 columns processed, file saved into parser/fixture/gerdict.json
+./spreadsheet/xlsx spreadsheet/fixture/gerdict.xlsx 8 > parser/fixture/gerdict.json
+
+# .csv to .json, 8 columns processed, file saved into parser/fixture/gerdict.json
+./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 > parser/fixture/gerdict.json
 ```
 
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
-cat parser/test.json | go run parser/parser.go peteraba false > persister/test.json
-cat parser/test.json | parser peteraba false > persister/test.json
+cat parser/fixture/gerdict.json | go run parser/parser.go peteraba false > persister/fixture/gerdict.json
+cat parser/fixture/gerdict.json | parser peteraba false > persister/fixture/gerdict.json
 ```
 
 ```bash
-cat parser/test.json | go run parser/parser.go peteraba true
-cat parser/test.json | parser peteraba true
+cat parser/fixture/test.json | go run parser/parser.go peteraba true
+cat parser/fixture/test.json | parser peteraba true
 ```
 
 ### Persist Parsed JSON
 
 ```bash
-cat persister/test.json | go run persister.go localhost test words
-cat persister/test.json | persister localhost test words
+cat persister/fixture/gerdict.json | go run persister.go localhost test words
+cat persister/fixture/gerdict.json | persister localhost test words
+```
+
+### Run everything at once
+
+```bash
+ ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser peteraba false | persister localhost test words
 ```
 
