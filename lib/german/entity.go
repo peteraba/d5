@@ -87,13 +87,14 @@ var (
 	MeaningRegexp = regexp.MustCompile("^([^(]*) ?([(]([^)]*)[)])? *$")
 
 	// Noun:
-	// ^                                                                               -- match beginning of string
-	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                    -- match noun in singular, must start with a capital
-	//                             ,                                                   -- match a comma
-	//                              ([A-ZÄÖÜa-zäöü~⍨() -]*)                            -- match plural part, can be an extension only starting with a ⍨, ~
-	//                                                     (,[A-ZÄÖÜßa-zäöü~⍨ ]*)?     -- match optional genitive, can be an extension
-	//                                                                            $    -- match end of string
-	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+),([A-ZÄÖÜa-zäöü~⍨() -]*)(,[A-ZÄÖÜßa-zäöü~⍨ ]*)?$")
+	// ^                                                                                          -- match beginning of string
+	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                               -- match noun in singular, must start with a capital
+	//                             ,                                                              -- match a comma
+	//                              ([A-ZÄÖÜa-zäöü~⍨ -]*)                                         -- match plural part, can be an extension only starting with a ⍨, ~
+	//                                                     (,([A-ZÄÖÜßa-zäöü~⍨ ]*()?               -- match optional genitive, can be an extension
+	//                                                                              ([(]pl[)])
+	//                                                                                        $    -- match end of string
+	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ ]*))?([(]pl[)])?$")
 
 	// Adjective:
 	// ^                                                       -- match beginning of string
@@ -108,7 +109,7 @@ var (
 	//  ([A-ZÄÖÜßa-zäöü, ]+)                             -- match verb
 	//                     ([A-ZÄÖÜßa-zäöü+() ]*)?       -- match extension(s), separated by plus signs
 	//                                            $      -- match end of string
-	VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü, ]+)([A-ZÄÖÜßa-zäöü+() ]*)?$")
+	VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü|, ]+)([A-ZÄÖÜßa-zäöü+() ]*)?$")
 
 	// English Word:
 	// ^                       -- match beginning of string
@@ -252,6 +253,83 @@ func (w *DefaultWord) IsOk() bool {
 	return w.Ok
 }
 
+type Any struct {
+	DefaultWord `bson:"word" json:"word"`
+}
+
+func NewAny(german, english, third, category, user, learned, score, tags string, ok bool) *Any {
+	d := NewDefaultWord(german, english, third, category, user, learned, score, tags)
+
+	d.Ok = ok
+
+	return &Any{d}
+}
+
+type Adjective struct {
+	DefaultWord `bson:"word" json:"word"`
+	Comparative []string `bson:"comparative" json:"comparative"`
+	Superlative []string `bson:"superlative" json:"superlative"`
+}
+
+func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
+	adjectiveParts := TrimSplit(german, conjugationSeparator)
+
+	comparative := []string{}
+	superlative := []string{}
+
+	if len(adjectiveParts) > 1 {
+		comparative = TrimSplit(adjectiveParts[1], alternativeSeparator)
+	}
+	if len(adjectiveParts) > 2 {
+		superlative = TrimSplit(adjectiveParts[2], alternativeSeparator)
+	}
+
+	return &Adjective{
+		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags),
+		comparative,
+		superlative,
+	}
+}
+
+type Noun struct {
+	DefaultWord  `bson:"word" json:"word"`
+	Articles     []Article `bson:"article" json:"article"`
+	Plural       []string  `bson:"plural" json:"plural"`
+	IsPluralOnly bool      `bson:"plural_only" json:"plural_only"`
+}
+
+func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
+	matches := NounRegexp.FindStringSubmatch(german)
+
+	if len(matches) < 5 {
+		return nil
+	}
+
+	articleList := []Article{}
+	for _, article := range TrimSplit(articles, alternativeSeparator) {
+		switch article {
+		case "r":
+			articleList = append(articleList, Der)
+			break
+		case "e":
+			articleList = append(articleList, Die)
+			break
+		case "s":
+			articleList = append(articleList, Das)
+			break
+		default:
+			return nil
+		}
+	}
+
+	return &Noun{
+		NewDefaultWord(german, english, third, "noun", user, learned, score, tags),
+		articleList,
+		TrimSplit(matches[3], alternativeSeparator),
+		matches[4] == "(pl)",
+	}
+}
+
 type Verb struct {
 	DefaultWord    `bson:"word" json:"word"`
 	Auxiliary      []string  `bson:"auxiliary" json:"auxiliary"`
@@ -337,75 +415,4 @@ func parseArguments(rawArguments string) (Reflexive, []string, error) {
 	}
 
 	return ReflexiveWithout, []string{}, nil
-}
-
-type Noun struct {
-	DefaultWord `bson:"word" json:"word"`
-	Articles    []Article `bson:"article" json:"article"`
-	Plural      []string  `bson:"plural" json:"plural"`
-}
-
-func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
-	matches := NounRegexp.FindStringSubmatch(german)
-
-	articleList := []Article{}
-	for _, article := range TrimSplit(articles, alternativeSeparator) {
-		switch article {
-		case "r":
-			articleList = append(articleList, Der)
-			break
-		case "e":
-			articleList = append(articleList, Die)
-			break
-		case "s":
-			articleList = append(articleList, Das)
-			break
-		default:
-			return nil
-		}
-	}
-
-	return &Noun{
-		NewDefaultWord(german, english, third, "noun", user, learned, score, tags),
-		articleList,
-		TrimSplit(matches[2], alternativeSeparator),
-	}
-}
-
-type Adjective struct {
-	DefaultWord `bson:"word" json:"word"`
-	Comparative []string `bson:"comparative" json:"comparative"`
-	Superlative []string `bson:"superlative" json:"superlative"`
-}
-
-func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
-	adjectiveParts := TrimSplit(german, conjugationSeparator)
-
-	comparative := []string{}
-	superlative := []string{}
-
-	if len(adjectiveParts) > 1 {
-		comparative = TrimSplit(adjectiveParts[1], alternativeSeparator)
-	}
-	if len(adjectiveParts) > 2 {
-		superlative = TrimSplit(adjectiveParts[2], alternativeSeparator)
-	}
-
-	return &Adjective{
-		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags),
-		comparative,
-		superlative,
-	}
-}
-
-type Any struct {
-	DefaultWord `bson:"word" json:"word"`
-}
-
-func NewAny(german, english, third, category, user, learned, score, tags string, ok bool) *Any {
-	d := NewDefaultWord(german, english, third, category, user, learned, score, tags)
-
-	d.Ok = ok
-
-	return &Any{d}
 }

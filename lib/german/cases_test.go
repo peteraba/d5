@@ -53,23 +53,10 @@ var meaningRegexpSuccessCases = []struct {
 
 var meaningRegexpFailureCases = []string{
 	"",
+	// Only one paranthases is allowed for a meaning
 	"to get sth. down (stairs)   (to heaven) ",
-}
-
-var nounRegexpSuccessCases = []struct {
-	raw, german, plural string
-}{
-	{"Verabredung,~en", "Verabredung", "~en"},
-	{"Anspruch,⍨e", "Anspruch", "⍨e"},
-	{"Vereinigten Staaten von Amerika,- (pl)", "Vereinigten Staaten von Amerika", "- (pl)"},
-}
-
-var nounRegexpFailureCases = []string{
-	"",
-	"Verabrendung",
-	"Verabrendung,!s/h/s",
-	"Verabrendung,as,is,as",
-	"kőr",
+	// No words are allowed after the paranthases
+	"to get sth. down (stairs)   to heaven ",
 }
 
 var adjectiveRegexpSuccessCases = []struct {
@@ -81,10 +68,34 @@ var adjectiveRegexpSuccessCases = []struct {
 }
 
 var adjectiveRegexpFailureCases = []string{
+	// Empty string is not a valid adjective
 	"",
+	// Adjectives must be all lower-cased
 	"Erfolgsverwohnt",
+	// Adjective can only contain one commas
 	"erfahren,-,-,-",
+	// Only German alphabet is allowed
 	"rót",
+}
+
+var nounRegexpSuccessCases = []struct {
+	raw, german, plural, genitive, isPlural string
+}{
+	{"Verabredung,~en", "Verabredung", "~en", "", ""},
+	{"Anspruch,⍨e", "Anspruch", "⍨e", "", ""},
+	{"Vereinigten Staaten von Amerika,- (pl)", "Vereinigten Staaten von Amerika", "- ", "", "(pl)"},
+	{"Hintergeräusch,~e,~s/~es", "Hintergeräusch", "~e", "~s/~es", ""},
+}
+
+var nounRegexpFailureCases = []string{
+	// Empty string is not a valid noun
+	"",
+	// A noun should not have more than two commas
+	"Hintergeräusch,~e,~s/~e,~s/~es",
+	// Exclaimation is not a valid word-character
+	"Hintergeräusch,!~e,~s/~es",
+	// Only German alphabet allowed
+	"kőr",
 }
 
 var verbRegexpSuccessCases = []struct {
@@ -95,8 +106,8 @@ var verbRegexpSuccessCases = []struct {
 }
 
 var verbRegexpFailureCases = []string{
+	// Empty string is not a valid verb
 	"",
-	"wűtend sein",
 }
 
 var argumentCreationCases = []struct {
@@ -151,5 +162,145 @@ var wordCreationSuccessCases = []struct {
 		"5",
 		"idiom, ithinkispider.com",
 		true,
+	},
+}
+
+var adjectiveCreationSuccessCases = []struct {
+	german, english, third, user, learned, score, tags string
+}{
+	{
+		"ägyptisch",
+		"Egyptian",
+		"egyiptomi",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"object_from",
+	},
+	{
+		"andauernd,-",
+		"continuous; ongoing",
+		"folyamatos",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
+	},
+	{
+		"aufmerksam",
+		"alert, observant (animal); kind, nice",
+		"éber (állat); figyelmes, előzékeny",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"person, animal",
+	},
+	{
+		"jung,⍨er,⍨sten",
+		"junior",
+		"kezdő",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"person",
+	},
+	{
+		"schmal,~er/⍨er,~sten/⍨sten",
+		"narrow",
+		"keskeny, szűk",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"room, clothes",
+	},
+}
+
+var nounCreationSuccessCases = []struct {
+	articles, german, english, third, user, learned, score, tags string
+}{
+	{
+		"s",
+		"Hintergeräusch,~e,~s/~es",
+		"background noise",
+		"háttérzaj",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"sound",
+	},
+	{
+		"s",
+		"Jurastudium, Jurastudien",
+		"law studies",
+		"jogi tanulmány",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"studies",
+	},
+	{
+		"r",
+		"Nebel,~",
+		"fog, mist, haze; nebula (astronomy)",
+		"köd",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"visible",
+	},
+}
+
+var verbCreationSuccessCases = []struct {
+	auxiliary, german, english, third, user, learned, score, tags string
+}{
+	{
+		"h",
+		"brechen, brach, gebrochen, brichst, bricht",
+		"to break, to get broken",
+		"összetörni, összetörik",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
+	},
+	{
+		"h",
+		"durch|fallen, durchfiel, durchgefallen, durchfällst, durchfällt",
+		"to check through",
+		"ellenőrizni, átvizsgálni",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
+	},
+	{
+		"s",
+		"einfallen, einfiel, eingefallen, einfällst, einfällt + (D)",
+		"to come to mind; to remember",
+		"eszébe jut",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
+	},
+	{
+		"h",
+		"fehlen + (D) + an (D)",
+		"to lack",
+		"hiányozni",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
+	},
+	{
+		"h",
+		"tun, tue, tust, tut, tun, tut, tun, taten, getan",
+		"to do",
+		"tenni, csinálni",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"",
 	},
 }

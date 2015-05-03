@@ -117,34 +117,6 @@ func TestMeaningRegexpFailure(t *testing.T) {
 	t.Log(len(meaningRegexpFailureCases), "test cases")
 }
 
-func TestNounRegexpSuccess(t *testing.T) {
-	for _, testCase := range nounRegexpSuccessCases {
-		matches := NounRegexp.FindStringSubmatch(testCase.raw)
-		if len(matches) < 3 || matches[0] != testCase.raw {
-			t.Fatalf("Regexp expected: %s", testCase.raw)
-		}
-		if matches[1] != testCase.german {
-			t.Fatalf("Regexp found: %s, expected: %s", matches[1], testCase.german)
-		}
-		if matches[2] != testCase.plural {
-			t.Fatalf("Regexp found: %s, expected: %s", matches[2], testCase.plural)
-		}
-	}
-
-	t.Log(len(nounRegexpSuccessCases), "test cases")
-}
-
-func TestNounRegexpFailure(t *testing.T) {
-	for _, testCase := range nounRegexpFailureCases {
-		matches := AuxiliaryRegexp.FindStringSubmatch(testCase)
-		if len(matches) > 0 {
-			t.Fatalf("Regexp found: %s, expected no match", matches[0])
-		}
-	}
-
-	t.Log(len(nounRegexpFailureCases), "test cases")
-}
-
 func TestAdjectiveRegexpSuccess(t *testing.T) {
 	for _, testCase := range adjectiveRegexpSuccessCases {
 		matches := AdjectiveRegexp.FindStringSubmatch(testCase.raw)
@@ -174,6 +146,34 @@ func TestAdjectiveRegexpFailure(t *testing.T) {
 	}
 
 	t.Log(len(adjectiveRegexpFailureCases), "test cases")
+}
+
+func TestNounRegexpSuccess(t *testing.T) {
+	for _, testCase := range nounRegexpSuccessCases {
+		matches := NounRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) < 3 || matches[0] != testCase.raw {
+			t.Fatalf("Regexp expected: %s", testCase.raw)
+		}
+		if matches[1] != testCase.german {
+			t.Fatalf("Regexp found: %s, expected: %s", matches[1], testCase.german)
+		}
+		if matches[2] != testCase.plural {
+			t.Fatalf("Regexp found: %s, expected: %s", matches[2], testCase.plural)
+		}
+	}
+
+	t.Log(len(nounRegexpSuccessCases), "test cases")
+}
+
+func TestNounRegexpFailure(t *testing.T) {
+	for _, testCase := range nounRegexpFailureCases {
+		matches := AuxiliaryRegexp.FindStringSubmatch(testCase)
+		if len(matches) > 0 {
+			t.Fatalf("Regexp found: %s, expected no match", matches[0])
+		}
+	}
+
+	t.Log(len(nounRegexpFailureCases), "test cases")
 }
 
 func TestVerbRegexpSuccess(t *testing.T) {
@@ -302,4 +302,66 @@ func TestWordCreationSuccess(t *testing.T) {
 	}
 
 	t.Log(len(wordCreationSuccessCases), "test cases")
+}
+
+func TestAdjectiveCreationSuccess(t *testing.T) {
+	for num, testCase := range adjectiveCreationSuccessCases {
+		adjective := NewAdjective(
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+		)
+
+		if adjective == nil {
+			t.Fatalf("No adjective is created for case #%d, german word: %s", num, testCase.german)
+		}
+	}
+
+	t.Log(len(adjectiveCreationSuccessCases), "test cases")
+}
+
+func TestNounCreationSuccess(t *testing.T) {
+	for num, testCase := range nounCreationSuccessCases {
+		noun := NewNoun(
+			testCase.articles,
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+		)
+
+		if noun == nil {
+			t.Fatalf("No noun is created for case #%d, german word: %s", num, testCase.german)
+		}
+	}
+
+	t.Log(len(nounCreationSuccessCases), "test cases")
+}
+
+func TestVerbCreationSuccess(t *testing.T) {
+	for num, testCase := range verbCreationSuccessCases {
+		verb := NewVerb(
+			testCase.auxiliary,
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+		)
+
+		if verb == nil {
+			t.Fatalf("No verb is created for case #%d, german word: %s", num, testCase.german)
+		}
+	}
+
+	t.Log(len(verbCreationSuccessCases), "test cases")
 }
