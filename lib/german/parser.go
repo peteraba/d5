@@ -5,15 +5,17 @@ import "encoding/json"
 type superword struct {
 	DefaultWord    `bson:"word" json:"word"`
 	Auxiliary      []string  `bson:"auxiliary" json:"auxiliary"`
+	Noun           string    `bson:"noun" json:"noun"`
+	Adjective      string    `bson:"adjective" json:"adjective"`
 	PastParticiple []string  `bson:"pastParticiple" json:"pastParticiple"`
 	Preterite      []string  `bson:"preterite" json:"preterite"`
-	Ich            []string  `bson:"ich" json:"ich"`
-	Du             []string  `bson:"du" json:"du"`
-	Er             []string  `bson:"er" json:"er"`
-	Wir            []string  `bson:"wir" json:"wir"`
-	Ihr            []string  `bson:"ihr" json:"ihr"`
-	Sie            []string  `bson:"sie" json:"sie"`
-	Sich           Sich      `bson:"sich" json:"sich"`
+	S1             []string  `bson:"s1" json:"s1"`
+	S2             []string  `bson:"s2" json:"s2"`
+	S3             []string  `bson:"s3" json:"s3"`
+	P1             []string  `bson:"p1" json:"p1"`
+	P2             []string  `bson:"p2" json:"p2"`
+	P3             []string  `bson:"p3" json:"p3"`
+	Reflexive      Reflexive `bson:"reflexive" json:"reflexive"`
 	Arguments      []string  `bson:"arguments" json:"arguments"`
 	Articles       []Article `bson:"article" json:"article"`
 	Plural         []string  `bson:"plural" json:"plural"`
@@ -39,15 +41,17 @@ func ParseWords(input []byte) ([]Word, error) {
 			word = &Verb{
 				superword.DefaultWord,
 				superword.Auxiliary,
+				superword.Noun,
+				superword.Adjective,
 				superword.PastParticiple,
 				superword.Preterite,
-				superword.Ich,
-				superword.Du,
-				superword.Er,
-				superword.Wir,
-				superword.Ihr,
-				superword.Sie,
-				superword.Sich,
+				superword.S1,
+				superword.S2,
+				superword.S3,
+				superword.P1,
+				superword.P2,
+				superword.P3,
+				superword.Reflexive,
 				superword.Arguments,
 			}
 			break

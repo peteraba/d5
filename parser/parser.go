@@ -18,7 +18,7 @@ func readStdInput() ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-func parseDictionary(dictionary [][6]string, user string) ([]germanLib.Word, []string) {
+func parseDictionary(dictionary [][8]string, user string) ([]germanLib.Word, []string) {
 	var (
 		words       = []germanLib.Word{}
 		parseErrors = []string{}
@@ -26,13 +26,15 @@ func parseDictionary(dictionary [][6]string, user string) ([]germanLib.Word, []s
 
 	for _, word := range dictionary {
 		var (
-			w        germanLib.Word
-			german   = word[0]
-			english  = word[1]
-			third    = word[2]
-			category = word[3]
-			learned  = word[4]
-			score    = word[5]
+			w                  germanLib.Word
+			articleOrAuxiliary = word[0]
+			german             = word[1]
+			english            = word[2]
+			third              = word[3]
+			category           = word[4]
+			learned            = word[5]
+			score              = word[6]
+			tags               = word[7]
 		)
 
 		if english == "" {
@@ -41,26 +43,26 @@ func parseDictionary(dictionary [][6]string, user string) ([]germanLib.Word, []s
 
 		switch category {
 		case "adj":
-			w = germanLib.NewAdjective(german, english, third, user, learned, score)
+			w = germanLib.NewAdjective(german, english, third, user, learned, score, tags)
 			break
 		case "noun":
 			if germanLib.NounRegexp.MatchString(german) {
-				w = germanLib.NewNoun(german, english, third, user, learned, score)
+				w = germanLib.NewNoun(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 			}
 			break
 		case "verb":
 			if germanLib.VerbRegexp.MatchString(german) {
-				w = germanLib.NewVerb(german, english, third, user, learned, score)
+				w = germanLib.NewVerb(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 			}
 			break
 		default:
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, true)
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, true)
 		}
 
 		if w == nil {
 			parseErrors = append(parseErrors, german)
 
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, false)
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, false)
 		}
 
 		words = append(words, w)
@@ -73,7 +75,7 @@ func main() {
 	var (
 		user       = ""
 		logErrors  = true
-		dictionary = [][6]string{}
+		dictionary = [][8]string{}
 	)
 
 	if len(os.Args) > 1 {
