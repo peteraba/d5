@@ -1,4 +1,4 @@
-package german
+package util
 
 import "strings"
 

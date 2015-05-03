@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/peteraba/d5/lib/util"
 )
 
 type Reflexive string
@@ -145,7 +147,7 @@ func NewArgument(allArguments string) []Argument {
 
 	allArguments = strings.TrimLeft(allArguments, argumentSeparator)
 
-	for _, word := range TrimSplit(allArguments, argumentSeparator) {
+	for _, word := range util.TrimSplit(allArguments, argumentSeparator) {
 		matches := ArgumentRegexp.FindStringSubmatch(word)
 		if len(matches) < 3 {
 			continue
@@ -168,7 +170,7 @@ type Meaning struct {
 func NewMeanings(allMeanings string) []Meaning {
 	meanings := []Meaning{}
 
-	for _, word := range TrimSplit(allMeanings, meaningSeparator) {
+	for _, word := range util.TrimSplit(allMeanings, meaningSeparator) {
 		matches := MeaningRegexp.FindStringSubmatch(word)
 		if len(matches) < 3 {
 			continue
@@ -216,7 +218,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 		user,
 		learnedParsed,
 		int(scoreParsed),
-		TrimSplit(tags, tagSeparator),
+		util.TrimSplit(tags, tagSeparator),
 		errors,
 	}
 }
@@ -270,17 +272,17 @@ type Adjective struct {
 }
 
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
-	adjectiveParts := TrimSplit(german, conjugationSeparator)
+	adjectiveParts := util.TrimSplit(german, conjugationSeparator)
 
 	errors := []string{}
 	comparative := []string{}
 	superlative := []string{}
 
 	if len(adjectiveParts) > 1 {
-		comparative = TrimSplit(adjectiveParts[1], alternativeSeparator)
+		comparative = util.TrimSplit(adjectiveParts[1], alternativeSeparator)
 	}
 	if len(adjectiveParts) > 2 {
-		superlative = TrimSplit(adjectiveParts[2], alternativeSeparator)
+		superlative = util.TrimSplit(adjectiveParts[2], alternativeSeparator)
 	}
 
 	return &Adjective{
@@ -307,7 +309,7 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 	errors := []string{}
 
 	articleList := []Article{}
-	for _, article := range TrimSplit(articles, alternativeSeparator) {
+	for _, article := range util.TrimSplit(articles, alternativeSeparator) {
 		switch article {
 		case "r":
 			articleList = append(articleList, Der)
@@ -326,7 +328,7 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 	return &Noun{
 		NewDefaultWord(german, english, third, "noun", user, learned, score, tags, errors),
 		articleList,
-		TrimSplit(matches[3], alternativeSeparator),
+		util.TrimSplit(matches[3], alternativeSeparator),
 		matches[4] == "(pl)",
 	}
 }
@@ -358,7 +360,7 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 
 	errors := []string{}
 
-	main := TrimSplit(matches[1], conjugationSeparator)
+	main := util.TrimSplit(matches[1], conjugationSeparator)
 	switch len(main) {
 	case 1:
 		german = main[0]
@@ -383,17 +385,17 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
-		TrimSplit(auxiliary, alternativeSeparator),
+		util.TrimSplit(auxiliary, alternativeSeparator),
 		"",
 		"",
-		TrimSplit(pastParticiple, alternativeSeparator),
-		TrimSplit(preterite, alternativeSeparator),
-		TrimSplit(ich, alternativeSeparator),
-		TrimSplit(du, alternativeSeparator),
-		TrimSplit(er, alternativeSeparator),
-		TrimSplit(wir, alternativeSeparator),
-		TrimSplit(ihr, alternativeSeparator),
-		TrimSplit(sie, alternativeSeparator),
+		util.TrimSplit(pastParticiple, alternativeSeparator),
+		util.TrimSplit(preterite, alternativeSeparator),
+		util.TrimSplit(ich, alternativeSeparator),
+		util.TrimSplit(du, alternativeSeparator),
+		util.TrimSplit(er, alternativeSeparator),
+		util.TrimSplit(wir, alternativeSeparator),
+		util.TrimSplit(ihr, alternativeSeparator),
+		util.TrimSplit(sie, alternativeSeparator),
 		sich,
 		arguments,
 	}
@@ -403,7 +405,7 @@ func parseArguments(rawArguments string) (Reflexive, []string, error) {
 	if rawArguments == "" {
 		return ReflexiveWithout, []string{}, nil
 	}
-	arguments := TrimSplit(rawArguments, argumentSeparator)
+	arguments := util.TrimSplit(rawArguments, argumentSeparator)
 
 	if strings.Contains(arguments[0], "sich (A)") {
 		return ReflexiveAcusative, arguments[1:], nil
