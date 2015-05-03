@@ -132,7 +132,7 @@ type Word interface {
 	GetUser() string
 	GetScore() int
 	GetLearned() time.Time
-	IsOk() bool
+	GetErrors() []string
 }
 
 type Argument struct {
@@ -192,10 +192,10 @@ type DefaultWord struct {
 	Learned  time.Time `bson:"learned" json:"learned"`
 	Score    int       `bson:"score" json:"score"`
 	Tags     []string  `bson:"tags" json:"tags"`
-	Ok       bool      `bson:"ok", json:"ok"`
+	Errors   []string  `bson:"errors", json:"errors"`
 }
 
-func NewDefaultWord(german, english, third, category, user, learned, score, tags string) DefaultWord {
+func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
 	englishMeanings, thirdMeanings := NewMeanings(english), NewMeanings(third)
 
 	scoreParsed, err := strconv.ParseInt(score, 0, 0)
@@ -217,7 +217,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 		learnedParsed,
 		int(scoreParsed),
 		TrimSplit(tags, tagSeparator),
-		true,
+		errors,
 	}
 }
 
@@ -249,18 +249,16 @@ func (w *DefaultWord) GetLearned() time.Time {
 	return w.Learned
 }
 
-func (w *DefaultWord) IsOk() bool {
-	return w.Ok
+func (w *DefaultWord) GetErrors() []string {
+	return w.Errors
 }
 
 type Any struct {
 	DefaultWord `bson:"word" json:"word"`
 }
 
-func NewAny(german, english, third, category, user, learned, score, tags string, ok bool) *Any {
-	d := NewDefaultWord(german, english, third, category, user, learned, score, tags)
-
-	d.Ok = ok
+func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any {
+	d := NewDefaultWord(german, english, third, category, user, learned, score, tags, errors)
 
 	return &Any{d}
 }
@@ -274,6 +272,7 @@ type Adjective struct {
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
 	adjectiveParts := TrimSplit(german, conjugationSeparator)
 
+	errors := []string{}
 	comparative := []string{}
 	superlative := []string{}
 
@@ -285,7 +284,7 @@ func NewAdjective(german, english, third, user, learned, score, tags string) *Ad
 	}
 
 	return &Adjective{
-		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags),
+		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags, errors),
 		comparative,
 		superlative,
 	}
@@ -305,6 +304,8 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 		return nil
 	}
 
+	errors := []string{}
+
 	articleList := []Article{}
 	for _, article := range TrimSplit(articles, alternativeSeparator) {
 		switch article {
@@ -323,7 +324,7 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 	}
 
 	return &Noun{
-		NewDefaultWord(german, english, third, "noun", user, learned, score, tags),
+		NewDefaultWord(german, english, third, "noun", user, learned, score, tags, errors),
 		articleList,
 		TrimSplit(matches[3], alternativeSeparator),
 		matches[4] == "(pl)",
@@ -355,6 +356,8 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		return nil
 	}
 
+	errors := []string{}
+
 	main := TrimSplit(matches[1], conjugationSeparator)
 	switch len(main) {
 	case 1:
@@ -379,7 +382,7 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 	}
 
 	return &Verb{
-		NewDefaultWord(german, english, third, "verb", user, learned, score, tags),
+		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
 		TrimSplit(auxiliary, alternativeSeparator),
 		"",
 		"",

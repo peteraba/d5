@@ -150,7 +150,7 @@ var meaningCreationCases = []struct {
 
 var wordCreationSuccessCases = []struct {
 	german, english, third, category, user, learned, score, tags string
-	ok                                                           bool
+	errors                                                       []string
 }{
 	{
 		"Ich versteh nur Bahnhof",
@@ -161,7 +161,7 @@ var wordCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"idiom, ithinkispider.com",
-		true,
+		[]string{},
 	},
 }
 

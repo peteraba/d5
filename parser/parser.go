@@ -56,13 +56,13 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanLib.Word, []s
 			}
 			break
 		default:
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, true)
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, []string{})
 		}
 
 		if w == nil {
 			parseErrors = append(parseErrors, german)
 
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, false)
+			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
 		}
 
 		words = append(words, w)

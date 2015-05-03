@@ -293,7 +293,7 @@ func TestWordCreationSuccess(t *testing.T) {
 			testCase.learned,
 			testCase.score,
 			testCase.tags,
-			testCase.ok,
+			testCase.errors,
 		)
 
 		if word == nil {
