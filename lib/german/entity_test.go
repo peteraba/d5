@@ -30,7 +30,7 @@ func TestArticleRegexpFailure(t *testing.T) {
 	t.Log(len(articleRegexpFailureCases), "test cases")
 }
 
-func TestAuxiliaryRegexp(t *testing.T) {
+func TestAuxiliaryRegexpSuccess(t *testing.T) {
 	for _, testCase := range auxiliaryRegexpSuccessCases {
 		matches := AuxiliaryRegexp.FindStringSubmatch(testCase.raw)
 		if len(matches) < 4 || matches[0] != testCase.raw {
@@ -58,7 +58,66 @@ func TestAuxiliaryRegexpFailure(t *testing.T) {
 	t.Log(len(auxiliaryRegexpFailureCases), "test cases")
 }
 
-func TestNounRegexp(t *testing.T) {
+func TestArgumentRegexpSuccess(t *testing.T) {
+	for _, testCase := range argumentRegexpSuccessCases {
+		matches := ArgumentRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) < 4 || matches[0] != testCase.raw {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[0], testCase.raw)
+		}
+		if matches[1] != testCase.argPrep {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[1], testCase.argPrep)
+		}
+		if matches[3] != testCase.argCase {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[3], testCase.argCase)
+		}
+	}
+
+	t.Log(len(argumentRegexpSuccessCases), "test cases")
+}
+
+func TestArgumentRegexpFailure(t *testing.T) {
+	for _, testCase := range argumentRegexpFailureCases {
+		matches := ArgumentRegexp.FindStringSubmatch(testCase)
+		if len(matches) > 0 && matches[0] != "" {
+			t.Fatalf("Regexp found: '%s', expected no match", matches[0])
+		}
+	}
+
+	t.Log(len(argumentRegexpFailureCases), "test cases")
+}
+
+func TestMeaningRegexpSuccess(t *testing.T) {
+	for _, testCase := range meaningRegexpSuccessCases {
+		matches := MeaningRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) == 0 {
+			t.Fatalf("Regexp match failed. expected: '%s'", testCase.raw)
+		}
+		if len(matches) < 4 || matches[0] != testCase.raw {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[0], testCase.raw)
+		}
+		if matches[1] != testCase.main {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[1], testCase.main)
+		}
+		if matches[3] != testCase.parant {
+			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[3], testCase.parant)
+		}
+	}
+
+	t.Log(len(meaningRegexpSuccessCases), "test cases")
+}
+
+func TestMeaningRegexpFailure(t *testing.T) {
+	for _, testCase := range meaningRegexpFailureCases {
+		matches := MeaningRegexp.FindStringSubmatch(testCase)
+		if len(matches) > 0 && matches[0] != "" {
+			t.Fatalf("Regexp found: '%s', expected no match", matches[0])
+		}
+	}
+
+	t.Log(len(meaningRegexpFailureCases), "test cases")
+}
+
+func TestNounRegexpSuccess(t *testing.T) {
 	for _, testCase := range nounRegexpSuccessCases {
 		matches := NounRegexp.FindStringSubmatch(testCase.raw)
 		if len(matches) < 3 || matches[0] != testCase.raw {
@@ -86,7 +145,7 @@ func TestNounRegexpFailure(t *testing.T) {
 	t.Log(len(nounRegexpFailureCases), "test cases")
 }
 
-func TestAdjectiveRegexp(t *testing.T) {
+func TestAdjectiveRegexpSuccess(t *testing.T) {
 	for _, testCase := range adjectiveRegexpSuccessCases {
 		matches := AdjectiveRegexp.FindStringSubmatch(testCase.raw)
 		if len(matches) < 6 && matches[0] != testCase.raw {
@@ -117,7 +176,7 @@ func TestAdjectiveRegexpFailure(t *testing.T) {
 	t.Log(len(adjectiveRegexpFailureCases), "test cases")
 }
 
-func TestVerbRegexp(t *testing.T) {
+func TestVerbRegexpSuccess(t *testing.T) {
 	for _, testCase := range verbRegexpSuccessCases {
 		matches := VerbRegexp.FindStringSubmatch(testCase.raw)
 		if matches[0] != testCase.raw {
@@ -143,4 +202,34 @@ func TestVerbRegexpFailure(t *testing.T) {
 	}
 
 	t.Log(len(verbRegexpFailureCases), "test cases")
+}
+
+func TestMeaningCreationSuccess(t *testing.T) {
+	//for _, testCase := range meaningRegexpSuccessCases {
+
+	//}
+
+	t.Log(len(meaningRegexpSuccessCases), "test cases")
+}
+
+func TestWordCreationSuccess(t *testing.T) {
+	for num, testCase := range wordCreationSuccessCases {
+		word := NewAny(
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.category,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+			testCase.ok,
+		)
+
+		if word == nil {
+			t.Fatalf("No word is created for case #%d, german word: %s", num, testCase.german)
+		}
+	}
+
+	t.Log(len(wordCreationSuccessCases), "test cases")
 }
