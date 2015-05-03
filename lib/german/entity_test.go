@@ -204,10 +204,80 @@ func TestVerbRegexpFailure(t *testing.T) {
 	t.Log(len(verbRegexpFailureCases), "test cases")
 }
 
-func TestMeaningCreationSuccess(t *testing.T) {
-	//for _, testCase := range meaningRegexpSuccessCases {
+func TestArgumentCreationSuccess(t *testing.T) {
+	var testArgument Argument
 
-	//}
+	for num, testCase := range argumentCreationCases {
+		arguments := NewArgument(testCase.allArguments)
+
+		if len(arguments) != len(testCase.arguments) {
+			t.Fatal(arguments)
+			t.Fatalf(
+				"Case #%d. Wrong number of arguments created. Expected %d, got: %d.",
+				num,
+				len(testCase.arguments),
+				len(arguments),
+			)
+		}
+
+		for key, argument := range arguments {
+			testArgument = testCase.arguments[key]
+
+			if argument.Preposition != testArgument.Preposition {
+				t.Fatalf(
+					"Case #%d. Wrong preposition found. Expected '%s', got: '%s'",
+					num,
+					testArgument.Preposition,
+					argument.Case,
+				)
+			}
+
+			if argument.Case != testArgument.Case {
+				t.Fatalf(
+					"Case #%d. Wrong case found. Expected '%s', got: '%s'",
+					num,
+					testArgument.Case,
+					argument.Case,
+				)
+			}
+		}
+	}
+
+	t.Log(len(meaningRegexpSuccessCases), "test cases")
+}
+
+func TestMeaningCreationSuccess(t *testing.T) {
+	var testMeaning Meaning
+
+	for num, testCase := range meaningCreationCases {
+		meanings := NewMeanings(testCase.allMeanings)
+
+		if len(meanings) != len(testCase.meanings) {
+			t.Fatalf("Case #%d: Wrong number of meanings created. Expected %d, got: %d.", num, testCase.meanings, meanings)
+		}
+
+		for key, meaning := range meanings {
+			testMeaning = testCase.meanings[key]
+
+			if meaning.Main != testMeaning.Main {
+				t.Fatalf(
+					"Case #%d. Wrong main found. Expected '%s', got: '%s'",
+					num,
+					testMeaning.Main,
+					meaning.Main,
+				)
+			}
+
+			if meaning.Paranthases != testMeaning.Paranthases {
+				t.Fatalf(
+					"Case #%d. Wrong paranthases found. Expected '%s', got: '%s'",
+					num,
+					testMeaning.Paranthases,
+					meaning.Paranthases,
+				)
+			}
+		}
+	}
 
 	t.Log(len(meaningRegexpSuccessCases), "test cases")
 }

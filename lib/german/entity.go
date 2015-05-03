@@ -142,6 +142,8 @@ type Argument struct {
 func NewArgument(allArguments string) []Argument {
 	arguments := []Argument{}
 
+	allArguments = strings.TrimLeft(allArguments, argumentSeparator)
+
 	for _, word := range TrimSplit(allArguments, argumentSeparator) {
 		matches := ArgumentRegexp.FindStringSubmatch(word)
 		if len(matches) < 3 {
@@ -149,7 +151,7 @@ func NewArgument(allArguments string) []Argument {
 		}
 
 		p := strings.Trim(matches[1], defaultWhitespace)
-		c := strings.Trim(matches[2], defaultWhitespace)
+		c := strings.Trim(matches[3], defaultWhitespace)
 
 		arguments = append(arguments, Argument{p, c})
 	}
@@ -172,7 +174,7 @@ func NewMeanings(allMeanings string) []Meaning {
 		}
 
 		m := strings.Trim(matches[1], defaultWhitespace)
-		p := strings.Trim(matches[2], defaultWhitespace)
+		p := strings.Trim(matches[3], defaultWhitespace)
 
 		meanings = append(meanings, Meaning{m, p})
 	}
