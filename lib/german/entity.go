@@ -11,9 +11,18 @@ import (
 type Reflexive string
 
 const (
-	Without   Reflexive = ""
-	Acusative           = "a"
-	Dative              = "d"
+	ReflexiveWithout   Reflexive = ""
+	ReflexiveAcusative           = "A"
+	ReflexiveDative              = "D"
+)
+
+type Case string
+
+const (
+	CaseNominative Case = "N"
+	CaseAcusative       = "A"
+	CaseDative          = "D"
+	CaseGenitive        = "G"
 )
 
 type Article string
@@ -33,6 +42,7 @@ const (
 	meaningSeparator     = ";"
 	synonimSeparator     = ","
 	tagSeparator         = ","
+	defaultWhitespace    = "\t\n\f\r "
 )
 
 var (
@@ -49,6 +59,32 @@ var (
 	//        (/([hs]))?      -- match optional second auxiliary notion, followin a / sign
 	//                  $     -- match end of string
 	AuxiliaryRegexp = regexp.MustCompile("^([sh])(/([hs]))?$")
+
+	// Argument:
+	// ^                                  -- match beginning of string
+	//  ([^(]*)                           -- match any string that is not a open paranthases character
+	//          ?                         -- match optional space character
+	//           (                        -- start of paranthases matching
+	//            [(]                       -- match open paranthases character
+	//               ([NADG])               -- match a case notion character  <-- N: nominative, A: acusative, D: dative, G: genitive
+	//                       [)]            -- match close paranthases character
+	//                          )?          -- end of paranthases matching
+	//                             *      -- match optional spaces
+	//                              $     -- match end of string
+	ArgumentRegexp = regexp.MustCompile("^([^(]*) ?([(]([NADG])[)])? *$")
+
+	// Meaning:
+	// ^                                -- match beginning of string
+	//  ([^(]*)                         -- match any string that is not a open paranthases character
+	//          ?                       -- match optional space character
+	//           (                      -- start of paranthases matching
+	//            [(]                     -- match open paranthases character
+	//               ([^)]*)              -- match paranthases content
+	//                      [)]           -- match close paranthases character
+	//                         )?         -- end of paranthases matching
+	//                           *      -- match optional spaces
+	//                            $     -- match end of string
+	MeaningRegexp = regexp.MustCompile("^([^(]*) ?([(]([^)]*)[)])? *$")
 
 	// Noun:
 	// ^                                                                               -- match beginning of string
@@ -98,6 +134,29 @@ type Word interface {
 	IsOk() bool
 }
 
+type Argument struct {
+	Preposition string `bson:"prep" json:"prep"`
+	Case        string `bson:"case" json:"case"`
+}
+
+func NewArgument(allArguments string) []Argument {
+	arguments := []Argument{}
+
+	for _, word := range TrimSplit(allArguments, argumentSeparator) {
+		matches := ArgumentRegexp.FindStringSubmatch(word)
+		if len(matches) < 3 {
+			continue
+		}
+
+		p := strings.Trim(matches[1], defaultWhitespace)
+		c := strings.Trim(matches[2], defaultWhitespace)
+
+		arguments = append(arguments, Argument{p, c})
+	}
+
+	return arguments
+}
+
 type Meaning struct {
 	Main        string `bson:"main" json:"main"`
 	Paranthases string `bson:"paranthases" json:"paranthases"`
@@ -107,7 +166,15 @@ func NewMeanings(allMeanings string) []Meaning {
 	meanings := []Meaning{}
 
 	for _, word := range TrimSplit(allMeanings, meaningSeparator) {
-		meanings = append(meanings, Meaning{word, ""})
+		matches := MeaningRegexp.FindStringSubmatch(word)
+		if len(matches) < 3 {
+			continue
+		}
+
+		m := strings.Trim(matches[1], defaultWhitespace)
+		p := strings.Trim(matches[2], defaultWhitespace)
+
+		meanings = append(meanings, Meaning{m, p})
 	}
 
 	return meanings
@@ -251,23 +318,23 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 
 func parseArguments(rawArguments string) (Reflexive, []string, error) {
 	if rawArguments == "" {
-		return Without, []string{}, nil
+		return ReflexiveWithout, []string{}, nil
 	}
 	arguments := TrimSplit(rawArguments, argumentSeparator)
 
 	if strings.Contains(arguments[0], "sich (A)") {
-		return Acusative, arguments[1:], nil
+		return ReflexiveAcusative, arguments[1:], nil
 	}
 
 	if strings.Contains(arguments[0], "sich (D)") {
-		return Dative, arguments[1:], nil
+		return ReflexiveDative, arguments[1:], nil
 	}
 
 	if strings.Contains(arguments[0], "sich") {
-		return Without, []string{}, errors.New("Reflexive definition is invalid")
+		return ReflexiveWithout, []string{}, errors.New("Reflexive definition is invalid")
 	}
 
-	return Without, []string{}, nil
+	return ReflexiveWithout, []string{}, nil
 }
 
 type Noun struct {
