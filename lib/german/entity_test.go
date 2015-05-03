@@ -268,12 +268,12 @@ func TestMeaningCreationSuccess(t *testing.T) {
 				)
 			}
 
-			if meaning.Paranthases != testMeaning.Paranthases {
+			if meaning.Parantheses != testMeaning.Parantheses {
 				t.Fatalf(
-					"Case #%d. Wrong paranthases found. Expected '%s', got: '%s'",
+					"Case #%d. Wrong parantheses found. Expected '%s', got: '%s'",
 					num,
-					testMeaning.Paranthases,
-					meaning.Paranthases,
+					testMeaning.Parantheses,
+					meaning.Parantheses,
 				)
 			}
 		}

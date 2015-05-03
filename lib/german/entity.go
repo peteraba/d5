@@ -62,37 +62,37 @@ var (
 
 	// Argument:
 	// ^                                  -- match beginning of string
-	//  ([^(]*)                           -- match any string that is not a open paranthases character
+	//  ([^(]*)                           -- match any string that is not a open parantheses character
 	//          ?                         -- match optional space character
-	//           (                        -- start of paranthases matching
-	//            [(]                       -- match open paranthases character
+	//           (                        -- start of parantheses matching
+	//            [(]                       -- match open parantheses character
 	//               ([NADG])               -- match a case notion character  <-- N: nominative, A: acusative, D: dative, G: genitive
-	//                       [)]            -- match close paranthases character
-	//                          )?          -- end of paranthases matching
+	//                       [)]            -- match close parantheses character
+	//                          )?          -- end of parantheses matching
 	//                             *      -- match optional spaces
 	//                              $     -- match end of string
 	ArgumentRegexp = regexp.MustCompile("^([^(]*) ?([(]([NADG])[)])? *$")
 
 	// Meaning:
 	// ^                                -- match beginning of string
-	//  ([^(]*)                         -- match any string that is not a open paranthases character
+	//  ([^(]*)                         -- match any string that is not a open parantheses character
 	//          ?                       -- match optional space character
-	//           (                      -- start of paranthases matching
-	//            [(]                     -- match open paranthases character
-	//               ([^)]*)              -- match paranthases content
-	//                      [)]           -- match close paranthases character
-	//                         )?         -- end of paranthases matching
+	//           (                      -- start of parantheses matching
+	//            [(]                     -- match open parantheses character
+	//               ([^)]*)              -- match parantheses content
+	//                      [)]           -- match close parantheses character
+	//                         )?         -- end of parantheses matching
 	//                           *      -- match optional spaces
 	//                            $     -- match end of string
 	MeaningRegexp = regexp.MustCompile("^([^(]*) ?([(]([^)]*)[)])? *$")
 
 	// Noun:
-	// ^                                                                                          -- match beginning of string
-	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                               -- match noun in singular, must start with a capital
-	//                             ,                                                              -- match a comma
-	//                              ([A-ZÄÖÜa-zäöü~⍨ -]*)                                         -- match plural part, can be an extension only starting with a ⍨, ~
+	// ^                                                                                           -- match beginning of string
+	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                                -- match noun in singular, must start with a capital
+	//                             ,                                                               -- match a comma
+	//                              ([A-ZÄÖÜa-zäöü~⍨ -]*)                                          -- match plural part, can be an extension only starting with a ⍨, ~
 	//                                                     (,([A-ZÄÖÜßa-zäöü~⍨ ]*()?               -- match optional genitive, can be an extension
-	//                                                                              ([(]pl[)])
+	//                                                                              ([(]pl[)])     -- match plural only note
 	//                                                                                        $    -- match end of string
 	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ ]*))?([(]pl[)])?$")
 
@@ -162,7 +162,7 @@ func NewArgument(allArguments string) []Argument {
 
 type Meaning struct {
 	Main        string `bson:"main" json:"main"`
-	Paranthases string `bson:"paranthases" json:"paranthases"`
+	Parantheses string `bson:"parantheses" json:"parantheses"`
 }
 
 func NewMeanings(allMeanings string) []Meaning {

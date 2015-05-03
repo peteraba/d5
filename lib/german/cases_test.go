@@ -53,9 +53,9 @@ var meaningRegexpSuccessCases = []struct {
 
 var meaningRegexpFailureCases = []string{
 	"",
-	// Only one paranthases is allowed for a meaning
+	// Only one parantheses is allowed for a meaning
 	"to get sth. down (stairs)   (to heaven) ",
-	// No words are allowed after the paranthases
+	// No words are allowed after the parantheses
 	"to get sth. down (stairs)   to heaven ",
 }
 
