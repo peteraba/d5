@@ -1,6 +1,10 @@
 package german
 
-import "testing"
+import (
+	"encoding/json"
+	"reflect"
+	"testing"
+)
 
 func TestArticleRegexpSucecss(t *testing.T) {
 	for _, testCase := range articleRegexpSuccessCases {
@@ -205,41 +209,19 @@ func TestVerbRegexpFailure(t *testing.T) {
 }
 
 func TestArgumentCreationSuccess(t *testing.T) {
-	var testArgument Argument
-
 	for num, testCase := range argumentCreationCases {
 		arguments := NewArgument(testCase.allArguments)
 
-		if len(arguments) != len(testCase.arguments) {
-			t.Fatal(arguments)
+		if !reflect.DeepEqual(arguments, testCase.arguments) {
+			w1, _ := json.Marshal(arguments)
+			w2, _ := json.Marshal(testCase.arguments)
+
 			t.Fatalf(
-				"Case #%d. Wrong number of arguments created. Expected %d, got: %d.",
-				num,
-				len(testCase.arguments),
-				len(arguments),
+				"Argument list #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
 			)
-		}
-
-		for key, argument := range arguments {
-			testArgument = testCase.arguments[key]
-
-			if argument.Preposition != testArgument.Preposition {
-				t.Fatalf(
-					"Case #%d. Wrong preposition found. Expected '%s', got: '%s'",
-					num,
-					testArgument.Preposition,
-					argument.Case,
-				)
-			}
-
-			if argument.Case != testArgument.Case {
-				t.Fatalf(
-					"Case #%d. Wrong case found. Expected '%s', got: '%s'",
-					num,
-					testArgument.Case,
-					argument.Case,
-				)
-			}
 		}
 	}
 
@@ -247,35 +229,19 @@ func TestArgumentCreationSuccess(t *testing.T) {
 }
 
 func TestMeaningCreationSuccess(t *testing.T) {
-	var testMeaning Meaning
-
 	for num, testCase := range meaningCreationCases {
 		meanings := NewMeanings(testCase.allMeanings)
 
-		if len(meanings) != len(testCase.meanings) {
-			t.Fatalf("Case #%d: Wrong number of meanings created. Expected %d, got: %d.", num, testCase.meanings, meanings)
-		}
+		if !reflect.DeepEqual(meanings, testCase.meanings) {
+			w1, _ := json.Marshal(meanings)
+			w2, _ := json.Marshal(testCase.meanings)
 
-		for key, meaning := range meanings {
-			testMeaning = testCase.meanings[key]
-
-			if meaning.Main != testMeaning.Main {
-				t.Fatalf(
-					"Case #%d. Wrong main found. Expected '%s', got: '%s'",
-					num,
-					testMeaning.Main,
-					meaning.Main,
-				)
-			}
-
-			if meaning.Parantheses != testMeaning.Parantheses {
-				t.Fatalf(
-					"Case #%d. Wrong parantheses found. Expected '%s', got: '%s'",
-					num,
-					testMeaning.Parantheses,
-					meaning.Parantheses,
-				)
-			}
+			t.Fatalf(
+				"Meaning list #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
+			)
 		}
 	}
 
@@ -296,8 +262,16 @@ func TestWordCreationSuccess(t *testing.T) {
 			testCase.errors,
 		)
 
-		if word == nil {
-			t.Fatalf("No word is created for case #%d, german word: %s", num, testCase.german)
+		if !reflect.DeepEqual(word, testCase.word) {
+			w1, _ := json.Marshal(word)
+			w2, _ := json.Marshal(testCase.word)
+
+			t.Fatalf(
+				"Word #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
+			)
 		}
 	}
 
@@ -316,8 +290,16 @@ func TestAdjectiveCreationSuccess(t *testing.T) {
 			testCase.tags,
 		)
 
-		if adjective == nil {
-			t.Fatalf("No adjective is created for case #%d, german word: %s", num, testCase.german)
+		if !reflect.DeepEqual(adjective, testCase.adjective) {
+			w1, _ := json.Marshal(adjective)
+			w2, _ := json.Marshal(testCase.adjective)
+
+			t.Fatalf(
+				"Adjective #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
+			)
 		}
 	}
 

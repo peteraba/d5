@@ -1,5 +1,7 @@
 package german
 
+import "time"
+
 var articleRegexpSuccessCases = []struct {
 	raw, first, second string
 }{
@@ -151,6 +153,7 @@ var meaningCreationCases = []struct {
 var wordCreationSuccessCases = []struct {
 	german, english, third, category, user, learned, score, tags string
 	errors                                                       []string
+	word                                                         *Any
 }{
 	{
 		"Ich versteh nur Bahnhof",
@@ -162,11 +165,29 @@ var wordCreationSuccessCases = []struct {
 		"5",
 		"idiom, ithinkispider.com",
 		[]string{},
+		&Any{
+			DefaultWord{
+				"Ich versteh nur Bahnhof",
+				[]Meaning{
+					Meaning{"I understand just train-station", ""},
+				},
+				[]Meaning{
+					Meaning{"Én csak a vasútállomásokat értem", ""},
+				},
+				"exp",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"idiom", "ithinkispider.com"},
+				[]string{},
+			},
+		},
 	},
 }
 
 var adjectiveCreationSuccessCases = []struct {
 	german, english, third, user, learned, score, tags string
+	adjective                                          *Adjective
 }{
 	{
 		"ägyptisch",
@@ -176,6 +197,25 @@ var adjectiveCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"object_from",
+		&Adjective{
+			DefaultWord{
+				"ägyptisch",
+				[]Meaning{
+					Meaning{"Egyptian", ""},
+				},
+				[]Meaning{
+					Meaning{"egyiptomi", ""},
+				},
+				"adjective",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"object_from"},
+				[]string{},
+			},
+			[]string{},
+			[]string{},
+		},
 	},
 	{
 		"andauernd,-",
@@ -185,6 +225,26 @@ var adjectiveCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Adjective{
+			DefaultWord{
+				"andauernd",
+				[]Meaning{
+					Meaning{"continuous", ""},
+					Meaning{"ongoing", ""},
+				},
+				[]Meaning{
+					Meaning{"folyamatos", ""},
+				},
+				"adjective",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]string{"-"},
+			[]string{},
+		},
 	},
 	{
 		"aufmerksam",
@@ -194,6 +254,27 @@ var adjectiveCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"person, animal",
+		&Adjective{
+			DefaultWord{
+				"aufmerksam",
+				[]Meaning{
+					Meaning{"alert, observant", "animal"},
+					Meaning{"kind, nice", ""},
+				},
+				[]Meaning{
+					Meaning{"éber", "állat"},
+					Meaning{"figyelmes, előzékeny", ""},
+				},
+				"adjective",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"person", "animal"},
+				[]string{},
+			},
+			[]string{},
+			[]string{},
+		},
 	},
 	{
 		"jung,⍨er,⍨sten",
@@ -203,6 +284,25 @@ var adjectiveCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"person",
+		&Adjective{
+			DefaultWord{
+				"jung",
+				[]Meaning{
+					Meaning{"junior", ""},
+				},
+				[]Meaning{
+					Meaning{"kezdő", ""},
+				},
+				"adjective",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"person"},
+				[]string{},
+			},
+			[]string{"⍨er"},
+			[]string{"⍨sten"},
+		},
 	},
 	{
 		"schmal,~er/⍨er,~sten/⍨sten",
@@ -212,6 +312,25 @@ var adjectiveCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"room, clothes",
+		&Adjective{
+			DefaultWord{
+				"schmal",
+				[]Meaning{
+					Meaning{"narrow", ""},
+				},
+				[]Meaning{
+					Meaning{"keskeny, szűk", ""},
+				},
+				"adjective",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"room", "clothes"},
+				[]string{},
+			},
+			[]string{"~er", "⍨er"},
+			[]string{"~sten", "⍨sten"},
+		},
 	},
 }
 

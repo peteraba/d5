@@ -274,9 +274,15 @@ type Adjective struct {
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
 	adjectiveParts := util.TrimSplit(german, conjugationSeparator)
 
+	if len(adjectiveParts) < 1 {
+		return nil
+	}
+
 	errors := []string{}
 	comparative := []string{}
 	superlative := []string{}
+
+	german = adjectiveParts[0]
 
 	if len(adjectiveParts) > 1 {
 		comparative = util.TrimSplit(adjectiveParts[1], alternativeSeparator)
