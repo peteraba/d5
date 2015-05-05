@@ -35,6 +35,13 @@ const (
 	Das         = "s"
 )
 
+type Auxiliary string
+
+const (
+	Sein  Auxiliary = "s"
+	Haben           = "h"
+)
+
 const learnedForm = "2006-01-02"
 
 const (
@@ -183,6 +190,110 @@ func NewMeanings(allMeanings string) []Meaning {
 	}
 
 	return meanings
+}
+
+func NewAuxiliary(auxiliaries []string) []Auxiliary {
+	var result []Auxiliary
+
+	for _, auxiliary := range auxiliaries {
+		switch auxiliary {
+		case "h":
+			result = append(result, Haben)
+			break
+		case "s":
+			result = append(result, Sein)
+			break
+		}
+	}
+
+	return result
+}
+
+type Prefix struct {
+	Prefix    string `bson:"prefix" json:"prefix"`
+	Separable bool   `bson:"separable" json:"separable"`
+}
+
+var alwaysSeparable = []string{
+	"an",
+	"auf",
+	"aus",
+	"auseinander",
+	"bei",
+	"da",
+	"dar",
+	"dabei",
+	"daran",
+	"durch",
+	"ein",
+	"empor",
+	"entgegen",
+	"entlang",
+	"entzwei",
+	"fehl",
+	"fest",
+	"fort",
+	"frei",
+	"gegenüber",
+	"gleich",
+	"heim",
+	"her",
+	"herab",
+	"heran",
+	"herbei",
+	"herein",
+	"herüber",
+	"herum",
+	"herunter",
+	"hervor",
+	"herauf",
+	"heraus",
+	"hin",
+	"hinab",
+	"hinauf",
+	"hinaus",
+	"hinein",
+	"hinterher",
+	"hinunter",
+	"hinweg",
+	"hinzu",
+	"hoch",
+	"los",
+	"mit",
+	"nach",
+	"nebenher",
+	"nieder",
+	"statt",
+	"vor",
+	"voran",
+	"voraus",
+	"vorbei",
+	"vorüber",
+	"vorweg",
+	"weg",
+	"zu",
+	"zurecht",
+	"zurück",
+	"zusammen",
+	"zwischen",
+}
+
+var alwaysUnseparable = []string{
+	"be",
+	"bei",
+	"emp",
+	"ent",
+	"er",
+	"ge",
+	"miss",
+	"ver",
+	"voll",
+	"zer",
+}
+
+func NewPrefix(german string) Prefix {
+
+	return Prefix{"", true}
 }
 
 type DefaultWord struct {
@@ -345,19 +456,20 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 
 type Verb struct {
 	DefaultWord    `bson:"word" json:"word"`
-	Auxiliary      []string  `bson:"auxiliary" json:"auxiliary"`
-	Noun           string    `bson:"noun" json:"noun"`
-	Adjective      string    `bson:"adjective" json:"adjective"`
-	PastParticiple []string  `bson:"pastParticiple" json:"pastParticiple"`
-	Preterite      []string  `bson:"preterite" json:"preterite"`
-	S1             []string  `bson:"s1" json:"s1"`
-	S2             []string  `bson:"s2" json:"s2"`
-	S3             []string  `bson:"s3" json:"s3"`
-	P1             []string  `bson:"p1" json:"p1"`
-	P2             []string  `bson:"p2" json:"p2"`
-	P3             []string  `bson:"p3" json:"p3"`
-	Reflexive      Reflexive `bson:"reflexive" json:"reflexive"`
-	Arguments      []string  `bson:"arguments" json:"arguments"`
+	Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary"`
+	Prefix         Prefix      `bson:"prefix" json:"prefix"`
+	Noun           string      `bson:"noun" json:"noun"`
+	Adjective      string      `bson:"adjective" json:"adjective"`
+	PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple"`
+	Preterite      []string    `bson:"preterite" json:"preterite"`
+	S1             []string    `bson:"s1" json:"s1"`
+	S2             []string    `bson:"s2" json:"s2"`
+	S3             []string    `bson:"s3" json:"s3"`
+	P1             []string    `bson:"p1" json:"p1"`
+	P2             []string    `bson:"p2" json:"p2"`
+	P3             []string    `bson:"p3" json:"p3"`
+	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive"`
+	Arguments      []string    `bson:"arguments" json:"arguments"`
 }
 
 func NewVerb(auxiliary, german, english, third, user, learned, score, tags string) *Verb {
@@ -395,7 +507,8 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
-		util.TrimSplit(auxiliary, alternativeSeparator),
+		NewAuxiliary(util.TrimSplit(auxiliary, alternativeSeparator)),
+		NewPrefix(german),
 		"",
 		"",
 		util.TrimSplit(pastParticiple, alternativeSeparator),
