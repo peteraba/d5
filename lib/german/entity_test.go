@@ -319,8 +319,16 @@ func TestNounCreationSuccess(t *testing.T) {
 			testCase.tags,
 		)
 
-		if noun == nil {
-			t.Fatalf("No noun is created for case #%d, german word: %s", num, testCase.german)
+		if !reflect.DeepEqual(noun, testCase.noun) {
+			w1, _ := json.Marshal(noun)
+			w2, _ := json.Marshal(testCase.noun)
+
+			t.Fatalf(
+				"Noun #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
+			)
 		}
 	}
 

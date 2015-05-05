@@ -19,6 +19,7 @@ type superword struct {
 	Arguments      []string  `bson:"arguments" json:"arguments"`
 	Articles       []Article `bson:"article" json:"article"`
 	Plural         []string  `bson:"plural" json:"plural"`
+	Genitive       []string  `bson:"genitive" json:"genitive"`
 	IsPluralOnly   bool      `bson:"plural_only" json:"plural_only"`
 	Comparative    []string  `bson:"comparative" json:"comparative"`
 	Superlative    []string  `bson:"superlative" json:"superlative"`
@@ -61,6 +62,7 @@ func ParseWords(input []byte) ([]Word, error) {
 				superword.DefaultWord,
 				superword.Articles,
 				superword.Plural,
+				superword.Genitive,
 				superword.IsPluralOnly,
 			}
 			break

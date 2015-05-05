@@ -336,6 +336,7 @@ var adjectiveCreationSuccessCases = []struct {
 
 var nounCreationSuccessCases = []struct {
 	articles, german, english, third, user, learned, score, tags string
+	noun                                                         *Noun
 }{
 	{
 		"s",
@@ -346,6 +347,27 @@ var nounCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"sound",
+		&Noun{
+			DefaultWord{
+				"Hintergeräusch",
+				[]Meaning{
+					Meaning{"background noise", ""},
+				},
+				[]Meaning{
+					Meaning{"háttérzaj", ""},
+				},
+				"noun",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"sound"},
+				[]string{},
+			},
+			[]Article{Das},
+			[]string{"~e"},
+			[]string{"~s", "~es"},
+			false,
+		},
 	},
 	{
 		"s",
@@ -356,6 +378,27 @@ var nounCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"studies",
+		&Noun{
+			DefaultWord{
+				"Jurastudium",
+				[]Meaning{
+					Meaning{"law studies", ""},
+				},
+				[]Meaning{
+					Meaning{"jogi tanulmány", ""},
+				},
+				"noun",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"studies"},
+				[]string{},
+			},
+			[]Article{Das},
+			[]string{"Jurastudien"},
+			[]string{},
+			false,
+		},
 	},
 	{
 		"r",
@@ -366,6 +409,59 @@ var nounCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"visible",
+		&Noun{
+			DefaultWord{
+				"Nebel",
+				[]Meaning{
+					Meaning{"fog, mist, haze", ""},
+					Meaning{"nebula", "astronomy"},
+				},
+				[]Meaning{
+					Meaning{"köd", ""},
+				},
+				"noun",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"visible"},
+				[]string{},
+			},
+			[]Article{Der},
+			[]string{"~"},
+			[]string{},
+			false,
+		},
+	},
+	{
+		"e",
+		"Vereinigten Staaten von Amerika,- (pl)",
+		"United States of America",
+		"Amerikai Egyesült Államok",
+		"peteraba",
+		"2015-05-03",
+		"5",
+		"country",
+		&Noun{
+			DefaultWord{
+				"Vereinigten Staaten von Amerika",
+				[]Meaning{
+					Meaning{"United States of America", ""},
+				},
+				[]Meaning{
+					Meaning{"Amerikai Egyesült Államok", ""},
+				},
+				"noun",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{"country"},
+				[]string{},
+			},
+			[]Article{Die},
+			[]string{"-"},
+			[]string{},
+			true,
+		},
 	},
 }
 

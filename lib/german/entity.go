@@ -302,6 +302,7 @@ type Noun struct {
 	DefaultWord  `bson:"word" json:"word"`
 	Articles     []Article `bson:"article" json:"article"`
 	Plural       []string  `bson:"plural" json:"plural"`
+	Genitive     []string  `bson:"genitive" json:"genitive"`
 	IsPluralOnly bool      `bson:"plural_only" json:"plural_only"`
 }
 
@@ -331,11 +332,14 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 		}
 	}
 
+	german = matches[1]
+
 	return &Noun{
 		NewDefaultWord(german, english, third, "noun", user, learned, score, tags, errors),
 		articleList,
-		util.TrimSplit(matches[3], alternativeSeparator),
-		matches[4] == "(pl)",
+		util.TrimSplit(matches[2], alternativeSeparator),
+		util.TrimSplit(matches[4], alternativeSeparator),
+		matches[5] == "(pl)",
 	}
 }
 
