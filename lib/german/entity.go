@@ -149,7 +149,7 @@ type Argument struct {
 	Case        string `bson:"case" json:"case"`
 }
 
-func NewArgument(allArguments string) []Argument {
+func NewArguments(allArguments string) []Argument {
 	arguments := []Argument{}
 
 	allArguments = strings.TrimLeft(allArguments, argumentSeparator)
@@ -167,6 +167,33 @@ func NewArgument(allArguments string) []Argument {
 	}
 
 	return arguments
+}
+
+func parseArguments(rawArguments string) (Reflexive, []Argument, error) {
+	arguments := NewArguments(rawArguments)
+
+	if len(arguments) == 0 {
+		return ReflexiveWithout, arguments, nil
+	}
+
+	if arguments[0].Preposition == "sich" {
+		sich := arguments[0]
+		arguments = arguments[1:]
+
+		switch sich.Case {
+		case "A":
+			return ReflexiveAcusative, arguments, nil
+			break
+		case "B":
+			return ReflexiveDative, arguments, nil
+			break
+		}
+
+		return ReflexiveWithout, arguments, errors.New("Reflexive definition is invalid")
+
+	}
+
+	return ReflexiveWithout, arguments, nil
 }
 
 type Meaning struct {
@@ -214,86 +241,134 @@ type Prefix struct {
 	Separable bool   `bson:"separable" json:"separable"`
 }
 
-var alwaysSeparable = []string{
-	"an",
-	"auf",
-	"aus",
-	"auseinander",
-	"bei",
-	"da",
-	"dar",
-	"dabei",
-	"daran",
-	"durch",
-	"ein",
-	"empor",
-	"entgegen",
-	"entlang",
-	"entzwei",
-	"fehl",
-	"fest",
-	"fort",
-	"frei",
-	"gegenüber",
-	"gleich",
-	"heim",
-	"her",
-	"herab",
-	"heran",
-	"herbei",
-	"herein",
-	"herüber",
-	"herum",
-	"herunter",
-	"hervor",
-	"herauf",
-	"heraus",
-	"hin",
-	"hinab",
-	"hinauf",
-	"hinaus",
-	"hinein",
-	"hinterher",
-	"hinunter",
-	"hinweg",
-	"hinzu",
-	"hoch",
-	"los",
-	"mit",
-	"nach",
-	"nebenher",
-	"nieder",
-	"statt",
-	"vor",
-	"voran",
-	"voraus",
-	"vorbei",
-	"vorüber",
-	"vorweg",
-	"weg",
-	"zu",
-	"zurecht",
-	"zurück",
-	"zusammen",
-	"zwischen",
+// array of maps of word to exceptions
+var separablePrefixes = []map[string][]string{
+	// top prio: causes hervor to be checked before her
+	map[string][]string{
+		"auseinander": []string{},
+		"entgegen":    []string{},
+		"entlang":     []string{},
+		"entzwei":     []string{},
+		"gegenüber":   []string{},
+		"gleich":      []string{},
+		"herbei":      []string{},
+		"herein":      []string{},
+		"herüber":     []string{},
+		"herunter":    []string{},
+		"hervor":      []string{},
+		"herauf":      []string{},
+		"heraus":      []string{},
+		"hinauf":      []string{},
+		"hinaus":      []string{},
+		"hinein":      []string{},
+		"hinterher":   []string{},
+		"hinunter":    []string{},
+		"hinweg":      []string{},
+		"nebenher":    []string{},
+		"nieder":      []string{},
+		"voraus":      []string{},
+		"vorbei":      []string{},
+		"vorüber":     []string{},
+		"vorweg":      []string{},
+		"zurecht":     []string{},
+		"zurück":      []string{},
+		"zusammen":    []string{},
+		"zwischen":    []string{},
+	},
+	// moderate prio: causes herab to check before her
+	map[string][]string{
+		"dabei": []string{},
+		"daran": []string{},
+		"durch": []string{},
+		"empor": []string{},
+		"fehl":  []string{"fehlen"},
+		"fest":  []string{},
+		"fort":  []string{},
+		"frei":  []string{},
+		"heim":  []string{},
+		"herab": []string{},
+		"heran": []string{},
+		"herum": []string{},
+		"hinab": []string{},
+		"hinzu": []string{},
+		"hoch":  []string{},
+		"nach":  []string{},
+		"statt": []string{},
+		"voran": []string{},
+	},
+	// low prio: causes vor to checked after vorher
+	map[string][]string{
+		"an":  []string{},
+		"auf": []string{},
+		"aus": []string{},
+		"bei": []string{},
+		"da":  []string{},
+		"dar": []string{},
+		"ein": []string{},
+		"her": []string{},
+		"hin": []string{},
+		"los": []string{},
+		"mit": []string{},
+		"vor": []string{},
+		"weg": []string{},
+		"zu":  []string{},
+	},
 }
 
-var alwaysUnseparable = []string{
-	"be",
-	"bei",
-	"emp",
-	"ent",
-	"er",
-	"ge",
-	"miss",
-	"ver",
-	"voll",
-	"zer",
+// array of maps of word to exceptions
+var unseparablePrefixes = []map[string][]string{
+	map[string][]string{
+		"be":   []string{},
+		"bei":  []string{},
+		"emp":  []string{},
+		"ent":  []string{},
+		"er":   []string{},
+		"ge":   []string{},
+		"miss": []string{},
+		"ver":  []string{},
+		"voll": []string{},
+		"zer":  []string{},
+	},
 }
 
 func NewPrefix(german string) Prefix {
+	idx := strings.Index(german, "|")
 
-	return Prefix{"", true}
+	if idx > -1 {
+		return Prefix{german[:idx], true}
+	}
+
+	for _, prefixSet := range separablePrefixes {
+	separablePrefixLoop:
+		for prefix, exceptions := range prefixSet {
+			for _, exception := range exceptions {
+				if exception == german {
+					continue separablePrefixLoop
+				}
+			}
+
+			if strings.Index(german, prefix) == 0 {
+				return Prefix{prefix, true}
+			}
+		}
+	}
+
+	for _, prefixSet := range unseparablePrefixes {
+	unseparablePrefixLoop:
+		for prefix, exceptions := range prefixSet {
+			for _, exception := range exceptions {
+				if exception == german {
+					continue unseparablePrefixLoop
+				}
+			}
+
+			if strings.Index(german, prefix) == 0 {
+				return Prefix{prefix, false}
+			}
+		}
+	}
+
+	return Prefix{"", false}
 }
 
 type DefaultWord struct {
@@ -469,7 +544,41 @@ type Verb struct {
 	P2             []string    `bson:"p2" json:"p2"`
 	P3             []string    `bson:"p3" json:"p3"`
 	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive"`
-	Arguments      []string    `bson:"arguments" json:"arguments"`
+	Arguments      []Argument  `bson:"arguments" json:"arguments"`
+}
+
+func NewVerbNoun(german string) string {
+	words := util.TrimSplit(german, conjugationSeparator)
+
+	if len(words) == 0 {
+		return ""
+	}
+
+	nouns := []string{}
+	for _, word := range words[1:] {
+		if strings.ToLower(word) != word {
+			nouns = append(nouns, word)
+		}
+	}
+
+	return strings.Join(nouns, " ")
+}
+
+func NewVerbAdjective(german string) string {
+	words := util.TrimSplit(german, conjugationSeparator)
+
+	if len(words) == 0 {
+		return ""
+	}
+
+	adjectives := []string{}
+	for _, word := range words[1:] {
+		if strings.ToLower(word) == word {
+			adjectives = append(adjectives, word)
+		}
+	}
+
+	return strings.Join(adjectives, " ")
 }
 
 func NewVerb(auxiliary, german, english, third, user, learned, score, tags string) *Verb {
@@ -505,12 +614,14 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		return nil
 	}
 
+	german = strings.Replace(german, "|", "", -1)
+
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
 		NewAuxiliary(util.TrimSplit(auxiliary, alternativeSeparator)),
 		NewPrefix(german),
-		"",
-		"",
+		NewVerbNoun(german),
+		NewVerbAdjective(german),
 		util.TrimSplit(pastParticiple, alternativeSeparator),
 		util.TrimSplit(preterite, alternativeSeparator),
 		util.TrimSplit(ich, alternativeSeparator),
@@ -522,25 +633,4 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		sich,
 		arguments,
 	}
-}
-
-func parseArguments(rawArguments string) (Reflexive, []string, error) {
-	if rawArguments == "" {
-		return ReflexiveWithout, []string{}, nil
-	}
-	arguments := util.TrimSplit(rawArguments, argumentSeparator)
-
-	if strings.Contains(arguments[0], "sich (A)") {
-		return ReflexiveAcusative, arguments[1:], nil
-	}
-
-	if strings.Contains(arguments[0], "sich (D)") {
-		return ReflexiveDative, arguments[1:], nil
-	}
-
-	if strings.Contains(arguments[0], "sich") {
-		return ReflexiveWithout, []string{}, errors.New("Reflexive definition is invalid")
-	}
-
-	return ReflexiveWithout, []string{}, nil
 }

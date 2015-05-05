@@ -210,7 +210,7 @@ func TestVerbRegexpFailure(t *testing.T) {
 
 func TestArgumentCreationSuccess(t *testing.T) {
 	for num, testCase := range argumentCreationCases {
-		arguments := NewArgument(testCase.allArguments)
+		arguments := NewArguments(testCase.allArguments)
 
 		if !reflect.DeepEqual(arguments, testCase.arguments) {
 			w1, _ := json.Marshal(arguments)
@@ -348,8 +348,16 @@ func TestVerbCreationSuccess(t *testing.T) {
 			testCase.tags,
 		)
 
-		if verb == nil {
-			t.Fatalf("No verb is created for case #%d, german word: %s", num, testCase.german)
+		if !reflect.DeepEqual(verb, testCase.verb) {
+			w1, _ := json.Marshal(verb)
+			w2, _ := json.Marshal(testCase.verb)
+
+			t.Fatalf(
+				"Verb #%d is different from expected.\nExpected: %v\ngot: %v",
+				num+1,
+				string(w1),
+				string(w2),
+			)
 		}
 	}
 

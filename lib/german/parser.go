@@ -17,7 +17,7 @@ type superword struct {
 	P2             []string    `bson:"p2" json:"p2"`
 	P3             []string    `bson:"p3" json:"p3"`
 	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive"`
-	Arguments      []string    `bson:"arguments" json:"arguments"`
+	Arguments      []Argument  `bson:"arguments" json:"arguments"`
 	Articles       []Article   `bson:"article" json:"article"`
 	Plural         []string    `bson:"plural" json:"plural"`
 	Genitive       []string    `bson:"genitive" json:"genitive"`

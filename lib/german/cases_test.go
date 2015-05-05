@@ -467,6 +467,7 @@ var nounCreationSuccessCases = []struct {
 
 var verbCreationSuccessCases = []struct {
 	auxiliary, german, english, third, user, learned, score, tags string
+	verb                                                          *Verb
 }{
 	{
 		"h",
@@ -477,6 +478,37 @@ var verbCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Verb{
+			DefaultWord{
+				"brechen",
+				[]Meaning{
+					Meaning{"to break, to get broken", ""},
+				},
+				[]Meaning{
+					Meaning{"összetörni, összetörik", ""},
+				},
+				"verb",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Auxiliary{Haben},
+			Prefix{},
+			"",
+			"",
+			[]string{"brach"},
+			[]string{"gebrochen"},
+			[]string{},
+			[]string{"brichst"},
+			[]string{"bricht"},
+			[]string{},
+			[]string{},
+			[]string{},
+			ReflexiveWithout,
+			[]Argument{},
+		},
 	},
 	{
 		"h",
@@ -487,6 +519,40 @@ var verbCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Verb{
+			DefaultWord{
+				"durchfallen",
+				[]Meaning{
+					Meaning{"to check through", ""},
+				},
+				[]Meaning{
+					Meaning{"ellenőrizni, átvizsgálni", ""},
+				},
+				"verb",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Auxiliary{Haben},
+			Prefix{
+				"durch",
+				true,
+			},
+			"",
+			"",
+			[]string{"durchfiel"},
+			[]string{"durchgefallen"},
+			[]string{},
+			[]string{"durchfällst"},
+			[]string{"durchfällt"},
+			[]string{},
+			[]string{},
+			[]string{},
+			ReflexiveWithout,
+			[]Argument{},
+		},
 	},
 	{
 		"s",
@@ -497,6 +563,43 @@ var verbCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Verb{
+			DefaultWord{
+				"einfallen",
+				[]Meaning{
+					Meaning{"to come to mind", ""},
+					Meaning{"to remember", ""},
+				},
+				[]Meaning{
+					Meaning{"eszébe jut", ""},
+				},
+				"verb",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Auxiliary{Sein},
+			Prefix{
+				"ein",
+				true,
+			},
+			"",
+			"",
+			[]string{"einfiel"},
+			[]string{"eingefallen"},
+			[]string{},
+			[]string{"einfällst"},
+			[]string{"einfällt"},
+			[]string{},
+			[]string{},
+			[]string{},
+			ReflexiveWithout,
+			[]Argument{
+				Argument{"", CaseDative},
+			},
+		},
 	},
 	{
 		"h",
@@ -507,6 +610,40 @@ var verbCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Verb{
+			DefaultWord{
+				"fehlen",
+				[]Meaning{
+					Meaning{"to lack", ""},
+				},
+				[]Meaning{
+					Meaning{"hiányozni", ""},
+				},
+				"verb",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Auxiliary{Haben},
+			Prefix{},
+			"",
+			"",
+			[]string{},
+			[]string{},
+			[]string{},
+			[]string{},
+			[]string{},
+			[]string{},
+			[]string{},
+			[]string{},
+			ReflexiveWithout,
+			[]Argument{
+				Argument{"", CaseDative},
+				Argument{"an", CaseDative},
+			},
+		},
 	},
 	{
 		"h",
@@ -517,5 +654,36 @@ var verbCreationSuccessCases = []struct {
 		"2015-05-03",
 		"5",
 		"",
+		&Verb{
+			DefaultWord{
+				"tun",
+				[]Meaning{
+					Meaning{"to do", ""},
+				},
+				[]Meaning{
+					Meaning{"tenni, csinálni", ""},
+				},
+				"verb",
+				"peteraba",
+				time.Date(2015, 5, 3, 0, 0, 0, 0, time.UTC),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Auxiliary{Haben},
+			Prefix{},
+			"",
+			"",
+			[]string{"taten"},
+			[]string{"getan"},
+			[]string{"tue"},
+			[]string{"tust"},
+			[]string{"tut"},
+			[]string{"tun"},
+			[]string{"tut"},
+			[]string{"tun"},
+			ReflexiveWithout,
+			[]Argument{},
+		},
 	},
 }
