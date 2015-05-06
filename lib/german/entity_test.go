@@ -217,7 +217,7 @@ func TestArgumentCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.arguments)
 
 			t.Fatalf(
-				"Argument list #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Argument list #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),
@@ -237,7 +237,7 @@ func TestMeaningCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.meanings)
 
 			t.Fatalf(
-				"Meaning list #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Meaning list #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),
@@ -267,7 +267,7 @@ func TestWordCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.word)
 
 			t.Fatalf(
-				"Word #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Word #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),
@@ -295,7 +295,7 @@ func TestAdjectiveCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.adjective)
 
 			t.Fatalf(
-				"Adjective #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Adjective #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),
@@ -324,7 +324,7 @@ func TestNounCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.noun)
 
 			t.Fatalf(
-				"Noun #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Noun #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),
@@ -353,7 +353,7 @@ func TestVerbCreationSuccess(t *testing.T) {
 			w2, _ := json.Marshal(testCase.verb)
 
 			t.Fatalf(
-				"Verb #%d is different from expected.\nExpected: %v\ngot: %v",
+				"Verb #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
 				num+1,
 				string(w1),
 				string(w2),

@@ -581,6 +581,23 @@ func NewVerbAdjective(german string) string {
 	return strings.Join(adjectives, " ")
 }
 
+func getGermanNounAdjective(german string) (string, string, string) {
+	german = strings.Replace(german, "|", "", -1)
+
+	noun := NewVerbNoun(german)
+	adjective := NewVerbAdjective(german)
+
+	if noun != "" {
+		german = noun + " " + german
+	}
+
+	if adjective != "" {
+		german = adjective + " " + german
+	}
+
+	return german, noun, adjective
+}
+
 func NewVerb(auxiliary, german, english, third, user, learned, score, tags string) *Verb {
 	pastParticiple, preterite, ich, du, er, wir, ihr, sie := "", "", "", "", "", "", "", ""
 
@@ -614,14 +631,16 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		return nil
 	}
 
-	german = strings.Replace(german, "|", "", -1)
+	prefix := NewPrefix(german)
+
+	german, noun, adjective := getGermanNounAdjective(german)
 
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
 		NewAuxiliary(util.TrimSplit(auxiliary, alternativeSeparator)),
-		NewPrefix(german),
-		NewVerbNoun(german),
-		NewVerbAdjective(german),
+		prefix,
+		noun,
+		adjective,
 		util.TrimSplit(pastParticiple, alternativeSeparator),
 		util.TrimSplit(preterite, alternativeSeparator),
 		util.TrimSplit(ich, alternativeSeparator),
