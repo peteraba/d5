@@ -3,9 +3,7 @@ package german
 import (
 	"errors"
 	"regexp"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/peteraba/d5/lib/util"
 )
@@ -27,14 +25,6 @@ const (
 	CaseGenitive        = "G"
 )
 
-type Article string
-
-const (
-	Der Article = "r"
-	Die         = "e"
-	Das         = "s"
-)
-
 type Auxiliary string
 
 const (
@@ -42,27 +32,11 @@ const (
 	Haben           = "h"
 )
 
-const learnedForm = "2006-01-02"
-
 const (
-	alternativeSeparator = "/"
-	conjugationSeparator = ","
-	argumentSeparator    = "+"
-	meaningSeparator     = ";"
-	synonimSeparator     = ","
-	tagSeparator         = ","
-	defaultWhitespace    = "\t\n\f\r "
-	wordSeparator        = " "
+	argumentSeparator = "+"
 )
 
 var (
-	// Article:
-	// ^                      -- match beginning of string
-	//  ([res])               -- match first article notion <-- r: der, e: die, s: das
-	//         (/([res]))?    -- match optional second article notion, following a / sign
-	//                    $   -- match end of string
-	ArticleRegexp = regexp.MustCompile("^([res])(/([res]))?$")
-
 	// Auxiliary:
 	// ^                      -- match beginning of string
 	//  ([sh])                -- match first auxiliary notion <-- s: sein, h: haben
@@ -83,67 +57,13 @@ var (
 	//                              $     -- match end of string
 	ArgumentRegexp = regexp.MustCompile("^([^(]*) ?([(]([NADG])[)])? *$")
 
-	// Meaning:
-	// ^                                -- match beginning of string
-	//  ([^(]*)                         -- match any string that is not a open parantheses character
-	//          ?                       -- match optional space character
-	//           (                      -- start of parantheses matching
-	//            [(]                     -- match open parantheses character
-	//               ([^)]*)              -- match parantheses content
-	//                      [)]           -- match close parantheses character
-	//                         )?         -- end of parantheses matching
-	//                           *      -- match optional spaces
-	//                            $     -- match end of string
-	MeaningRegexp = regexp.MustCompile("^([^(]*) ?([(]([^)]*)[)])? *$")
-
-	// Noun:
-	// ^                                                                                           -- match beginning of string
-	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                                -- match noun in singular, must start with a capital
-	//                             ,                                                               -- match a comma
-	//                              ([A-ZÄÖÜa-zäöü~⍨ -]*)                                          -- match plural part, can be an extension only starting with a ⍨, ~
-	//                                                     (,([A-ZÄÖÜßa-zäöü~⍨ ]*()?               -- match optional genitive, can be an extension
-	//                                                                              ([(]pl[)])     -- match plural only note
-	//                                                                                        $    -- match end of string
-	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ ]*))?([(]pl[)])?$")
-
-	// Adjective:
-	// ^                                                       -- match beginning of string
-	//  ([a-zäöüß]+)                                           -- match adjective
-	//              (,([a-zäöüß~⍨-]*))?                        -- match optional comparative, can be an extension only starting with a ⍨, ~
-	//                                 (,([a-zäöüß~⍨-]*))?     -- match optional superlative, can be an extension
-	//                                                    $    -- match end of string
-	AdjectiveRegexp = regexp.MustCompile("^([a-zäöüß]+)(,([a-zäöüß~⍨-]*))?(,([a-zäöüß~⍨-]*))?$")
-
 	// Verb:
 	// ^                                                 -- match beginning of string
 	//  ([A-ZÄÖÜßa-zäöü, ]+)                             -- match verb
 	//                     ([A-ZÄÖÜßa-zäöü+() ]*)?       -- match extension(s), separated by plus signs
 	//                                            $      -- match end of string
 	VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü|, ]+)([A-ZÄÖÜßa-zäöü+() ]*)?$")
-
-	// English Word:
-	// ^                       -- match beginning of string
-	//  [a-zA-Z,.() ]*         -- English words can only contain letters, dots, parantheses and spaces
-	//                $        -- match end of string
-	EnglishRegexp = regexp.MustCompile("^[a-zA-Z,.() ]*$")
-
-	// German Word:
-	// ^                           -- match beginning of string
-	//  [a-zA-ZäÄöÖüÜß,.() ]*      -- German words can only contain German letters, dots, parantheses and spaces
-	//                       $     -- match end of string
-	GermanRegexp = regexp.MustCompile("^[a-zA-ZäÄöÖüÜß,.() ]*$")
 )
-
-type Word interface {
-	GetGerman() string
-	GetEnglish() []Meaning
-	GetThird() []Meaning
-	GetCategory() string
-	GetUser() string
-	GetScore() int
-	GetLearned() time.Time
-	GetErrors() []string
-}
 
 type Argument struct {
 	Preposition string `bson:"prep" json:"prep"`
@@ -195,29 +115,6 @@ func parseArguments(rawArguments string) (Reflexive, []Argument, error) {
 	}
 
 	return ReflexiveWithout, arguments, nil
-}
-
-type Meaning struct {
-	Main        string `bson:"main" json:"main"`
-	Parantheses string `bson:"parantheses" json:"parantheses"`
-}
-
-func NewMeanings(allMeanings string) []Meaning {
-	meanings := []Meaning{}
-
-	for _, word := range util.TrimSplit(allMeanings, meaningSeparator) {
-		matches := MeaningRegexp.FindStringSubmatch(word)
-		if len(matches) < 3 {
-			continue
-		}
-
-		m := strings.Trim(matches[1], defaultWhitespace)
-		p := strings.Trim(matches[3], defaultWhitespace)
-
-		meanings = append(meanings, Meaning{m, p})
-	}
-
-	return meanings
 }
 
 func NewAuxiliary(auxiliaries []string) []Auxiliary {
@@ -370,164 +267,6 @@ func NewPrefix(german string) Prefix {
 	}
 
 	return Prefix{"", false}
-}
-
-type DefaultWord struct {
-	German   string    `bson:"german" json:"german"`
-	English  []Meaning `bson:"english" json:"english"`
-	Third    []Meaning `bson:"third" json:"third"`
-	Category string    `bson:"category" json:"category"`
-	User     string    `bson:"user" json:"user"`
-	Learned  time.Time `bson:"learned" json:"learned"`
-	Score    int       `bson:"score" json:"score"`
-	Tags     []string  `bson:"tags" json:"tags"`
-	Errors   []string  `bson:"errors", json:"errors"`
-}
-
-func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
-	englishMeanings, thirdMeanings := NewMeanings(english), NewMeanings(third)
-
-	scoreParsed, err := strconv.ParseInt(score, 0, 0)
-	if err != nil || scoreParsed < 1 || scoreParsed > 10 {
-		scoreParsed = 5
-	}
-
-	learnedParsed, err := time.Parse(learnedForm, learned)
-	if err != nil {
-		learnedParsed = time.Now()
-	}
-
-	return DefaultWord{
-		german,
-		englishMeanings,
-		thirdMeanings,
-		category,
-		user,
-		learnedParsed,
-		int(scoreParsed),
-		util.TrimSplit(tags, tagSeparator),
-		errors,
-	}
-}
-
-func (w *DefaultWord) GetGerman() string {
-	return w.German
-}
-
-func (w *DefaultWord) GetEnglish() []Meaning {
-	return w.English
-}
-
-func (w *DefaultWord) GetThird() []Meaning {
-	return w.Third
-}
-
-func (w *DefaultWord) GetCategory() string {
-	return w.Category
-}
-
-func (w *DefaultWord) GetScore() int {
-	return w.Score
-}
-
-func (w *DefaultWord) GetUser() string {
-	return w.User
-}
-
-func (w *DefaultWord) GetLearned() time.Time {
-	return w.Learned
-}
-
-func (w *DefaultWord) GetErrors() []string {
-	return w.Errors
-}
-
-type Any struct {
-	DefaultWord `bson:"word" json:"word"`
-}
-
-func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any {
-	d := NewDefaultWord(german, english, third, category, user, learned, score, tags, errors)
-
-	return &Any{d}
-}
-
-type Adjective struct {
-	DefaultWord `bson:"word" json:"word"`
-	Comparative []string `bson:"comparative" json:"comparative"`
-	Superlative []string `bson:"superlative" json:"superlative"`
-}
-
-func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
-	adjectiveParts := util.TrimSplit(german, conjugationSeparator)
-
-	if len(adjectiveParts) < 1 {
-		return nil
-	}
-
-	errors := []string{}
-	comparative := []string{}
-	superlative := []string{}
-
-	german = adjectiveParts[0]
-
-	if len(adjectiveParts) > 1 {
-		comparative = util.TrimSplit(adjectiveParts[1], alternativeSeparator)
-	}
-	if len(adjectiveParts) > 2 {
-		superlative = util.TrimSplit(adjectiveParts[2], alternativeSeparator)
-	}
-
-	return &Adjective{
-		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags, errors),
-		comparative,
-		superlative,
-	}
-}
-
-type Noun struct {
-	DefaultWord  `bson:"word" json:"word"`
-	Articles     []Article `bson:"article" json:"article"`
-	Plural       []string  `bson:"plural" json:"plural"`
-	Genitive     []string  `bson:"genitive" json:"genitive"`
-	IsPluralOnly bool      `bson:"plural_only" json:"plural_only"`
-}
-
-func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
-	matches := NounRegexp.FindStringSubmatch(german)
-
-	if len(matches) < 5 {
-		return nil
-	}
-
-	errors := []string{}
-
-	articleList := []Article{}
-	for _, article := range util.TrimSplit(articles, alternativeSeparator) {
-		switch article {
-		case "r":
-			articleList = append(articleList, Der)
-			break
-		case "e":
-			articleList = append(articleList, Die)
-			break
-		case "s":
-			articleList = append(articleList, Das)
-			break
-		default:
-			return nil
-		}
-	}
-
-	german = matches[1]
-
-	return &Noun{
-		NewDefaultWord(german, english, third, "noun", user, learned, score, tags, errors),
-		articleList,
-		util.TrimSplit(matches[2], alternativeSeparator),
-		util.TrimSplit(matches[4], alternativeSeparator),
-		matches[5] == "(pl)",
-	}
 }
 
 type Verb struct {
