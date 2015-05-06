@@ -52,6 +52,7 @@ const (
 	synonimSeparator     = ","
 	tagSeparator         = ","
 	defaultWhitespace    = "\t\n\f\r "
+	wordSeparator        = " "
 )
 
 var (
@@ -547,55 +548,31 @@ type Verb struct {
 	Arguments      []Argument  `bson:"arguments" json:"arguments"`
 }
 
-func NewVerbNoun(german string) string {
-	words := util.TrimSplit(german, conjugationSeparator)
-
-	if len(words) == 0 {
-		return ""
+func extractNounAdjective(german string) (string, string) {
+	lastIndex := strings.LastIndex(german, wordSeparator)
+	if lastIndex == -1 {
+		return "", ""
 	}
 
-	nouns := []string{}
-	for _, word := range words[1:] {
-		if strings.ToLower(word) != word {
-			nouns = append(nouns, word)
-		}
+	noun, adjective := "", ""
+
+	extra := german[0:lastIndex]
+
+	if strings.ToLower(extra) == extra {
+		adjective = extra
+	} else {
+		noun = extra
 	}
 
-	return strings.Join(nouns, " ")
+	return noun, adjective
 }
 
-func NewVerbAdjective(german string) string {
-	words := util.TrimSplit(german, conjugationSeparator)
-
-	if len(words) == 0 {
-		return ""
-	}
-
-	adjectives := []string{}
-	for _, word := range words[1:] {
-		if strings.ToLower(word) == word {
-			adjectives = append(adjectives, word)
-		}
-	}
-
-	return strings.Join(adjectives, " ")
-}
-
-func getGermanNounAdjective(german string) (string, string, string) {
+func NewVerbWir(german string) string {
 	german = strings.Replace(german, "|", "", -1)
 
-	noun := NewVerbNoun(german)
-	adjective := NewVerbAdjective(german)
+	words := util.TrimSplit(german, wordSeparator)
 
-	if noun != "" {
-		german = noun + " " + german
-	}
-
-	if adjective != "" {
-		german = adjective + " " + german
-	}
-
-	return german, noun, adjective
+	return words[len(words)-1]
 }
 
 func NewVerb(auxiliary, german, english, third, user, learned, score, tags string) *Verb {
@@ -633,7 +610,13 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 
 	prefix := NewPrefix(german)
 
-	german, noun, adjective := getGermanNounAdjective(german)
+	if wir == "" {
+		wir = NewVerbWir(german)
+	}
+
+	german = strings.Replace(german, "|", "", -1)
+
+	noun, adjective := extractNounAdjective(german)
 
 	return &Verb{
 		NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),

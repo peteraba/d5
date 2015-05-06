@@ -213,8 +213,8 @@ func TestArgumentCreationSuccess(t *testing.T) {
 		arguments := NewArguments(testCase.allArguments)
 
 		if !reflect.DeepEqual(arguments, testCase.arguments) {
-			w1, _ := json.Marshal(arguments)
-			w2, _ := json.Marshal(testCase.arguments)
+			w1, _ := json.Marshal(testCase.arguments)
+			w2, _ := json.Marshal(arguments)
 
 			t.Fatalf(
 				"Argument list #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
@@ -233,8 +233,8 @@ func TestMeaningCreationSuccess(t *testing.T) {
 		meanings := NewMeanings(testCase.allMeanings)
 
 		if !reflect.DeepEqual(meanings, testCase.meanings) {
-			w1, _ := json.Marshal(meanings)
-			w2, _ := json.Marshal(testCase.meanings)
+			w1, _ := json.Marshal(testCase.meanings)
+			w2, _ := json.Marshal(meanings)
 
 			t.Fatalf(
 				"Meaning list #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
@@ -263,8 +263,8 @@ func TestWordCreationSuccess(t *testing.T) {
 		)
 
 		if !reflect.DeepEqual(word, testCase.word) {
-			w1, _ := json.Marshal(word)
-			w2, _ := json.Marshal(testCase.word)
+			w1, _ := json.Marshal(testCase.word)
+			w2, _ := json.Marshal(word)
 
 			t.Fatalf(
 				"Word #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
@@ -291,8 +291,8 @@ func TestAdjectiveCreationSuccess(t *testing.T) {
 		)
 
 		if !reflect.DeepEqual(adjective, testCase.adjective) {
-			w1, _ := json.Marshal(adjective)
-			w2, _ := json.Marshal(testCase.adjective)
+			w1, _ := json.Marshal(testCase.adjective)
+			w2, _ := json.Marshal(adjective)
 
 			t.Fatalf(
 				"Adjective #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
@@ -320,8 +320,8 @@ func TestNounCreationSuccess(t *testing.T) {
 		)
 
 		if !reflect.DeepEqual(noun, testCase.noun) {
-			w1, _ := json.Marshal(noun)
-			w2, _ := json.Marshal(testCase.noun)
+			w1, _ := json.Marshal(testCase.noun)
+			w2, _ := json.Marshal(noun)
 
 			t.Fatalf(
 				"Noun #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
@@ -349,8 +349,8 @@ func TestVerbCreationSuccess(t *testing.T) {
 		)
 
 		if !reflect.DeepEqual(verb, testCase.verb) {
-			w1, _ := json.Marshal(verb)
-			w2, _ := json.Marshal(testCase.verb)
+			w1, _ := json.Marshal(testCase.verb)
+			w2, _ := json.Marshal(verb)
 
 			t.Fatalf(
 				"Verb #%d is different from expected.\nExpected: \n%v\ngot: \n%v",
