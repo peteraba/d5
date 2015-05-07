@@ -1,36 +1,40 @@
 package german
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/peteraba/d5/lib/german/entity"
+)
 
 type superword struct {
-	DefaultWord    `bson:"word" json:"word"`
-	Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary"`
-	Prefix         Prefix      `bson:"prefix" json:"prefix"`
-	Noun           string      `bson:"noun" json:"noun"`
-	Adjective      string      `bson:"adjective" json:"adjective"`
-	PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple"`
-	Preterite      []string    `bson:"preterite" json:"preterite"`
-	S1             []string    `bson:"s1" json:"s1"`
-	S2             []string    `bson:"s2" json:"s2"`
-	S3             []string    `bson:"s3" json:"s3"`
-	P1             []string    `bson:"p1" json:"p1"`
-	P2             []string    `bson:"p2" json:"p2"`
-	P3             []string    `bson:"p3" json:"p3"`
-	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive"`
-	Arguments      []Argument  `bson:"arguments" json:"arguments"`
-	Articles       []Article   `bson:"article" json:"article"`
-	Plural         []string    `bson:"plural" json:"plural"`
-	Genitive       []string    `bson:"genitive" json:"genitive"`
-	IsPluralOnly   bool        `bson:"plural_only" json:"plural_only"`
-	Comparative    []string    `bson:"comparative" json:"comparative"`
-	Superlative    []string    `bson:"superlative" json:"superlative"`
+	entity.DefaultWord `bson:"word" json:"word"`
+	Auxiliary          []entity.Auxiliary `bson:"auxiliary" json:"auxiliary"`
+	Prefix             entity.Prefix      `bson:"prefix" json:"prefix"`
+	Noun               string             `bson:"noun" json:"noun"`
+	Adjective          string             `bson:"adjective" json:"adjective"`
+	PastParticiple     []string           `bson:"pastParticiple" json:"pastParticiple"`
+	Preterite          []string           `bson:"preterite" json:"preterite"`
+	S1                 []string           `bson:"s1" json:"s1"`
+	S2                 []string           `bson:"s2" json:"s2"`
+	S3                 []string           `bson:"s3" json:"s3"`
+	P1                 []string           `bson:"p1" json:"p1"`
+	P2                 []string           `bson:"p2" json:"p2"`
+	P3                 []string           `bson:"p3" json:"p3"`
+	Reflexive          entity.Reflexive   `bson:"reflexive" json:"reflexive"`
+	Arguments          []entity.Argument  `bson:"arguments" json:"arguments"`
+	Articles           []entity.Article   `bson:"article" json:"article"`
+	Plural             []string           `bson:"plural" json:"plural"`
+	Genitive           []string           `bson:"genitive" json:"genitive"`
+	IsPluralOnly       bool               `bson:"plural_only" json:"plural_only"`
+	Comparative        []string           `bson:"comparative" json:"comparative"`
+	Superlative        []string           `bson:"superlative" json:"superlative"`
 }
 
-func ParseWords(input []byte) ([]Word, error) {
+func ParseWords(input []byte) ([]entity.Word, error) {
 	var (
 		superwords = []superword{}
-		words      = []Word{}
-		word       Word
+		words      = []entity.Word{}
+		word       entity.Word
 		err        error
 	)
 
@@ -41,7 +45,7 @@ func ParseWords(input []byte) ([]Word, error) {
 	for _, superword := range superwords {
 		switch superword.Category {
 		case "verb":
-			word = &Verb{
+			word = &entity.Verb{
 				superword.DefaultWord,
 				superword.Auxiliary,
 				superword.Prefix,
@@ -60,7 +64,7 @@ func ParseWords(input []byte) ([]Word, error) {
 			}
 			break
 		case "noun":
-			word = &Noun{
+			word = &entity.Noun{
 				superword.DefaultWord,
 				superword.Articles,
 				superword.Plural,
@@ -69,14 +73,14 @@ func ParseWords(input []byte) ([]Word, error) {
 			}
 			break
 		case "adjective":
-			word = &Adjective{
+			word = &entity.Adjective{
 				superword.DefaultWord,
 				superword.Comparative,
 				superword.Superlative,
 			}
 			break
 		default:
-			word = &Any{
+			word = &entity.Any{
 				superword.DefaultWord,
 			}
 			break

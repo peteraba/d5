@@ -1,4 +1,4 @@
-package german
+package entity
 
 import "time"
 

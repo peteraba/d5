@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 
-	germanLib "github.com/peteraba/d5/lib/german"
+	germanEntity "github.com/peteraba/d5/lib/german/entity"
 )
 
 func readStdInput() ([]byte, error) {
@@ -18,15 +18,15 @@ func readStdInput() ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-func parseDictionary(dictionary [][8]string, user string) ([]germanLib.Word, []string) {
+func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, []string) {
 	var (
-		words       = []germanLib.Word{}
+		words       = []germanEntity.Word{}
 		parseErrors = []string{}
 	)
 
 	for _, word := range dictionary {
 		var (
-			w                  germanLib.Word
+			w                  germanEntity.Word
 			articleOrAuxiliary = word[0]
 			german             = word[1]
 			english            = word[2]
@@ -43,26 +43,26 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanLib.Word, []s
 
 		switch category {
 		case "adj":
-			w = germanLib.NewAdjective(german, english, third, user, learned, score, tags)
+			w = germanEntity.NewAdjective(german, english, third, user, learned, score, tags)
 			break
 		case "noun":
-			if germanLib.NounRegexp.MatchString(german) {
-				w = germanLib.NewNoun(articleOrAuxiliary, german, english, third, user, learned, score, tags)
+			if germanEntity.NounRegexp.MatchString(german) {
+				w = germanEntity.NewNoun(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 			}
 			break
 		case "verb":
-			if germanLib.VerbRegexp.MatchString(german) {
-				w = germanLib.NewVerb(articleOrAuxiliary, german, english, third, user, learned, score, tags)
+			if germanEntity.VerbRegexp.MatchString(german) {
+				w = germanEntity.NewVerb(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 			}
 			break
 		default:
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, []string{})
+			w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{})
 		}
 
 		if w == nil {
 			parseErrors = append(parseErrors, german)
 
-			w = germanLib.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
+			w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
 		}
 
 		words = append(words, w)

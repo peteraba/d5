@@ -10,7 +10,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	germanLib "github.com/peteraba/d5/lib/german"
+	german "github.com/peteraba/d5/lib/german"
+	entity "github.com/peteraba/d5/lib/german/entity"
 )
 
 func readStdInput() ([]byte, error) {
@@ -27,7 +28,7 @@ func removeUserCollection(collection *mgo.Collection, user string) error {
 	return nil
 }
 
-func insertWords(collection *mgo.Collection, words []germanLib.Word) error {
+func insertWords(collection *mgo.Collection, words []entity.Word) error {
 	var err error
 
 	for _, word := range words {
@@ -39,7 +40,7 @@ func insertWords(collection *mgo.Collection, words []germanLib.Word) error {
 	return nil
 }
 
-func saveCollection(words []germanLib.Word, url, databaseName, collectionName string) error {
+func saveCollection(words []entity.Word, url, databaseName, collectionName string) error {
 	var (
 		collection *mgo.Collection
 		err        error
@@ -73,7 +74,7 @@ func saveCollection(words []germanLib.Word, url, databaseName, collectionName st
 //  - mgo collection
 func main() {
 	var (
-		words []germanLib.Word
+		words []entity.Word
 		input []byte
 		err   error
 	)
@@ -86,7 +87,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	words, err = germanLib.ParseWords(input)
+	words, err = german.ParseWords(input)
 	if err != nil {
 		log.Fatalln(err)
 	}
