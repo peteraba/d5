@@ -163,7 +163,7 @@ cat parser/fixture/test.json | parser peteraba true
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | go run persister.go localhost test words
+cat persister/fixture/gerdict.json | go run persister/persister.go localhost test words
 cat persister/fixture/gerdict.json | persister localhost test words
 ```
 
