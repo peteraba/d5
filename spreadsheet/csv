@@ -22,6 +22,9 @@ def main(argv):
                 break
 
             data.append(row[0:row_length])
+
+    if len(data) == 0:
+        return
         
     if len(argv) >= 3 and argv[2]=='pretty':
         print(dumps(data[1:], sort_keys=True, indent=4, separators=(',', ': ')))

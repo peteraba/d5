@@ -9,6 +9,9 @@ import (
 func TestAuxiliaryRegexpSuccess(t *testing.T) {
 	for _, testCase := range auxiliaryRegexpSuccessCases {
 		matches := AuxiliaryRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) == 0 {
+			t.Fatalf("Regexp found: no match")
+		}
 		if len(matches) < 4 || matches[0] != testCase.raw {
 			t.Fatalf("Regexp found: %s, expected: %s", matches[0], testCase.raw)
 		}
@@ -37,6 +40,9 @@ func TestAuxiliaryRegexpFailure(t *testing.T) {
 func TestArgumentRegexpSuccess(t *testing.T) {
 	for _, testCase := range argumentRegexpSuccessCases {
 		matches := ArgumentRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) == 0 {
+			t.Fatalf("Regexp found: no match")
+		}
 		if len(matches) < 4 || matches[0] != testCase.raw {
 			t.Fatalf("Regexp found: '%s', expected: '%s'", matches[0], testCase.raw)
 		}
@@ -65,6 +71,9 @@ func TestArgumentRegexpFailure(t *testing.T) {
 func TestVerbRegexpSuccess(t *testing.T) {
 	for _, testCase := range verbRegexpSuccessCases {
 		matches := VerbRegexp.FindStringSubmatch(testCase.raw)
+		if len(matches) == 0 {
+			t.Fatalf("Regexp found: no match")
+		}
 		if matches[0] != testCase.raw {
 			t.Fatalf("Regexp found: %s, expected: %s", matches[0], testCase.raw)
 		}

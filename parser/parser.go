@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 
 	germanEntity "github.com/peteraba/d5/lib/german/entity"
 )
@@ -76,18 +76,25 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, 
 	return words, parseErrors
 }
 
+func parseFlags() (string, bool) {
+	user := flag.String("user", "", "User to whom the data belongs")
+
+	logErrors := flag.Bool("log", false, "Log errors, halt output")
+
+	flag.Parse()
+
+	return *user, *logErrors
+}
+
 func main() {
 	var (
-		user       = ""
-		logErrors  = true
 		dictionary = [][8]string{}
 	)
 
-	if len(os.Args) > 1 {
-		user = os.Args[1]
-	}
-	if len(os.Args) > 2 {
-		logErrors, _ = strconv.ParseBool(os.Args[2])
+	user, logErrors := parseFlags()
+
+	if user == "" {
+		return
 	}
 
 	input, err := readStdInput()
@@ -110,5 +117,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(string(b))
+	if !logErrors {
+		fmt.Println(string(b))
+	}
 }

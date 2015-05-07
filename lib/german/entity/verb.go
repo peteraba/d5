@@ -62,7 +62,7 @@ var (
 	//  ([A-ZÄÖÜßa-zäöü, ]+)                             -- match verb
 	//                     ([A-ZÄÖÜßa-zäöü+() ]*)?       -- match extension(s), separated by plus signs
 	//                                            $      -- match end of string
-	VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü|, ]+)([A-ZÄÖÜßa-zäöü+() ]*)?$")
+	VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü|,/ -]+)([A-ZÄÖÜßa-zäöü+()/ -]*)?$")
 )
 
 type Argument struct {

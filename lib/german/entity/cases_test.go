@@ -87,6 +87,7 @@ var nounRegexpSuccessCases = []struct {
 	{"Anspruch,⍨e", "Anspruch", "⍨e", "", ""},
 	{"Vereinigten Staaten von Amerika,- (pl)", "Vereinigten Staaten von Amerika", "- ", "", "(pl)"},
 	{"Hintergeräusch,~e,~s/~es", "Hintergeräusch", "~e", "~s/~es", ""},
+	{"CD-Brenner,~", "CD-Brenner", "~", "", ""},
 }
 
 var nounRegexpFailureCases = []string{
@@ -105,6 +106,7 @@ var verbRegexpSuccessCases = []struct {
 }{
 	{"wütend sein, bin, bist + auf (A)", "wütend sein, bin, bist ", "+ auf (A)"},
 	{"absprechen, absprach, abgesprochen, absprichst, abspricht + sich (A) + über (A)", "absprechen, absprach, abgesprochen, absprichst, abspricht ", "+ sich (A) + über (A)"},
+	{"abhauen, abhiebe/abhaute, abgehauen/abgehaut", "abhauen, abhiebe/abhaute, abgehauen/abgehaut", ""},
 }
 
 var verbRegexpFailureCases = []string{

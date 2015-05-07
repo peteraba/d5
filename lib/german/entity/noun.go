@@ -30,7 +30,7 @@ var (
 	//                                                     (,([A-ZÄÖÜßa-zäöü~⍨ ]*()?               -- match optional genitive, can be an extension
 	//                                                                              ([(]pl[)])     -- match plural only note
 	//                                                                                        $    -- match end of string
-	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ ]*))?([(]pl[)])?$")
+	NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü -]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ -]*))?([(]pl[)])?$")
 )
 
 type Noun struct {
