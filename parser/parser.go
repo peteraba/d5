@@ -60,9 +60,14 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, 
 		}
 
 		if w == nil {
-			parseErrors = append(parseErrors, german)
 
 			w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
+			if w == nil {
+				parseErrors = append(parseErrors, german)
+				continue
+			} else {
+				parseErrors = append(parseErrors, german+"!!!!!")
+			}
 		}
 
 		words = append(words, w)

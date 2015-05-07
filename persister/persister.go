@@ -32,6 +32,9 @@ func insertWords(collection *mgo.Collection, words []entity.Word) error {
 	var err error
 
 	for _, word := range words {
+		if word.GetUser() == "" {
+			continue
+		}
 		if err = collection.Insert(word); err != nil {
 			return err
 		}
