@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -70,11 +71,17 @@ func saveCollection(words []entity.Word, url, databaseName, collectionName strin
 	return nil
 }
 
-// Args
-//  - program name
-//  - mgo url
-//  - mgo database
-//  - mgo collection
+func parseFlags() (string, string, string, bool) {
+	hostName := flag.String("host", "", "Mongo database host")
+	dbName := flag.String("db", "", "Mongo database name")
+	collectionName := flag.String("coll", "", "Mongo collection for words")
+	debug := flag.Bool("debug", false, "Log errors, halt output")
+
+	flag.Parse()
+
+	return *hostName, *dbName, *collectionName, *debug
+}
+
 func main() {
 	var (
 		words []entity.Word
@@ -82,9 +89,7 @@ func main() {
 		err   error
 	)
 
-	if len(os.Args) < 4 {
-		log.Fatalln("Mandatory arguments: mgo url, mgo database, mgo collection")
-	}
+	hostName, dbName, collectionName, debug := parseFlags()
 
 	if input, err = readStdInput(); err != nil {
 		log.Fatalln(err)
@@ -95,8 +100,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = saveCollection(words, os.Args[1], os.Args[2], os.Args[3])
+	err = saveCollection(words, hostName, dbName, collectionName)
 	if err != nil {
 		log.Fatalln(err)
+	}
+
+	if debug {
+		log.Printf("Words count: %d\n", len(words))
 	}
 }

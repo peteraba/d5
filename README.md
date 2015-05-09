@@ -151,25 +151,34 @@ Convert excel file into a json file.
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
-cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba -log=false > persister/fixture/gerdict.json
-cat parser/fixture/gerdict.json | parser -user=peteraba -log=false > persister/fixture/gerdict.json
+cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba > persister/fixture/gerdict.json
+cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerdict.json
 ```
 
+#### Debugging
+
 ```bash
-cat parser/fixture/test.json | go run parser/parser.go peteraba true
-cat parser/fixture/test.json | parser peteraba true
+cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba -debug=true
+cat parser/fixture/gerdict.json | parser -user=peteraba -debug=true
 ```
 
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | go run persister/persister.go localhost test words
-cat persister/fixture/gerdict.json | persister localhost test words
+cat persister/fixture/gerdict.json | go run persister/persister.go -host=localhost -db=test -coll=words
+cat persister/fixture/gerdict.json | persister -host=localhost -db=test -coll=words
+```
+
+#### Debugging
+
+```bash
+cat persister/fixture/gerdict.json | go run persister/persister.go -host=localhost -db=test -coll=words -debug=true
+cat persister/fixture/gerdict.json | persister -host=localhost -db=test -coll=words -debug=true
 ```
 
 ### Run everything at once
 
 ```bash
- ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser peteraba false | persister localhost test words
+ ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister -host=localhost -db=test -coll=words
 ```
 

@@ -79,11 +79,11 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, 
 func parseFlags() (string, bool) {
 	user := flag.String("user", "", "User to whom the data belongs")
 
-	logErrors := flag.Bool("log", false, "Log errors, halt output")
+	debug := flag.Bool("debug", false, "Log errors, halt output")
 
 	flag.Parse()
 
-	return *user, *logErrors
+	return *user, *debug
 }
 
 func main() {
@@ -91,14 +91,14 @@ func main() {
 		dictionary = [][8]string{}
 	)
 
-	user, logErrors := parseFlags()
+	user, debug := parseFlags()
 
 	if user == "" {
 		return
 	}
 
 	input, err := readStdInput()
-	if err != nil && logErrors {
+	if err != nil && debug {
 		log.Println(err)
 	}
 
@@ -106,9 +106,9 @@ func main() {
 
 	words, parseErrors := parseDictionary(dictionary, user)
 
-	if logErrors && len(parseErrors) > 0 {
+	if debug && len(parseErrors) > 0 {
 		for _, word := range parseErrors {
-			fmt.Printf("Failed: %v\n", word)
+			log.Printf("Failed: %v\n", word)
 		}
 	}
 
@@ -117,7 +117,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if !logErrors {
+	if !debug {
 		fmt.Println(string(b))
+	} else {
+		log.Println("Parsing is done.")
 	}
 }
