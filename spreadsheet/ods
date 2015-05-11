@@ -35,6 +35,9 @@ def main(argv):
         if all(x is "" for x in row):
             break
 
+        row[5] = row[5][0:10]
+        row[6] = str(round(float(row[6])))
+
         data.append(row)
 
     if len(argv) >= 3 and argv[2]=='pretty':

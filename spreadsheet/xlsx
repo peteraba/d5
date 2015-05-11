@@ -3,6 +3,7 @@
 from openpyxl import load_workbook
 from json import dumps
 import sys
+import datetime
 
 def main(argv):
     if len(argv) == 0:
@@ -15,6 +16,8 @@ def main(argv):
 
     data = []
 
+    day0 = datetime.date.fromtimestamp(0)
+
     for row in sheet.iter_rows():
         if all(x.value is None for x in row):
             break
@@ -22,7 +25,16 @@ def main(argv):
         if len(row) < row_length:
             break
 
-        data.append([cell.value if cell.value else "" for cell in row[0:row_length]])
+        row_data = [cell.value if cell.value else "" for cell in row[0:row_length]]
+
+        if row[5].value != "date":
+            date = day0 + datetime.timedelta(round(float(row[5].value)) - 25569)
+            row_data[5] = date.strftime("%Y-%m-%d")
+
+        if row[6].value != "score":
+            row_data[6] = str(int(row_data[6]))
+
+        data.append(row_data)
 
     if len(argv) >= 3 and argv[2]=='pretty':
         print(dumps(data[1:], sort_keys=True, indent=4, separators=(',', ': ')))
