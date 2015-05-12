@@ -1,2 +1,10 @@
-go test github.com/peteraba/d5/lib/german/entity
-go test github.com/peteraba/d5/lib/util
+#! /bin/bash
+
+go test github.com/peteraba/d5/lib/german/entity -cover
+echo ""
+
+go test github.com/peteraba/d5/lib/german/dict -cover
+echo ""
+
+go test github.com/peteraba/d5/lib/util -cover
+echo ""

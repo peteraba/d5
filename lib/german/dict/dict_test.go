@@ -5,42 +5,36 @@ import "testing"
 var declensionCases = []struct {
 	base      string
 	extension string
-	result    []string
+	result    string
 }{
 	{
 		"jung",
 		"⍨er",
-		[]string{"jünger"},
+		"jünger",
 	},
 	{
 		"schmal",
-		"~er/⍨er",
-		[]string{"schmaler", "schmäler"},
+		"~er",
+		"schmaler",
 	},
 	{
 		"zusätzlich",
 		"-",
-		[]string{},
+		"",
 	},
 	{
 		"Stipendium",
 		"Stipendien",
-		[]string{"Stipendien"},
+		"Stipendien",
 	},
 }
 
-func TestExtend(t *testing.T) {
+func TestDecline(t *testing.T) {
 	for num, testCase := range declensionCases {
 		result := Decline(testCase.base, testCase.extension)
 
-		if len(result) != len(testCase.result) {
-			t.Fatalf("Case %d: result is different from expected. Expected: %d result(s), got: %d.", num, len(testCase.result), len(result))
-		}
-
-		for key, word := range result {
-			if word != testCase.result[key] {
-				t.Fatalf("Case %d / %d. Expected: '%s', got: '%s'", num, key, testCase.result[key], word)
-			}
+		if result != testCase.result {
+			t.Fatalf("Case %d: result is different from expected. Expected: %s result(s), got: %s.", num, testCase.result, result)
 		}
 	}
 

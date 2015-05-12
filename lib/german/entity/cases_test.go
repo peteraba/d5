@@ -773,3 +773,89 @@ var verbCreationSuccessCases = []struct {
 		},
 	},
 }
+
+var getPluralCases = []struct {
+	noun           Noun
+	expectedResult []string
+}{
+	{
+		Noun{
+			DefaultWord{
+				"Gulasch",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{"~s", "~e"},
+			[]string{},
+			false,
+		},
+		[]string{"Gulaschs", "Gulasche"},
+	},
+	{
+		Noun{
+			DefaultWord{
+				"Klamotten",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{},
+			[]string{},
+			true,
+		},
+		[]string{"Gulasch"},
+	},
+	{
+		Noun{
+			DefaultWord{
+				"Jurastudium",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{"Jurastudien"},
+			[]string{},
+			false,
+		},
+		[]string{"Jurastudien"},
+	},
+	{
+		Noun{
+			DefaultWord{
+				"Knast",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{"⍨e"},
+			[]string{},
+			false,
+		},
+		[]string{"Knäste"},
+	},
+}

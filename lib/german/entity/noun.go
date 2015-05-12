@@ -3,6 +3,7 @@ package entity
 import (
 	"regexp"
 
+	"github.com/peteraba/d5/lib/german/dict"
 	"github.com/peteraba/d5/lib/util"
 )
 
@@ -76,4 +77,38 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 		util.TrimSplit(matches[4], alternativeSeparator),
 		matches[5] == "(pl)",
 	}
+}
+
+func (n *Noun) GetPlurals() []string {
+	if n.IsPluralOnly {
+		return []string{n.German}
+	}
+
+	result := []string{}
+	for _, pl := range n.Plural {
+		result = append(result, dict.Decline(n.German, pl))
+	}
+
+	return result
+}
+
+func (n *Noun) GetPluralsString(maxCount int) string {
+	raw := n.GetPlurals()
+
+	return util.JoinLimited(raw, maxCount)
+}
+
+func (n *Noun) GetGenitive() []string {
+	result := []string{}
+	for _, pl := range n.Genitive {
+		result = append(result, dict.Decline(n.German, pl))
+	}
+
+	return result
+}
+
+func (n *Noun) GetGenitiveString(maxCount int) string {
+	raw := n.GetGenitive()
+
+	return util.JoinLimited(raw, maxCount)
 }

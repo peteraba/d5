@@ -21,36 +21,28 @@ func getTr() map[string]string {
 	return tr
 }
 
-func Decline(base, extensions string) []string {
-	var (
-		result = []string{}
-	)
-
-	if extensions == "" || extensions == "-" {
-		return result
+func Decline(base, extension string) string {
+	if extension == "" || extension == "-" {
+		return ""
 	}
 
-	for _, extension := range strings.Split(extensions, "/") {
-		r, size := utf8.DecodeRuneInString(extension)
-		switch r {
-		case '~':
-			result = append(result, base+extension[size:])
-			break
-		case '⍨':
-			result = append(result, umlautise(base)+extension[size:])
-			break
-		default:
-			result = append(result, extension)
-		}
+	r, size := utf8.DecodeRuneInString(extension)
+	switch r {
+	case '~':
+		return base + extension[size:]
+		break
+	case '⍨':
+		return umlautise(base) + extension[size:]
+		break
 	}
 
-	return result
+	return extension
 }
 
 func umlautise(base string) string {
 	var (
-		tr       = getTr()
-		fromIdx  int
+		tr              = getTr()
+		fromIdx  int    = 0
 		foundIdx int    = -1
 		foundKey string = ""
 	)

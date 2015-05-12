@@ -15,3 +15,15 @@ func TrimSplit(s, sep string) []string {
 
 	return split
 }
+
+func JoinLimited(parts []string, maxCount int) string {
+	if len(parts) < maxCount {
+		maxCount = len(parts)
+	}
+
+	if maxCount < 1 {
+		return ""
+	}
+
+	return strings.Join(parts[0:maxCount], ", ")
+}

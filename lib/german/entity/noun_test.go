@@ -90,3 +90,21 @@ func TestNounCreationSuccess(t *testing.T) {
 
 	t.Log(len(nounCreationSuccessCases), "test cases")
 }
+
+func TestGetPlural(t *testing.T) {
+	for num, testCase := range getPluralCases {
+		result := testCase.noun.GetPlurals()
+
+		if len(result) != len(testCase.expectedResult) {
+			t.Fatalf("%v", result)
+			t.Fatalf(
+				"Count of plurals for test case #%d is different from expected. Expected: %d, got: %d",
+				num+1,
+				len(testCase.expectedResult),
+				len(result),
+			)
+		}
+	}
+
+	t.Log(len(getPluralCases), "test cases")
+}
