@@ -264,3 +264,33 @@ var getPluralCases = []struct {
 		"Knäste",
 	},
 }
+
+var getGenitiveCases = []struct {
+	noun            Noun
+	expectedResult  []string
+	stringCount     int
+	expectedResult2 string
+}{
+	{
+		Noun{
+			DefaultWord{
+				"Gulasch",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{},
+			[]string{"~es", "~s"},
+			false,
+		},
+		[]string{"Gulasches", "Gulaschs"},
+		1,
+		"Gulasches",
+	},
+}
