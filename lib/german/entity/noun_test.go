@@ -96,7 +96,6 @@ func TestGetPlural(t *testing.T) {
 		result := testCase.noun.GetPlurals()
 
 		if len(result) != len(testCase.expectedResult) {
-			t.Fatalf("%v", result)
 			t.Fatalf(
 				"Count of plurals for test case #%d is different from expected. Expected: %d, got: %d",
 				num+1,
@@ -107,4 +106,55 @@ func TestGetPlural(t *testing.T) {
 	}
 
 	t.Log(len(getPluralCases), "test cases")
+}
+
+func TestGetGenitive(t *testing.T) {
+	for num, testCase := range getGenitiveCases {
+		result := testCase.noun.GetGenitives()
+
+		if len(result) != len(testCase.expectedResult) {
+			t.Fatalf(
+				"Count of genitive for test case #%d is different from expected. Expected: %d, got: %d",
+				num+1,
+				len(testCase.expectedResult),
+				len(result),
+			)
+		}
+	}
+
+	t.Log(len(getGenitiveCases), "test cases")
+}
+
+func TestGetPluralString(t *testing.T) {
+	for num, testCase := range getPluralCases {
+		result := testCase.noun.GetPluralsString(testCase.stringCount)
+
+		if result != testCase.expectedResult2 {
+			t.Fatalf(
+				"Plurals for test case #%d is different from expected. Expected: %s, got: %s",
+				num+1,
+				testCase.expectedResult2,
+				result,
+			)
+		}
+	}
+
+	t.Log(len(getPluralCases), "test cases")
+}
+
+func TestGetGenitiveString(t *testing.T) {
+	for num, testCase := range getGenitiveCases {
+		result := testCase.noun.GetGenitivesString(testCase.stringCount)
+
+		if result != testCase.expectedResult2 {
+			t.Fatalf(
+				"Genitive for test case #%d is different from expected. Expected: %s, got: %s",
+				num+1,
+				testCase.expectedResult2,
+				result,
+			)
+		}
+	}
+
+	t.Log(len(getGenitiveCases), "test cases")
 }

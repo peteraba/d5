@@ -15,6 +15,11 @@ const (
 	Das         = "s"
 )
 
+const (
+	pluralJoin   = ", "
+	genitiveJoin = ", "
+)
+
 var (
 	// Article:
 	// ^                      -- match beginning of string
@@ -95,20 +100,20 @@ func (n *Noun) GetPlurals() []string {
 func (n *Noun) GetPluralsString(maxCount int) string {
 	raw := n.GetPlurals()
 
-	return util.JoinLimited(raw, maxCount)
+	return util.JoinLimited(raw, pluralJoin, maxCount)
 }
 
-func (n *Noun) GetGenitive() []string {
+func (n *Noun) GetGenitives() []string {
 	result := []string{}
-	for _, pl := range n.Genitive {
-		result = append(result, dict.Decline(n.German, pl))
+	for _, genitive := range n.Genitive {
+		result = append(result, dict.Decline(n.German, genitive))
 	}
 
 	return result
 }
 
-func (n *Noun) GetGenitiveString(maxCount int) string {
-	raw := n.GetGenitive()
+func (n *Noun) GetGenitivesString(maxCount int) string {
+	raw := n.GetGenitives()
 
-	return util.JoinLimited(raw, maxCount)
+	return util.JoinLimited(raw, genitiveJoin, maxCount)
 }

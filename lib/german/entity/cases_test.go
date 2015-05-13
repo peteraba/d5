@@ -775,8 +775,10 @@ var verbCreationSuccessCases = []struct {
 }
 
 var getPluralCases = []struct {
-	noun           Noun
-	expectedResult []string
+	noun            Noun
+	expectedResult  []string
+	stringCount     int
+	expectedResult2 string
 }{
 	{
 		Noun{
@@ -797,6 +799,8 @@ var getPluralCases = []struct {
 			false,
 		},
 		[]string{"Gulaschs", "Gulasche"},
+		1,
+		"Gulaschs",
 	},
 	{
 		Noun{
@@ -816,7 +820,9 @@ var getPluralCases = []struct {
 			[]string{},
 			true,
 		},
-		[]string{"Gulasch"},
+		[]string{"Klamotten"},
+		1,
+		"Klamotten",
 	},
 	{
 		Noun{
@@ -837,6 +843,8 @@ var getPluralCases = []struct {
 			false,
 		},
 		[]string{"Jurastudien"},
+		1,
+		"Jurastudien",
 	},
 	{
 		Noun{
@@ -857,5 +865,37 @@ var getPluralCases = []struct {
 			false,
 		},
 		[]string{"Knäste"},
+		1,
+		"Knäste",
+	},
+}
+
+var getGenitiveCases = []struct {
+	noun            Noun
+	expectedResult  []string
+	stringCount     int
+	expectedResult2 string
+}{
+	{
+		Noun{
+			DefaultWord{
+				"Gulasch",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{},
+			[]string{},
+			[]string{"~es", "~s"},
+			false,
+		},
+		[]string{"Gulasches", "Gulaschs"},
+		1,
+		"Gulasches",
 	},
 }

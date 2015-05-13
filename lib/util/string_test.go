@@ -81,7 +81,7 @@ var joinLimitedCases = []struct {
 
 func TestJoinLimited(t *testing.T) {
 	for num, testCase := range joinLimitedCases {
-		result := JoinLimited(testCase.parts, testCase.maxCount)
+		result := JoinLimited(testCase.parts, ", ", testCase.maxCount)
 
 		if result != testCase.result {
 			t.Fatalf("Case #%d. Expected: '%v', got: '%v'\n", num, testCase.result, result)
