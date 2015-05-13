@@ -3,7 +3,13 @@ package entity
 import (
 	"regexp"
 
+	"github.com/peteraba/d5/lib/german/dict"
 	"github.com/peteraba/d5/lib/util"
+)
+
+const (
+	comparativeJoin = ","
+	superlativeJoin = ","
 )
 
 var (
@@ -38,6 +44,7 @@ func NewAdjective(german, english, third, user, learned, score, tags string) *Ad
 	if len(adjectiveParts) > 1 {
 		comparative = util.TrimSplit(adjectiveParts[1], alternativeSeparator)
 	}
+
 	if len(adjectiveParts) > 2 {
 		superlative = util.TrimSplit(adjectiveParts[2], alternativeSeparator)
 	}
@@ -47,4 +54,34 @@ func NewAdjective(german, english, third, user, learned, score, tags string) *Ad
 		comparative,
 		superlative,
 	}
+}
+
+func (a *Adjective) GetComparative() []string {
+	result := []string{}
+	for _, comparative := range a.Comparative {
+		result = append(result, dict.Decline(a.German, comparative))
+	}
+
+	return result
+}
+
+func (a *Adjective) GetComparativeString(maxCount int) string {
+	raw := a.GetComparative()
+
+	return util.JoinLimited(raw, comparativeJoin, maxCount)
+}
+
+func (a *Adjective) GetSuperlative() []string {
+	result := []string{}
+	for _, superlative := range a.Superlative {
+		result = append(result, dict.Decline(a.German, superlative))
+	}
+
+	return result
+}
+
+func (a *Adjective) GetSuperlativeString(maxCount int) string {
+	raw := a.GetSuperlative()
+
+	return util.JoinLimited(raw, genitiveJoin, maxCount)
 }

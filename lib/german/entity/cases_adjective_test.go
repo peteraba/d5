@@ -169,3 +169,59 @@ var adjectiveCreationSuccessCases = []struct {
 		},
 	},
 }
+
+var getComparativeCases = []struct {
+	adjective       Adjective
+	expectedResult  []string
+	maxCount        int
+	expectedResult2 string
+}{
+	{
+		Adjective{
+			DefaultWord{
+				"jung",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]string{"⍨er"},
+			[]string{"⍨sten"},
+		},
+		[]string{"jünger"},
+		1,
+		"jünger",
+	},
+}
+
+var getSuperlativeCases = []struct {
+	adjective       Adjective
+	expectedResult  []string
+	maxCount        int
+	expectedResult2 string
+}{
+	{
+		Adjective{
+			DefaultWord{
+				"jung",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]string{"⍨er"},
+			[]string{"⍨sten"},
+		},
+		[]string{"jüngsten"},
+		1,
+		"jüngsten",
+	},
+}

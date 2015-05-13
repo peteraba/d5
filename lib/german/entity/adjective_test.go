@@ -64,3 +64,71 @@ func TestAdjectiveCreationSuccess(t *testing.T) {
 
 	t.Log(len(adjectiveCreationSuccessCases), "test cases")
 }
+
+func TestGetComparative(t *testing.T) {
+	for num, testCase := range getComparativeCases {
+		result := testCase.adjective.GetComparative()
+
+		if len(result) != len(testCase.expectedResult) {
+			t.Fatalf(
+				"Count of comparatives for test case #%d is different from expected. Expected: %d, got: %d",
+				num+1,
+				len(testCase.expectedResult),
+				len(result),
+			)
+		}
+	}
+
+	t.Log(len(getComparativeCases), "test cases")
+}
+
+func TestGetSuperlative(t *testing.T) {
+	for num, testCase := range getSuperlativeCases {
+		result := testCase.adjective.GetSuperlative()
+
+		if len(result) != len(testCase.expectedResult) {
+			t.Fatalf(
+				"Count of superlative for test case #%d is different from expected. Expected: %d, got: %d",
+				num+1,
+				len(testCase.expectedResult),
+				len(result),
+			)
+		}
+	}
+
+	t.Log(len(getSuperlativeCases), "test cases")
+}
+
+func TestGetComparativeString(t *testing.T) {
+	for num, testCase := range getComparativeCases {
+		result := testCase.adjective.GetComparativeString(testCase.maxCount)
+
+		if result != testCase.expectedResult2 {
+			t.Fatalf(
+				"Comparative for test case #%d is different from expected. Expected: %s, got: %s",
+				num+1,
+				testCase.expectedResult2,
+				result,
+			)
+		}
+	}
+
+	t.Log(len(getComparativeCases), "test cases")
+}
+
+func TestGetSuperlativeString(t *testing.T) {
+	for num, testCase := range getSuperlativeCases {
+		result := testCase.adjective.GetSuperlativeString(testCase.maxCount)
+
+		if result != testCase.expectedResult2 {
+			t.Fatalf(
+				"Superlative for test case #%d is different from expected. Expected: %s, got: %s",
+				num+1,
+				testCase.expectedResult2,
+				result,
+			)
+		}
+	}
+
+	t.Log(len(getSuperlativeCases), "test cases")
+}
