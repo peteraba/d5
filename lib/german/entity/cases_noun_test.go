@@ -2,21 +2,6 @@ package entity
 
 import "time"
 
-var articleRegexpSuccessCases = []struct {
-	raw, first, second string
-}{
-	{"s", "s", ""},
-	{"s/r", "s", "r"},
-	{"r/s", "r", "s"},
-}
-
-var articleRegexpFailureCases = []string{
-	"",
-	"i",
-	"s/r/s",
-	"S",
-}
-
 var nounRegexpSuccessCases = []struct {
 	raw, german, plural, genitive, isPlural string
 }{

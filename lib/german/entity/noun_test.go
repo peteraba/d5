@@ -6,34 +6,6 @@ import (
 	"testing"
 )
 
-func TestArticleRegexpSucecss(t *testing.T) {
-	for _, testCase := range articleRegexpSuccessCases {
-		matches := ArticleRegexp.FindStringSubmatch(testCase.raw)
-		if len(matches) < 4 || matches[0] != testCase.raw {
-			t.Fatalf("Regexp found: %s, expected: %s", matches[0], testCase.raw)
-		}
-		if matches[1] != testCase.first {
-			t.Fatalf("Regexp found: %s, expected: %s", matches[1], testCase.first)
-		}
-		if matches[3] != testCase.second {
-			t.Fatalf("Regexp found: %s, expected: %s", matches[3], testCase.second)
-		}
-	}
-
-	t.Log(len(articleRegexpSuccessCases), "test cases")
-}
-
-func TestArticleRegexpFailure(t *testing.T) {
-	for _, testCase := range articleRegexpFailureCases {
-		matches := ArticleRegexp.FindStringSubmatch(testCase)
-		if len(matches) > 0 {
-			t.Fatalf("Regexp found: %s, expected no match", matches[0])
-		}
-	}
-
-	t.Log(len(articleRegexpFailureCases), "test cases")
-}
-
 func TestNounRegexpSuccess(t *testing.T) {
 	for _, testCase := range nounRegexpSuccessCases {
 		matches := NounRegexp.FindStringSubmatch(testCase.raw)

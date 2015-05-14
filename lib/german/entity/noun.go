@@ -7,27 +7,12 @@ import (
 	"github.com/peteraba/d5/lib/util"
 )
 
-type Article string
-
-const (
-	Der Article = "r"
-	Die         = "e"
-	Das         = "s"
-)
-
 const (
 	pluralJoin   = ", "
 	genitiveJoin = ", "
 )
 
 var (
-	// Article:
-	// ^                      -- match beginning of string
-	//  ([res])               -- match first article notion <-- r: der, e: die, s: das
-	//         (/([res]))?    -- match optional second article notion, following a / sign
-	//                    $   -- match end of string
-	ArticleRegexp = regexp.MustCompile("^([res])(/([res]))?$")
-
 	// Noun:
 	// ^                                                                                           -- match beginning of string
 	//  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                                -- match noun in singular, must start with a capital
