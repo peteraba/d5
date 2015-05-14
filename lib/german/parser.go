@@ -72,7 +72,7 @@ func ParseWords(input []byte) ([]entity.Word, error) {
 				superword.IsPluralOnly,
 			}
 			break
-		case "adjective":
+		case "adj":
 			word = &entity.Adjective{
 				superword.DefaultWord,
 				superword.Comparative,

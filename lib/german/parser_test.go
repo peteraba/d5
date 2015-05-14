@@ -44,6 +44,22 @@ func newEmptySuperword(category string) superword {
 	}
 }
 
+func newEmptyIdiom() entity.DefaultWord {
+	w := entity.DefaultWord{}
+
+	w.Category = "idiom"
+
+	return w
+}
+
+func newEmptyNoun() entity.Noun {
+	return entity.Noun{}
+}
+
+func newEmptyAdjective() entity.Adjective {
+	return entity.Adjective{}
+}
+
 func newEmptyVerb() entity.Verb {
 	return entity.Verb{}
 }
@@ -58,6 +74,20 @@ var parseWordCases = []struct {
 		},
 		[]entity.Word{
 			newEmptyVerb(),
+		},
+	},
+	{
+		[]superword{
+			newEmptySuperword("idiom"),
+			newEmptySuperword("noun"),
+			newEmptySuperword("adj"),
+			newEmptySuperword("idiom"),
+		},
+		[]entity.Word{
+			newEmptyIdiom(),
+			newEmptyNoun(),
+			newEmptyAdjective(),
+			newEmptyIdiom(),
 		},
 	},
 }
@@ -83,6 +113,18 @@ func TestSliceAppend(t *testing.T) {
 				len(testCase.words),
 				len(words),
 			)
+		}
+
+		for num2, w := range words {
+			if w.GetGerman() != testCase.words[num2].GetGerman() {
+				t.Fatalf(
+					"Word #%d, test case #%d is wrong. Expected %s, got: %s",
+					num2,
+					num,
+					testCase.words[num2],
+					w,
+				)
+			}
 		}
 	}
 
