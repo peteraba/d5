@@ -330,13 +330,13 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		german = main[0]
 		break
 	case 3:
-		german, pastParticiple, preterite = main[0], main[1], main[2]
+		german, preterite, pastParticiple = main[0], main[1], main[2]
 		break
 	case 5:
-		german, pastParticiple, preterite, du, er = main[0], main[1], main[2], main[3], main[4]
+		german, preterite, pastParticiple, du, er = main[0], main[1], main[2], main[3], main[4]
 		break
 	case 9:
-		german, ich, du, er, wir, ihr, sie, pastParticiple, preterite = main[0], main[1], main[2], main[3], main[4], main[5], main[6], main[7], main[8]
+		german, ich, du, er, wir, ihr, sie, preterite, pastParticiple = main[0], main[1], main[2], main[3], main[4], main[5], main[6], main[7], main[8]
 		break
 	default:
 		return nil
@@ -374,4 +374,110 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		sich,
 		arguments,
 	}
+}
+
+func (v *Verb) getPresentStem() []string {
+	p1s := []string{}
+
+	for _, p1 := range v.P1 {
+		if strings.HasSuffix(p1, "en") {
+			p1s = append(p1s, strings.TrimSuffix(p1, "en"))
+		} else if strings.HasSuffix(p1, "n") {
+			p1s = append(p1s, strings.TrimSuffix(p1, "n"))
+		}
+	}
+
+	return p1s
+}
+
+func (v *Verb) GetPresentS1() []string {
+	if len(v.S1) > 0 {
+		return v.S1
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "e")
+}
+
+func (v *Verb) GetPresentS2() []string {
+	if len(v.S2) > 0 {
+		return v.S2
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "st")
+}
+
+func (v *Verb) GetPresentS3() []string {
+	if len(v.S3) > 0 {
+		return v.S3
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "t")
+}
+
+func (v *Verb) GetPresentP1() []string {
+	return v.P1
+}
+
+func (v *Verb) GetPresentP2() []string {
+	if len(v.P2) > 0 {
+		return v.P2
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "t")
+}
+
+func (v *Verb) GetPresentP3() []string {
+	if len(v.P3) > 0 {
+		return v.P3
+	}
+
+	return v.P1
+}
+
+func (v *Verb) GetPastS1() []string {
+	if len(v.Preterite) > 0 {
+		return v.Preterite
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "te")
+}
+
+func (v *Verb) GetPastS2() []string {
+	if len(v.Preterite) > 0 {
+		return util.SliceAppend(v.Preterite, "st")
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "test")
+}
+
+func (v *Verb) GetPastS3() []string {
+	if len(v.Preterite) > 0 {
+		return v.Preterite
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "te")
+}
+
+func (v *Verb) GetPastP1() []string {
+	if len(v.Preterite) > 0 {
+		return util.SliceAppend(v.Preterite, "en")
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "ten")
+}
+
+func (v *Verb) GetPastP2() []string {
+	if len(v.Preterite) > 0 {
+		return util.SliceAppend(v.Preterite, "t")
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "tet")
+}
+
+func (v *Verb) GetPastP3() []string {
+	if len(v.Preterite) > 0 {
+		return util.SliceAppend(v.Preterite, "en")
+	}
+
+	return util.SliceAppend(v.getPresentStem(), "ten")
 }

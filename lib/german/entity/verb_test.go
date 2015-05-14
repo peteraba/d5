@@ -3,6 +3,7 @@ package entity
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -146,4 +147,41 @@ func TestVerbCreationSuccess(t *testing.T) {
 	}
 
 	t.Log(len(verbCreationSuccessCases), "test cases")
+}
+
+func TestConjugation(t *testing.T) {
+	for _, testCase := range verbCreationSuccessCases {
+		verb := testCase.verb
+
+		conjugationTest(t, testCase.presentP1, testCase.presentS1, verb.GetPresentS1(), "Present S1")
+		conjugationTest(t, testCase.presentP1, testCase.presentS2, verb.GetPresentS2(), "Present S2")
+		conjugationTest(t, testCase.presentP1, testCase.presentS3, verb.GetPresentS3(), "Present S3")
+		conjugationTest(t, testCase.presentP1, testCase.presentP1, verb.GetPresentP1(), "Present P1")
+		conjugationTest(t, testCase.presentP1, testCase.presentP2, verb.GetPresentP2(), "Present P2")
+		conjugationTest(t, testCase.presentP1, testCase.presentP3, verb.GetPresentP3(), "Present P3")
+
+		conjugationTest(t, testCase.presentP1, testCase.pastS1, verb.GetPastS1(), "Past S1")
+		conjugationTest(t, testCase.presentP1, testCase.pastS2, verb.GetPastS2(), "Past S2")
+		conjugationTest(t, testCase.presentP1, testCase.pastS3, verb.GetPastS3(), "Past S3")
+		conjugationTest(t, testCase.presentP1, testCase.pastP1, verb.GetPastP1(), "Past P1")
+		conjugationTest(t, testCase.presentP1, testCase.pastP2, verb.GetPastP2(), "Past P2")
+		conjugationTest(t, testCase.presentP1, testCase.pastP3, verb.GetPastP3(), "Past P3")
+	}
+
+	t.Log(len(verbCreationSuccessCases), "test cases")
+}
+
+func conjugationTest(t *testing.T, presentP1 []string, expected []string, actual []string, str string) {
+	var stringsExpected = strings.Join(expected, ",")
+	var stringsActual = strings.Join(actual, ",")
+
+	if stringsExpected != stringsActual {
+		t.Fatalf(
+			"%s for %s is wrong. Expected: '%s', got: '%s'.",
+			str,
+			presentP1[0],
+			stringsExpected,
+			stringsActual,
+		)
+	}
 }
