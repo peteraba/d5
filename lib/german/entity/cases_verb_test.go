@@ -391,7 +391,7 @@ var verbCreationSuccessCases = []struct {
 		[]string{"treibt"},
 		[]string{"treiben"},
 		[]string{"trieb"},
-		[]string{"triebt"},
+		[]string{"triebst"},
 		[]string{"trieb"},
 		[]string{"trieben"},
 		[]string{"triebt"},

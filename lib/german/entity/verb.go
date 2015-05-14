@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
 )
 
@@ -395,7 +396,7 @@ func (v *Verb) GetPresentS1() []string {
 		return v.S1
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "e")
+	return germanUtil.SliceAppend(v.getPresentStem(), "e")
 }
 
 func (v *Verb) GetPresentS2() []string {
@@ -403,7 +404,7 @@ func (v *Verb) GetPresentS2() []string {
 		return v.S2
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "st")
+	return germanUtil.SliceAppend(v.getPresentStem(), "st")
 }
 
 func (v *Verb) GetPresentS3() []string {
@@ -411,7 +412,7 @@ func (v *Verb) GetPresentS3() []string {
 		return v.S3
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "t")
+	return germanUtil.SliceAppend(v.getPresentStem(), "t")
 }
 
 func (v *Verb) GetPresentP1() []string {
@@ -423,7 +424,7 @@ func (v *Verb) GetPresentP2() []string {
 		return v.P2
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "t")
+	return germanUtil.SliceAppend(v.getPresentStem(), "t")
 }
 
 func (v *Verb) GetPresentP3() []string {
@@ -439,15 +440,15 @@ func (v *Verb) GetPastS1() []string {
 		return v.Preterite
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "te")
+	return germanUtil.SliceAppend(v.getPresentStem(), "te")
 }
 
 func (v *Verb) GetPastS2() []string {
 	if len(v.Preterite) > 0 {
-		return util.SliceAppend(v.Preterite, "st")
+		return germanUtil.SliceAppend(v.Preterite, "st")
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "test")
+	return germanUtil.SliceAppend(v.getPresentStem(), "test")
 }
 
 func (v *Verb) GetPastS3() []string {
@@ -455,29 +456,29 @@ func (v *Verb) GetPastS3() []string {
 		return v.Preterite
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "te")
+	return germanUtil.SliceAppend(v.getPresentStem(), "te")
 }
 
 func (v *Verb) GetPastP1() []string {
 	if len(v.Preterite) > 0 {
-		return util.SliceAppend(v.Preterite, "en")
+		return germanUtil.SliceAppend(v.Preterite, "en")
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "ten")
+	return germanUtil.SliceAppend(v.getPresentStem(), "ten")
 }
 
 func (v *Verb) GetPastP2() []string {
 	if len(v.Preterite) > 0 {
-		return util.SliceAppend(v.Preterite, "t")
+		return germanUtil.SliceAppend(v.Preterite, "t")
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "tet")
+	return germanUtil.SliceAppend(v.getPresentStem(), "tet")
 }
 
 func (v *Verb) GetPastP3() []string {
 	if len(v.Preterite) > 0 {
-		return util.SliceAppend(v.Preterite, "en")
+		return germanUtil.SliceAppend(v.Preterite, "en")
 	}
 
-	return util.SliceAppend(v.getPresentStem(), "ten")
+	return germanUtil.SliceAppend(v.getPresentStem(), "ten")
 }
