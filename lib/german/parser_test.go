@@ -130,3 +130,9 @@ func TestSliceAppend(t *testing.T) {
 
 	t.Log(len(parseWordCases), "test cases")
 }
+
+func TestSliceAppendErrors(t *testing.T) {
+	if err, _ := ParseWords([]byte{}); err == nil {
+		t.Fatal("Empty byte slice should cause an error")
+	}
+}

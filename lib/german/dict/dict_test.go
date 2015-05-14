@@ -27,6 +27,11 @@ var declensionCases = []struct {
 		"Stipendien",
 		"Stipendien",
 	},
+	{
+		"sauber",
+		"⍨er",
+		"saüberer",
+	},
 }
 
 func TestDecline(t *testing.T) {
