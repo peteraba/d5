@@ -3,6 +3,7 @@ package entity
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -131,4 +132,29 @@ func TestGetSuperlativeString(t *testing.T) {
 	}
 
 	t.Log(len(getSuperlativeCases), "test cases")
+}
+
+func TestDeclineAdjective(t *testing.T) {
+	for num, testCase := range declineAdjectiveCases {
+		result := testCase.adjective.Decline(
+			testCase.degree,
+			testCase.declension,
+			testCase.nounArticle,
+			testCase.isPlural,
+			testCase.nounCase,
+		)
+
+		actualResult := strings.Join(result, ", ")
+
+		if actualResult != testCase.expectedResult {
+			t.Fatalf(
+				"Declension for test case #%d is different from expected. Expected: %s, got: %s",
+				num+1,
+				testCase.expectedResult,
+				actualResult,
+			)
+		}
+	}
+
+	t.Log(len(declineAdjectiveCases), "test cases")
 }
