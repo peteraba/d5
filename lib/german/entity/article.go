@@ -162,7 +162,17 @@ func IndefiniteArticle(word string, nounArticle Article, isPlural bool, nounCase
 	return strings.TrimRight(word, "e") + strings.TrimLeft(ending, "~")
 }
 
-func DefiniteArticle(nounArticle Article, isPlural bool, nounCase Case) string {
+func DefiniteArticle(word string, nounArticle Article, isPlural bool, nounCase Case) string {
+	if word == "der" || word == "die" || word == "das" {
+		return declineArticle(nounArticle, isPlural, nounCase)
+	}
+
+	ending := definiteEnding(nounArticle, isPlural, nounCase)
+
+	return strings.TrimRight(word, "e") + strings.TrimLeft(ending, "~")
+}
+
+func declineArticle(nounArticle Article, isPlural bool, nounCase Case) string {
 	switch nounCase {
 	case CaseNominative:
 		if isPlural {

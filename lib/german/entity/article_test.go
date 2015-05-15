@@ -49,7 +49,7 @@ func TestIndefiniteArticle(t *testing.T) {
 
 func TestDefiniteArticle(t *testing.T) {
 	for num, testCase := range definiteArticleCases {
-		article := DefiniteArticle(testCase.nounArticle, testCase.isPlural, testCase.nounCase)
+		article := DefiniteArticle(testCase.word, testCase.nounArticle, testCase.isPlural, testCase.nounCase)
 
 		if article != testCase.result {
 			t.Fatalf(
