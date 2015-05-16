@@ -86,3 +86,129 @@ func TestWordCreationSuccess(t *testing.T) {
 
 	t.Log(len(wordCreationSuccessCases), "test cases")
 }
+
+func TestWordGetEnglish(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetEnglish()
+		if !reflect.DeepEqual(actual, word.English) {
+			t.Fatal(
+				"GetEnglish test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.English,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetThird(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetThird()
+		if !reflect.DeepEqual(actual, word.Third) {
+			t.Fatal(
+				"GetThird test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.Third,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetCategory(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetCategory()
+		if actual != word.Category {
+			t.Fatal(
+				"GetCategory test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.Category,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetScore(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetScore()
+		if actual != word.Score {
+			t.Fatal(
+				"GetScore test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.Score,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetUser(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetUser()
+		if actual != word.User {
+			t.Fatal(
+				"GetUser test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.User,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetLearned(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetLearned()
+		if actual != word.Learned {
+			t.Fatal(
+				"GetGerman test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.Learned,
+				actual,
+			)
+		}
+	}
+}
+
+func TestWordGetErrors(t *testing.T) {
+	var word *Any
+
+	for num, testCase := range wordCreationSuccessCases {
+		word = testCase.word
+
+		actual := word.GetErrors()
+		if !reflect.DeepEqual(actual, word.Errors) {
+			t.Fatal(
+				"GetErrors test failed for case #%d. Expected: '%v', got: '%v'.",
+				num+1,
+				word.Errors,
+				actual,
+			)
+		}
+	}
+}

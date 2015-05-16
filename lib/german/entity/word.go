@@ -69,9 +69,6 @@ func NewMeanings(allMeanings string) []Meaning {
 
 	for _, word := range util.TrimSplit(allMeanings, meaningSeparator) {
 		matches := MeaningRegexp.FindStringSubmatch(word)
-		if len(matches) < 3 {
-			continue
-		}
 
 		m := strings.Trim(matches[1], defaultWhitespace)
 		p := strings.Trim(matches[3], defaultWhitespace)
@@ -91,7 +88,7 @@ type DefaultWord struct {
 	Learned  time.Time `bson:"learned" json:"learned"`
 	Score    int       `bson:"score" json:"score"`
 	Tags     []string  `bson:"tags" json:"tags"`
-	Errors   []string  `bson:"errors", json:"errors"`
+	Errors   []string  `bson:"errors" json:"errors"`
 }
 
 func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
@@ -102,10 +99,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 		scoreParsed = 5
 	}
 
-	learnedParsed, err := time.Parse(learnedForm, learned)
-	if err != nil {
-		learnedParsed = time.Now()
-	}
+	learnedParsed := util.ParseTimeNow(learnedForm, learned)
 
 	return DefaultWord{
 		german,

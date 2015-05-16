@@ -170,6 +170,20 @@ var adjectiveCreationSuccessCases = []struct {
 	},
 }
 
+var adjectiveCreationFailureCases = []struct {
+	german, english, third, user, learned, score, tags string
+}{
+	{
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+	},
+}
+
 var getComparativeCases = []struct {
 	adjective       Adjective
 	expectedResult  []string

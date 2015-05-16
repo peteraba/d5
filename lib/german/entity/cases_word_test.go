@@ -50,7 +50,7 @@ var wordCreationSuccessCases = []struct {
 		"exp",
 		"peteraba",
 		"2015-05-03",
-		"5",
+		"15",
 		"idiom, ithinkispider.com",
 		[]string{},
 		&Any{

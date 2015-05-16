@@ -63,6 +63,14 @@ func TestNounCreationSuccess(t *testing.T) {
 	t.Log(len(nounCreationSuccessCases), "test cases")
 }
 
+func TestNounCreationFailure(t *testing.T) {
+	var actual = NewNoun("", "", "", "", "", "", "", "")
+
+	if actual != nil {
+		t.Fatal("Noun should have not been created with empty German argument")
+	}
+}
+
 func TestGetPlural(t *testing.T) {
 	for num, testCase := range getPluralCases {
 		result := testCase.noun.GetPlurals()

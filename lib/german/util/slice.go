@@ -9,6 +9,11 @@ func SliceAppend(stringSlice []string, stringToAppend string) []string {
 	for _, stem := range stringSlice {
 		word = stem + stringToAppend
 		switch stringToAppend {
+		case "en":
+			if strings.HasSuffix(stem, "e") {
+				word = strings.TrimSuffix(stem, "e") + stringToAppend
+			}
+			break
 		case "t":
 			if strings.HasSuffix(stem, "t") {
 				word = stem + "e" + stringToAppend

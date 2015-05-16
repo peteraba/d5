@@ -50,11 +50,9 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 		case "e":
 			articleList = append(articleList, Die)
 			break
-		case "s":
+		default:
 			articleList = append(articleList, Das)
 			break
-		default:
-			return nil
 		}
 	}
 

@@ -20,6 +20,11 @@ var sliceAppendCases = []struct {
 		"t",
 		"ausarbeitet",
 	},
+	{
+		[]string{"arbeite"},
+		"en",
+		"arbeiten",
+	},
 }
 
 func TestSliceAppend(t *testing.T) {

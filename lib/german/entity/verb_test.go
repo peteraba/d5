@@ -122,6 +122,23 @@ func TestArgumentCreationSuccess(t *testing.T) {
 	t.Log(len(meaningRegexpSuccessCases), "test cases")
 }
 
+func TestPrefixCreation(t *testing.T) {
+	for num, testCase := range prefixCreationCases {
+		prefix := NewPrefix(testCase.german)
+
+		if prefix.Prefix != testCase.prefix.Prefix && prefix.Separable != testCase.prefix.Separable {
+			t.Fatalf(
+				"Prefix #%d isn't as expected. Expected: '%v', got: '%v'.",
+				num+1,
+				testCase.prefix,
+				prefix,
+			)
+		}
+	}
+
+	t.Log(len(prefixCreationCases), "test cases")
+}
+
 func TestVerbCreationSuccess(t *testing.T) {
 	for num, testCase := range verbCreationSuccessCases {
 		verb := NewVerb(
@@ -151,29 +168,54 @@ func TestVerbCreationSuccess(t *testing.T) {
 	t.Log(len(verbCreationSuccessCases), "test cases")
 }
 
+func TestVerbCreationFailure(t *testing.T) {
+	for num, testCase := range verbCreationFailureCases {
+		verb := NewVerb(
+			testCase.auxiliary,
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+		)
+
+		if verb != nil {
+			t.Fatalf(
+				"Verb #%d is not nil as expected.\nGot: \n%v",
+				num+1,
+				verb,
+			)
+		}
+	}
+
+	t.Log(len(verbRegexpFailureCases), "test cases")
+}
+
 func TestConjugation(t *testing.T) {
 	for _, testCase := range verbCreationSuccessCases {
 		verb := testCase.verb
 
-		conjugationCheck(t, testCase.presentP1, testCase.presentS1, verb.GetPresentS1(), "Present S1")
-		conjugationCheck(t, testCase.presentP1, testCase.presentS2, verb.GetPresentS2(), "Present S2")
-		conjugationCheck(t, testCase.presentP1, testCase.presentS3, verb.GetPresentS3(), "Present S3")
-		conjugationCheck(t, testCase.presentP1, testCase.presentP1, verb.GetPresentP1(), "Present P1")
-		conjugationCheck(t, testCase.presentP1, testCase.presentP2, verb.GetPresentP2(), "Present P2")
-		conjugationCheck(t, testCase.presentP1, testCase.presentP3, verb.GetPresentP3(), "Present P3")
+		conjugationCheck(t, verb.German, testCase.presentS1, verb.GetPresentS1(), "Present S1")
+		conjugationCheck(t, verb.German, testCase.presentS2, verb.GetPresentS2(), "Present S2")
+		conjugationCheck(t, verb.German, testCase.presentS3, verb.GetPresentS3(), "Present S3")
+		conjugationCheck(t, verb.German, testCase.presentP1, verb.GetPresentP1(), "Present P1")
+		conjugationCheck(t, verb.German, testCase.presentP2, verb.GetPresentP2(), "Present P2")
+		conjugationCheck(t, verb.German, testCase.presentP3, verb.GetPresentP3(), "Present P3")
 
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteS1, verb.GetPreteriteS1(), "Preterite S1")
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteS2, verb.GetPreteriteS2(), "Preterite S2")
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteS3, verb.GetPreteriteS3(), "Preterite S3")
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteP1, verb.GetPreteriteP1(), "Preterite P1")
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteP2, verb.GetPreteriteP2(), "Preterite P2")
-		conjugationCheck(t, testCase.presentP1, testCase.preteriteP3, verb.GetPreteriteP3(), "Preterite P3")
+		conjugationCheck(t, verb.German, testCase.preteriteS1, verb.GetPreteriteS1(), "Preterite S1")
+		conjugationCheck(t, verb.German, testCase.preteriteS2, verb.GetPreteriteS2(), "Preterite S2")
+		conjugationCheck(t, verb.German, testCase.preteriteS3, verb.GetPreteriteS3(), "Preterite S3")
+		conjugationCheck(t, verb.German, testCase.preteriteP1, verb.GetPreteriteP1(), "Preterite P1")
+		conjugationCheck(t, verb.German, testCase.preteriteP2, verb.GetPreteriteP2(), "Preterite P2")
+		conjugationCheck(t, verb.German, testCase.preteriteP3, verb.GetPreteriteP3(), "Preterite P3")
 	}
 
 	t.Log(len(verbCreationSuccessCases), "test cases")
 }
 
-func conjugationCheck(t *testing.T, presentP1 []string, expected []string, actual []string, str string) {
+func conjugationCheck(t *testing.T, german string, expected []string, actual []string, str string) {
 	var stringsExpected = strings.Join(expected, ",")
 	var stringsActual = strings.Join(actual, ",")
 
@@ -181,7 +223,7 @@ func conjugationCheck(t *testing.T, presentP1 []string, expected []string, actua
 		t.Fatalf(
 			"%s for %s is wrong. Expected: '%s', got: '%s'.",
 			str,
-			presentP1[0],
+			german,
 			stringsExpected,
 			stringsActual,
 		)
@@ -194,15 +236,17 @@ func TestConjugationSeparated(t *testing.T) {
 	)
 
 	for _, testCase := range verbCreationSuccessCases {
+		verb := testCase.verb
+
 		actual = testCase.verb.GetSeparated(testCase.pp, testCase.tense)
 
-		conjugationSeparatedCheck(t, testCase.presentP1, testCase.expectedSeparated, actual)
+		conjugationSeparatedCheck(t, verb.German, testCase.expectedSeparated, actual)
 	}
 
 	t.Log(len(verbCreationSuccessCases), "test cases")
 }
 
-func conjugationSeparatedCheck(t *testing.T, presentP1 []string, expected [][2]string, actual [][2]string) {
+func conjugationSeparatedCheck(t *testing.T, german string, expected [][2]string, actual [][2]string) {
 	var (
 		stringExpected string
 		stringActual   string
@@ -214,7 +258,7 @@ func conjugationSeparatedCheck(t *testing.T, presentP1 []string, expected [][2]s
 	if stringExpected != stringActual {
 		t.Fatalf(
 			"Separated word for '%s' is wrong. Expected: '%s', got: '%s'.",
-			presentP1[0],
+			german,
 			stringExpected,
 			stringActual,
 		)

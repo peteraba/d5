@@ -22,55 +22,33 @@ var indefiniteArticleCases = []struct {
 	nounCase    Case
 	result      string
 }{
-	{
-		"ein",
-		Der,
-		false,
-		CaseNominative,
-		"ein",
-	},
-	{
-		"ein",
-		Der,
-		false,
-		CaseAcusative,
-		"einen",
-	},
-	{
-		"ein",
-		Der,
-		true,
-		CaseDative,
-		"",
-	},
-	{
-		"ein",
-		Die,
-		false,
-		CaseDative,
-		"einer",
-	},
-	{
-		"ein",
-		Das,
-		false,
-		CaseDative,
-		"einem",
-	},
-	{
-		"kein",
-		Der,
-		true,
-		CaseDative,
-		"keinen",
-	},
-	{
-		"unser",
-		Das,
-		false,
-		CaseDative,
-		"unserem",
-	},
+	// Nominative
+	{"ein", Der, false, CaseNominative, "ein"},
+	{"ein", Die, false, CaseNominative, "eine"},
+	{"ein", Das, false, CaseNominative, "ein"},
+	{"ein", Der, true, CaseNominative, ""},
+	{"kein", Der, true, CaseNominative, "keine"},
+	// Acusative
+	{"ein", Der, false, CaseAcusative, "einen"},
+	{"ein", Die, false, CaseAcusative, "eine"},
+	{"ein", Das, false, CaseAcusative, "ein"},
+	{"ein", Der, true, CaseAcusative, ""},
+	{"kein", Der, true, CaseAcusative, "keine"},
+	// Dative
+	{"ein", Der, false, CaseDative, "einem"},
+	{"ein", Die, false, CaseDative, "einer"},
+	{"ein", Das, false, CaseDative, "einem"},
+	{"ein", Der, true, CaseDative, ""},
+	{"kein", Der, true, CaseDative, "keinen"},
+	// Genitive
+	{"ein", Der, false, CaseGenitive, "eines"},
+	{"ein", Die, false, CaseGenitive, "einer"},
+	{"ein", Das, false, CaseGenitive, "eines"},
+	{"ein", Der, true, CaseGenitive, ""},
+	{"kein", Der, true, CaseGenitive, "keiner"},
+	// Extra
+	{"unser", Das, false, CaseDative, "unserem"},
+	{"", Das, false, CaseDative, "einem"},
 }
 
 var definiteArticleCases = []struct {

@@ -145,9 +145,7 @@ func (a *Adjective) Decline(
 func strongInflection(nounArticle Article, isPlural bool, nounCase Case) string {
 	switch nounCase {
 	case CaseNominative:
-		if isPlural {
-			return "~e"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~er"
@@ -157,11 +155,10 @@ func strongInflection(nounArticle Article, isPlural bool, nounCase Case) string 
 				return "~es"
 			}
 		}
-		break
+
+		return "~e"
 	case CaseAcusative:
-		if isPlural {
-			return "~e"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~en"
@@ -171,11 +168,9 @@ func strongInflection(nounArticle Article, isPlural bool, nounCase Case) string 
 				return "~es"
 			}
 		}
-		break
+		return "~e"
 	case CaseDative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~em"
@@ -185,32 +180,27 @@ func strongInflection(nounArticle Article, isPlural bool, nounCase Case) string 
 				return "~em"
 			}
 		}
-		break
-	case CaseGenitive:
-		if isPlural {
-			return "~er"
-		} else {
-			switch nounArticle {
-			case Der:
-				return "~en"
-			case Die:
-				return "~er"
-			case Das:
-				return "~en"
-			}
-		}
-		break
+		return "~en"
 	}
 
-	return ""
+	//case CaseGenitive:
+	if !isPlural {
+		switch nounArticle {
+		case Der:
+			return "~en"
+		case Die:
+			return "~er"
+		case Das:
+			return "~en"
+		}
+	}
+	return "~er"
 }
 
 func mixedInlection(nounArticle Article, isPlural bool, nounCase Case) string {
 	switch nounCase {
 	case CaseNominative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~er"
@@ -220,11 +210,9 @@ func mixedInlection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~es"
 			}
 		}
-		break
+		return "~en"
 	case CaseAcusative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~en"
@@ -234,11 +222,9 @@ func mixedInlection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~es"
 			}
 		}
-		break
+		return "~en"
 	case CaseDative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~en"
@@ -248,32 +234,27 @@ func mixedInlection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~en"
 			}
 		}
-		break
-	case CaseGenitive:
-		if isPlural {
-			return "~en"
-		} else {
-			switch nounArticle {
-			case Der:
-				return "~en"
-			case Die:
-				return "~en"
-			case Das:
-				return "~en"
-			}
-		}
-		break
+		return "~en"
 	}
 
-	return ""
+	//case CaseGenitive:
+	if !isPlural {
+		switch nounArticle {
+		case Der:
+			return "~en"
+		case Die:
+			return "~en"
+		case Das:
+			return "~en"
+		}
+	}
+	return "~en"
 }
 
 func weakInflection(nounArticle Article, isPlural bool, nounCase Case) string {
 	switch nounCase {
 	case CaseNominative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~e"
@@ -283,11 +264,9 @@ func weakInflection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~e"
 			}
 		}
-		break
+		return "~en"
 	case CaseAcusative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~en"
@@ -297,11 +276,9 @@ func weakInflection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~e"
 			}
 		}
-		break
+		return "~en"
 	case CaseDative:
-		if isPlural {
-			return "~en"
-		} else {
+		if !isPlural {
 			switch nounArticle {
 			case Der:
 				return "~en"
@@ -311,22 +288,20 @@ func weakInflection(nounArticle Article, isPlural bool, nounCase Case) string {
 				return "~en"
 			}
 		}
-		break
-	case CaseGenitive:
-		if isPlural {
-			return "~en"
-		} else {
-			switch nounArticle {
-			case Der:
-				return "~en"
-			case Die:
-				return "~en"
-			case Das:
-				return "~en"
-			}
-		}
-		break
+		return "~en"
 	}
 
-	return ""
+	//case CaseGenitive:
+	if !isPlural {
+		switch nounArticle {
+		case Der:
+			return "~en"
+		case Die:
+			return "~en"
+		case Das:
+			return "~en"
+		}
+	}
+
+	return "~en"
 }

@@ -66,6 +66,24 @@ func TestAdjectiveCreationSuccess(t *testing.T) {
 	t.Log(len(adjectiveCreationSuccessCases), "test cases")
 }
 
+func TestAdjectiveCreationFailure(t *testing.T) {
+	for num, testCase := range adjectiveCreationFailureCases {
+		adjective := NewAdjective(
+			testCase.german,
+			testCase.english,
+			testCase.third,
+			testCase.user,
+			testCase.learned,
+			testCase.score,
+			testCase.tags,
+		)
+
+		if adjective != nil {
+			t.Fatalf("Adjective was created for test case number #%d.", num+1)
+		}
+	}
+}
+
 func TestGetComparative(t *testing.T) {
 	for num, testCase := range getComparativeCases {
 		result := testCase.adjective.GetComparative()
