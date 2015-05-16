@@ -62,10 +62,13 @@ var argumentCreationCases = []struct {
 }
 
 var verbCreationSuccessCases = []struct {
-	auxiliary, german, english, third, user, learned, score, tags    string
-	verb                                                             *Verb
-	presentS1, presentS2, presentS3, presentP1, presentP2, presentP3 []string
-	pastS1, pastS2, pastS3, pastP1, pastP2, pastP3                   []string
+	auxiliary, german, english, third, user, learned, score, tags                string
+	verb                                                                         *Verb
+	presentS1, presentS2, presentS3, presentP1, presentP2, presentP3             []string
+	preteriteS1, preteriteS2, preteriteS3, preteriteP1, preteriteP2, preteriteP3 []string
+	tense                                                                        Tense
+	pp                                                                           PersonalPronoun
+	expectedSeparated                                                            [][2]string
 }{
 	{
 		"h",
@@ -119,6 +122,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"brachen"},
 		[]string{"bracht"},
 		[]string{"brachen"},
+		Present,
+		S1,
+		[][2]string{
+			[2]string{"breche", ""},
+		},
 	},
 	{
 		"h",
@@ -175,6 +183,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"durchfielen"},
 		[]string{"durchfielt"},
 		[]string{"durchfielen"},
+		Present,
+		S2,
+		[][2]string{
+			[2]string{"fällst", "durch"},
+		},
 	},
 	{
 		"s",
@@ -234,6 +247,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"einfielen"},
 		[]string{"einfielt"},
 		[]string{"einfielen"},
+		Preterite,
+		P2,
+		[][2]string{
+			[2]string{"fielt", "ein"},
+		},
 	},
 	{
 		"h",
@@ -290,6 +308,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"fehlten"},
 		[]string{"fehltet"},
 		[]string{"fehlten"},
+		Present,
+		S1,
+		[][2]string{
+			[2]string{"fehle", ""},
+		},
 	},
 	{
 		"h",
@@ -343,6 +366,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"taten"},
 		[]string{"tatet"},
 		[]string{"taten"},
+		Present,
+		S1,
+		[][2]string{
+			[2]string{"tue", ""},
+		},
 	},
 	{
 		"h",
@@ -396,6 +424,11 @@ var verbCreationSuccessCases = []struct {
 		[]string{"trieben"},
 		[]string{"triebt"},
 		[]string{"trieben"},
+		Preterite,
+		S2,
+		[][2]string{
+			[2]string{"triebst", ""},
+		},
 	},
 	{
 		"s",
@@ -451,5 +484,10 @@ var verbCreationSuccessCases = []struct {
 		[]string{"waren"},
 		[]string{"wart"},
 		[]string{"waren"},
+		Preterite,
+		P3,
+		[][2]string{
+			[2]string{"waren", ""},
+		},
 	},
 }

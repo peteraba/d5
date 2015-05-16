@@ -37,6 +37,25 @@ const (
 	argumentSeparator = "+"
 )
 
+type PersonalPronoun string
+
+const (
+	S1 PersonalPronoun = "S1"
+	S2                 = "S2"
+	S3                 = "S3"
+	P1                 = "P1"
+	P2                 = "P2"
+	P3                 = "P3"
+)
+
+type Tense string
+
+const (
+	Present        Tense = "Present"
+	Preterite            = "Preterite"
+	PastParticiple       = "Past Participle"
+)
+
 var (
 	// Auxiliary:
 	// ^                      -- match beginning of string
@@ -435,7 +454,7 @@ func (v *Verb) GetPresentP3() []string {
 	return v.P1
 }
 
-func (v *Verb) GetPastS1() []string {
+func (v *Verb) GetPreteriteS1() []string {
 	if len(v.Preterite) > 0 {
 		return v.Preterite
 	}
@@ -443,7 +462,7 @@ func (v *Verb) GetPastS1() []string {
 	return germanUtil.SliceAppend(v.getPresentStem(), "te")
 }
 
-func (v *Verb) GetPastS2() []string {
+func (v *Verb) GetPreteriteS2() []string {
 	if len(v.Preterite) > 0 {
 		return germanUtil.SliceAppend(v.Preterite, "st")
 	}
@@ -451,7 +470,7 @@ func (v *Verb) GetPastS2() []string {
 	return germanUtil.SliceAppend(v.getPresentStem(), "test")
 }
 
-func (v *Verb) GetPastS3() []string {
+func (v *Verb) GetPreteriteS3() []string {
 	if len(v.Preterite) > 0 {
 		return v.Preterite
 	}
@@ -459,7 +478,7 @@ func (v *Verb) GetPastS3() []string {
 	return germanUtil.SliceAppend(v.getPresentStem(), "te")
 }
 
-func (v *Verb) GetPastP1() []string {
+func (v *Verb) GetPreteriteP1() []string {
 	if len(v.Preterite) > 0 {
 		return germanUtil.SliceAppend(v.Preterite, "en")
 	}
@@ -467,7 +486,7 @@ func (v *Verb) GetPastP1() []string {
 	return germanUtil.SliceAppend(v.getPresentStem(), "ten")
 }
 
-func (v *Verb) GetPastP2() []string {
+func (v *Verb) GetPreteriteP2() []string {
 	if len(v.Preterite) > 0 {
 		return germanUtil.SliceAppend(v.Preterite, "t")
 	}
@@ -475,10 +494,77 @@ func (v *Verb) GetPastP2() []string {
 	return germanUtil.SliceAppend(v.getPresentStem(), "tet")
 }
 
-func (v *Verb) GetPastP3() []string {
+func (v *Verb) GetPreteriteP3() []string {
 	if len(v.Preterite) > 0 {
 		return germanUtil.SliceAppend(v.Preterite, "en")
 	}
 
 	return germanUtil.SliceAppend(v.getPresentStem(), "ten")
+}
+
+func (v *Verb) GetVerbPreterite(pp PersonalPronoun) []string {
+	switch pp {
+	case S1:
+		return v.GetPreteriteS1()
+	case S2:
+		return v.GetPreteriteS2()
+	case S3:
+		return v.GetPreteriteS3()
+	case P1:
+		return v.GetPreteriteP1()
+	case P2:
+		return v.GetPreteriteP2()
+	}
+
+	return v.GetPreteriteP3()
+}
+
+func (v *Verb) GetVerbPresent(pp PersonalPronoun) []string {
+	switch pp {
+	case S1:
+		return v.GetPresentS1()
+	case S2:
+		return v.GetPresentS2()
+	case S3:
+		return v.GetPresentS3()
+	case P1:
+		return v.GetPresentP1()
+	case P2:
+		return v.GetPresentP2()
+	}
+
+	return v.GetPresentP3()
+}
+
+func (v *Verb) GetVerb(pp PersonalPronoun, tense Tense) []string {
+	switch tense {
+	case Preterite:
+		return v.GetVerbPreterite(pp)
+	case Present:
+		return v.GetVerbPresent(pp)
+	}
+
+	return v.PastParticiple
+}
+
+func (v *Verb) GetSeparated(pp PersonalPronoun, tense Tense) [][2]string {
+	var (
+		result       = [][2]string{}
+		resultItem   [2]string
+		nonSeparated []string
+	)
+
+	nonSeparated = v.GetVerb(pp, tense)
+
+	for _, word := range nonSeparated {
+		resultItem = [2]string{word, ""}
+		if v.Prefix.Separable && v.Prefix.Prefix != "" && tense != PastParticiple {
+			resultItem[0] = strings.TrimLeft(word, v.Prefix.Prefix)
+			resultItem[1] = v.Prefix.Prefix
+		}
+
+		result = append(result, resultItem)
+	}
+
+	return result
 }
