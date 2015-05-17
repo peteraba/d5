@@ -20,6 +20,12 @@ function test_error()
 	echo -en "  \e[1;33m[\e[1;31m✘\e[1;33m]\e[0m"
 }
 
+# Output a nice [✘] with colors for a unsuccessfully check
+function test_warning()
+{
+	echo -en "  \e[1;33m[\e[1;36m!\e[1;33m]\e[0m"
+}
+
 function test_end()
 {
 	echo -en "\e[0m"

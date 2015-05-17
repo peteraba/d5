@@ -10,10 +10,14 @@ function run_test()
 {
 	line=$(go test github.com/peteraba/d5/lib/$f -cover)
 	if [ ${line:0:2} == "ok" ]; then
-		test_success
 		# remove "ok", trim left
 		line="Dir:\t\t$(echo -e "${line:2}" | sed -e 's/^[[:space:]]*//')"
 		line="$(echo $line | sed -r 's/ 0/ \nTime:\t\t0/g' | sed -r 's/ coverage: /\nCoverage:\t/g')"
+		if [[ "$line" == *"100.0%"* ]]; then
+			test_success
+		else
+			test_warning
+		fi
 		print_output "$line\n"
 	else
 		test_error
