@@ -38,8 +38,8 @@ func TestMeaningRegexpFailure(t *testing.T) {
 }
 
 func TestMeaningCreationSuccess(t *testing.T) {
-	for num, testCase := range meaningCreationCases {
-		meanings := NewMeanings(testCase.allMeanings)
+	for num, testCase := range meaningCreationSuccessCases {
+		meanings, _ := NewMeanings(testCase.allMeanings, []string{})
 
 		if !reflect.DeepEqual(meanings, testCase.meanings) {
 			w1, _ := json.Marshal(testCase.meanings)
@@ -54,7 +54,25 @@ func TestMeaningCreationSuccess(t *testing.T) {
 		}
 	}
 
-	t.Log(len(meaningRegexpSuccessCases), "test cases")
+	t.Log(len(meaningCreationSuccessCases), "test cases")
+}
+
+func TestMeaningCreationFailure(t *testing.T) {
+	for num, testCase := range meaningCreationFailureCases {
+		_, errors := NewMeanings(testCase.allMeanings, []string{})
+
+		if len(errors) == 0 {
+			w1, _ := json.Marshal(testCase.allMeanings)
+
+			t.Fatalf(
+				"Meaning list #%d did not return errors as expected.\nMeaning: \n%v",
+				num+1,
+				string(w1),
+			)
+		}
+	}
+
+	t.Log(len(meaningCreationFailureCases), "test cases")
 }
 
 func TestWordCreationSuccess(t *testing.T) {

@@ -19,7 +19,7 @@ var meaningRegexpFailureCases = []string{
 	"to get sth. down (stairs)   to heaven ",
 }
 
-var meaningCreationCases = []struct {
+var meaningCreationSuccessCases = []struct {
 	allMeanings string
 	meanings    []Meaning
 }{
@@ -35,6 +35,17 @@ var meaningCreationCases = []struct {
 			Meaning{"beleolvasni", "átv. is"},
 			Meaning{"sorok között olvasni", ""},
 		},
+	},
+}
+
+var meaningCreationFailureCases = []struct {
+	allMeanings string
+}{
+	{
+		"to spank, to beat, to hit (colloquial) (colloquial)",
+	},
+	{
+		"beleolvasni (átv. is); sorok között olvasni <>!@#$^&*()~",
 	},
 }
 

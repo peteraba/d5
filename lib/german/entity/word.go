@@ -39,7 +39,6 @@ var (
 	// ^                       -- match beginning of string
 	//  [a-zA-Z,.() ]*         -- English words can only contain letters, dots, parantheses and spaces
 	//                $        -- match end of string
-	EnglishRegexp = regexp.MustCompile("^[a-zA-Z,.() ]*$")
 
 	// German Word:
 	// ^                           -- match beginning of string
@@ -64,11 +63,16 @@ type Meaning struct {
 	Parantheses string `bson:"parantheses" json:"parantheses"`
 }
 
-func NewMeanings(allMeanings string) []Meaning {
+func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
 	meanings := []Meaning{}
 
 	for _, word := range util.TrimSplit(allMeanings, meaningSeparator) {
 		matches := MeaningRegexp.FindStringSubmatch(word)
+
+		if matches == nil {
+			errors = append(errors, "Meaning not parsed: "+word)
+			continue
+		}
 
 		m := strings.Trim(matches[1], defaultWhitespace)
 		p := strings.Trim(matches[3], defaultWhitespace)
@@ -76,7 +80,7 @@ func NewMeanings(allMeanings string) []Meaning {
 		meanings = append(meanings, Meaning{m, p})
 	}
 
-	return meanings
+	return meanings, errors
 }
 
 type DefaultWord struct {
@@ -92,7 +96,8 @@ type DefaultWord struct {
 }
 
 func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
-	englishMeanings, thirdMeanings := NewMeanings(english), NewMeanings(third)
+	englishMeanings, errors := NewMeanings(english, errors)
+	thirdMeanings, errors := NewMeanings(third, errors)
 
 	scoreParsed, err := strconv.ParseInt(score, 0, 0)
 	if err != nil || scoreParsed < 1 || scoreParsed > 10 {

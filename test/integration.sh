@@ -52,46 +52,47 @@ function print_title()
 function test_convert_ods_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.ods ]; then
-		../spreadsheet/ods ../spreadsheet/fixture/gerdict.ods 8 > output/ods.json
+		../spreadsheet/ods ../spreadsheet/fixture/gerdict.ods 8 | python -m json.tool > output/ods.json
 	fi
 }
 
 function test_convert_xlsx_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.xlsx ]; then
-		../spreadsheet/xlsx ../spreadsheet/fixture/gerdict.xlsx 8 > output/xlsx.json
+		../spreadsheet/xlsx ../spreadsheet/fixture/gerdict.xlsx 8 | python -m json.tool > output/xlsx.json
 	fi
 }
 
 function test_convert_csv_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.csv ]; then
-		../spreadsheet/csv ../spreadsheet/fixture/gerdict.csv 8 > output/csv.json
+		../spreadsheet/csv ../spreadsheet/fixture/gerdict.csv 8 | python -m json.tool > output/csv.json
 	fi
 }
 
 function test_check_json_sizes()
 {
 	if [ -f output/csv.json ]; then
-		csv_size=$(wc -c output/csv.json | cut -f 1 -d ' ')
-		xlsx_size=$(wc -c output/xlsx.json | cut -f 1 -d ' ')
-		ods_size=$(wc -c output/ods.json | cut -f 1 -d ' ')
+		csv_xlsx_diff=$(diff output/csv.json output/xlsx.json)
+		csv_ods_diff=$(diff output/csv.json output/ods.json)
 
-		if [ "$csv_size" -ne "$xlsx_size" ]; then
+		if [ "$csv_xlsx_diff" != "" ]; then
 			test_error
 			print_error ".xlsx and .csv files are different"
+			print_error "$csv_xlsx_diff"
 			error=1
 		else
 			test_success
-			print_output ".xlsx and .csv files are the same in size"
+			print_output ".xlsx and .csv files are the same"
 		fi
-		if [ "$csv_size" -ne "$ods_size" ]; then
+		if [ "$csv_ods_diff" != "" ]; then
 			test_error
 			print_error ".ods and .csv files are different"
+			print_error "$csv_ods_diff"
 			error=1
 		else
 			test_success
-			print_output ".ods and .csv files are the same in size"
+			print_output ".ods and .csv files are the same"
 		fi
 	fi
 }
