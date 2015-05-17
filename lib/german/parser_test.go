@@ -8,8 +8,8 @@ import (
 	"github.com/peteraba/d5/lib/german/entity"
 )
 
-func newEmptySuperword(category string) superword {
-	return superword{
+func newEmptySuperword(category string) Superword {
+	return Superword{
 		entity.DefaultWord{
 			"",
 			[]entity.Meaning{},
@@ -65,11 +65,11 @@ func newEmptyVerb() entity.Verb {
 }
 
 var parseWordCases = []struct {
-	superwords []superword
+	superwords []Superword
 	words      []entity.Word
 }{
 	{
-		[]superword{
+		[]Superword{
 			newEmptySuperword("verb"),
 		},
 		[]entity.Word{
@@ -77,7 +77,7 @@ var parseWordCases = []struct {
 		},
 	},
 	{
-		[]superword{
+		[]Superword{
 			newEmptySuperword("idiom"),
 			newEmptySuperword("noun"),
 			newEmptySuperword("adj"),
@@ -92,7 +92,7 @@ var parseWordCases = []struct {
 	},
 }
 
-func TestSliceAppend(t *testing.T) {
+func TestParseWords(t *testing.T) {
 	for num, testCase := range parseWordCases {
 		b, err := json.Marshal(testCase.superwords)
 
@@ -134,5 +134,27 @@ func TestSliceAppend(t *testing.T) {
 func TestSliceAppendErrors(t *testing.T) {
 	if err, _ := ParseWords([]byte{}); err == nil {
 		t.Fatal("Empty byte slice should cause an error")
+	}
+}
+
+func TestDictionaryCreation(t *testing.T) {
+	var d Dictionary
+
+	superwords := []Superword{
+		newEmptySuperword("verb"),
+		newEmptySuperword("verb"),
+		newEmptySuperword("noun"),
+		newEmptySuperword("verb"),
+		newEmptySuperword("noun"),
+		newEmptySuperword("noun"),
+		newEmptySuperword("adj"),
+		newEmptySuperword("idiom"),
+		newEmptySuperword("hello"),
+	}
+
+	d = SuperwordsToDictionary(superwords)
+
+	if len(superwords) != d.GetCount() {
+		t.Fatalf("Wrong count received. Expected: %d, got: %d.", len(superwords), d.GetCount())
 	}
 }

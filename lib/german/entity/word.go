@@ -59,8 +59,8 @@ type Word interface {
 }
 
 type Meaning struct {
-	Main        string `bson:"main" json:"main"`
-	Parantheses string `bson:"parantheses" json:"parantheses"`
+	Main        string `bson:"main" json:"main,omitempty"`
+	Parantheses string `bson:"parantheses" json:"parantheses,omitempty"`
 }
 
 func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
@@ -84,15 +84,15 @@ func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
 }
 
 type DefaultWord struct {
-	German   string    `bson:"german" json:"german"`
-	English  []Meaning `bson:"english" json:"english"`
-	Third    []Meaning `bson:"third" json:"third"`
-	Category string    `bson:"category" json:"category"`
-	User     string    `bson:"user" json:"user"`
-	Learned  time.Time `bson:"learned" json:"learned"`
-	Score    int       `bson:"score" json:"score"`
-	Tags     []string  `bson:"tags" json:"tags"`
-	Errors   []string  `bson:"errors" json:"errors"`
+	German   string    `bson:"german" json:"german,omitempty"`
+	English  []Meaning `bson:"english" json:"english,omitempty"`
+	Third    []Meaning `bson:"third" json:"third,omitempty"`
+	Category string    `bson:"category" json:"category,omitempty"`
+	User     string    `bson:"user" json:"user,omitempty"`
+	Learned  time.Time `bson:"learned" json:"learned,omitempty"`
+	Score    int       `bson:"score" json:"score,omitempty"`
+	Tags     []string  `bson:"tags" json:"tags,omitempty"`
+	Errors   []string  `bson:"errors" json:"errors,omitempty"`
 }
 
 func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
@@ -152,7 +152,7 @@ func (w DefaultWord) GetErrors() []string {
 }
 
 type Any struct {
-	DefaultWord `bson:"word" json:"word"`
+	DefaultWord `bson:"word" json:"word,omitempty"`
 }
 
 func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any {

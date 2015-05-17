@@ -148,6 +148,7 @@ Convert excel file into a json file.
 ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 > parser/fixture/gerdict.json
 ```
 
+
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
@@ -161,6 +162,7 @@ cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerd
 cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba -debug=true
 cat parser/fixture/gerdict.json | parser -user=peteraba -debug=true
 ```
+
 
 ### Persist Parsed JSON
 
@@ -176,9 +178,27 @@ cat persister/fixture/gerdict.json | go run persister/persister.go -host=localho
 cat persister/fixture/gerdict.json | persister -host=localhost -db=test -coll=words -debug=true
 ```
 
-### Run everything at once
+
+### Run the import chain at once
 
 ```bash
  ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister -host=localhost -db=test -coll=words
+```
+
+
+### Finder
+
+Used to find words
+
+```bash
+echo "{\"word.german\": \"solche\"}" | go run finder/finder.go -host=localhost -db=test -coll=words
+echo "{\"word.german\": \"solche\"}" | finder -host=localhost -db=test -coll=words
+```
+
+#### Debugging
+
+```bash
+echo "{\"word.german\": \"solche\"}" | go run finder/finder.go -host=localhost -db=test -coll=words -debug=true
+echo "{\"word.german\": \"solche\"}" | finder -host=localhost -db=test -coll=words -debug=true
 ```
 

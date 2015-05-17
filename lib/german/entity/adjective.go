@@ -40,9 +40,9 @@ var (
 )
 
 type Adjective struct {
-	DefaultWord `bson:"word" json:"word"`
-	Comparative []string `bson:"comparative" json:"comparative"`
-	Superlative []string `bson:"superlative" json:"superlative"`
+	DefaultWord `bson:"word" json:"word,omitempty"`
+	Comparative []string `bson:"comparative" json:"comparative,omitempty"`
+	Superlative []string `bson:"superlative" json:"superlative,omitempty"`
 }
 
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {

@@ -85,8 +85,8 @@ var (
 )
 
 type Argument struct {
-	Preposition string `bson:"prep" json:"prep"`
-	Case        Case   `bson:"case" json:"case"`
+	Preposition string `bson:"prep" json:"prep,omitempty"`
+	Case        Case   `bson:"case" json:"case,omitempty"`
 }
 
 func NewArgument(word string) Argument {
@@ -168,8 +168,8 @@ func NewAuxiliary(auxiliaries []string) []Auxiliary {
 }
 
 type Prefix struct {
-	Prefix    string `bson:"prefix" json:"prefix"`
-	Separable bool   `bson:"separable" json:"separable"`
+	Prefix    string `bson:"prefix" json:"prefix,omitempty"`
+	Separable bool   `bson:"separable" json:"separable,omitempty"`
 }
 
 // array of maps of word to exceptions
@@ -300,21 +300,21 @@ func NewPrefix(german string) Prefix {
 }
 
 type Verb struct {
-	DefaultWord    `bson:"word" json:"word"`
-	Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary"`
-	Prefix         Prefix      `bson:"prefix" json:"prefix"`
-	Noun           string      `bson:"noun" json:"noun"`
-	Adjective      string      `bson:"adjective" json:"adjective"`
-	PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple"`
-	Preterite      []string    `bson:"preterite" json:"preterite"`
-	S1             []string    `bson:"s1" json:"s1"`
-	S2             []string    `bson:"s2" json:"s2"`
-	S3             []string    `bson:"s3" json:"s3"`
-	P1             []string    `bson:"p1" json:"p1"`
-	P2             []string    `bson:"p2" json:"p2"`
-	P3             []string    `bson:"p3" json:"p3"`
-	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive"`
-	Arguments      []Argument  `bson:"arguments" json:"arguments"`
+	DefaultWord    `bson:"word" json:"word,omitempty"`
+	Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary,omitempty"`
+	Prefix         Prefix      `bson:"prefix" json:"prefix,omitempty"`
+	Noun           string      `bson:"noun" json:"noun,omitempty"`
+	Adjective      string      `bson:"adjective" json:"adjective,omitempty"`
+	PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple,omitempty"`
+	Preterite      []string    `bson:"preterite" json:"preterite,omitempty"`
+	S1             []string    `bson:"s1" json:"s1,omitempty"`
+	S2             []string    `bson:"s2" json:"s2,omitempty"`
+	S3             []string    `bson:"s3" json:"s3,omitempty"`
+	P1             []string    `bson:"p1" json:"p1,omitempty"`
+	P2             []string    `bson:"p2" json:"p2,omitempty"`
+	P3             []string    `bson:"p3" json:"p3,omitempty"`
+	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive,omitempty"`
+	Arguments      []Argument  `bson:"arguments" json:"arguments,omitempty"`
 }
 
 func extractNounAdjective(german string) (string, string, string) {

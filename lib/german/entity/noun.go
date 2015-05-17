@@ -25,11 +25,11 @@ var (
 )
 
 type Noun struct {
-	DefaultWord  `bson:"word" json:"word"`
-	Articles     []Article `bson:"article" json:"article"`
-	Plural       []string  `bson:"plural" json:"plural"`
-	Genitive     []string  `bson:"genitive" json:"genitive"`
-	IsPluralOnly bool      `bson:"plural_only" json:"plural_only"`
+	DefaultWord  `bson:"word" json:"word,omitempty"`
+	Articles     []Article `bson:"article" json:"article,omitempty"`
+	Plural       []string  `bson:"plural" json:"plural,omitempty"`
+	Genitive     []string  `bson:"genitive" json:"genitive,omitempty"`
+	IsPluralOnly bool      `bson:"plural_only" json:"plural_only,omitempty"`
 }
 
 func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
