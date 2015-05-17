@@ -88,7 +88,7 @@ function test_insert_into_db()
 function test_find_solche()
 {
 	local result=""
-	local search_expression="{\"word.german\": \"solche\"}"
+	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 	if [ -f ../finder/finder.go ]; then
 		result=$(echo $search_expression | go run ../finder/finder.go  -host=localhost -db=test -coll=words)
