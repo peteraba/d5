@@ -133,6 +133,20 @@ Adjectives are composed of a main word, optionally a notion for comparative and 
 Utils
 -----
 
+### Preparations
+
+```bash
+export D5_HOSTNAME="localhost"
+export D5_DBNAME="d5"
+export D5_COLL_WORDS="words"
+
+# For debugging:
+# export PARSER_DEBUG=1
+# export PERSISTER_DEBUG=1
+# export FINDER_DEBUG=1
+```
+
+
 ### Convert Excel to Plain JSON
 
 Convert excel file into a json file.
@@ -160,10 +174,6 @@ cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerd
 ### Persist Parsed JSON
 
 ```bash
-export D5_HOSTNAME="localhost"
-export D5_DBNAME="d5"
-export D5_COLL_WORDS="words"
-# export PARSER_DEBUG=1
 cat persister/fixture/gerdict.json | go run persister/persister.go
 cat persister/fixture/gerdict.json | persister
 ```
@@ -172,7 +182,7 @@ cat persister/fixture/gerdict.json | persister
 ### Run the import chain at once
 
 ```bash
- ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister -host=localhost -db=test -coll=words
+ ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister
 ```
 
 
@@ -181,14 +191,7 @@ cat persister/fixture/gerdict.json | persister
 Used to find words
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | go run finder/finder.go -host=localhost -db=test -coll=words
-echo "{\"word.german\": \"solche\"}" | finder -host=localhost -db=test -coll=words
-```
-
-#### Debugging
-
-```bash
-echo "{\"word.german\": \"solche\"}" | go run finder/finder.go -host=localhost -db=test -coll=words -debug=true
-echo "{\"word.german\": \"solche\"}" | finder -host=localhost -db=test -coll=words -debug=true
+echo "{\"word.german\": \"solche\"}" | go run finder/finder.go
+echo "{\"word.german\": \"solche\"}" | finder
 ```
 

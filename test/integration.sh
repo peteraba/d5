@@ -9,6 +9,7 @@ export D5_DBNAME="d5_test"
 export D5_COLL_WORDS="words"
 export PERSISTER_DEBUG=0
 export PARSER_DEBUG=0
+export FINDER_DEBUG=0
 
 error=0
 
@@ -83,7 +84,7 @@ function test_parse_json()
 function test_insert_into_db()
 {
 	if [ -f ../persister/persister.go ]; then
-		cat output/parsed.json | go run ../persister/persister.go -host=localhost -db=test -coll=words
+		cat output/parsed.json | go run ../persister/persister.go
 	else
 		test_error
 		print_error "persister/persister is missing"
@@ -97,7 +98,7 @@ function test_find_solche()
 	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 	if [ -f ../finder/finder.go ]; then
-		result=$(echo $search_expression | go run ../finder/finder.go  -host=localhost -db=test -coll=words)
+		result=$(echo $search_expression | go run ../finder/finder.go)
 	else
 		test_error
 		print_error "finder/finder is missing"

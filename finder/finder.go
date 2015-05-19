@@ -3,15 +3,22 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"gopkg.in/mgo.v2"
 
 	german "github.com/peteraba/d5/lib/german"
+)
+
+const (
+	d5_dbhost_env       = "D5_HOSTNAME"
+	d5_dbname_env       = "D5_DBNAME"
+	d5_coll_words_env   = "D5_COLL_WORDS"
+	persister_debug_env = "PERSISTER_DEBUG"
 )
 
 func readStdInput() ([]byte, error) {
@@ -43,17 +50,6 @@ func getCollection(query interface{}, url, databaseName, collectionName string) 
 	return result, err
 }
 
-func parseFlags() (string, string, string, bool) {
-	hostName := flag.String("host", "", "Mongo database host")
-	dbName := flag.String("db", "", "Mongo database name")
-	collectionName := flag.String("coll", "", "Mongo collection for words")
-	debug := flag.Bool("debug", false, "Log errors, halt output")
-
-	flag.Parse()
-
-	return *hostName, *dbName, *collectionName, *debug
-}
-
 func getSearchQuery(bytes []byte) (interface{}, error) {
 	var search = make(map[string]string)
 
@@ -81,6 +77,28 @@ func outputJson(rawData interface{}, debug bool) {
 	}
 }
 
+func parseEnvs() (string, string, string, bool) {
+	var debug = false
+
+	// Mongo database host
+	hostname := os.Getenv(d5_dbhost_env)
+
+	// Mongo database name
+	dbName := os.Getenv(d5_dbname_env)
+
+	// Mongo collection name
+	collectionName := os.Getenv(d5_coll_words_env)
+
+	// Is debugging enabled
+	debugRaw := os.Getenv(persister_debug_env)
+
+	if debugRaw == "1" || strings.ToLower(debugRaw) == "true" {
+		debug = true
+	}
+
+	return hostname, dbName, collectionName, debug
+}
+
 func main() {
 	var (
 		input        []byte
@@ -90,7 +108,7 @@ func main() {
 		dictionary   german.Dictionary
 	)
 
-	hostName, dbName, collectionName, debug := parseFlags()
+	hostName, dbName, collectionName, debug := parseEnvs()
 
 	if input, err = readStdInput(); err != nil {
 		log.Fatalln(err)
