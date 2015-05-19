@@ -15,10 +15,10 @@ import (
 )
 
 const (
-	d5_dbhost_env       = "D5_HOSTNAME"
-	d5_dbname_env       = "D5_DBNAME"
-	d5_coll_words_env   = "D5_COLL_WORDS"
-	persister_debug_env = "PERSISTER_DEBUG"
+	d5_dbhost_env     = "D5_HOSTNAME"
+	d5_dbname_env     = "D5_DBNAME"
+	d5_coll_words_env = "D5_COLL_WORDS"
+	finder_debug_env  = "FINDER_DEBUG"
 )
 
 func readStdInput() ([]byte, error) {
@@ -90,7 +90,7 @@ func parseEnvs() (string, string, string, bool) {
 	collectionName := os.Getenv(d5_coll_words_env)
 
 	// Is debugging enabled
-	debugRaw := os.Getenv(persister_debug_env)
+	debugRaw := os.Getenv(finder_debug_env)
 
 	if debugRaw == "1" || strings.ToLower(debugRaw) == "true" {
 		debug = true
