@@ -160,15 +160,12 @@ cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerd
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | go run persister/persister.go -host=localhost -db=test -coll=words
-cat persister/fixture/gerdict.json | persister -host=localhost -db=test -coll=words
-```
-
-#### Debugging
-
-```bash
-cat persister/fixture/gerdict.json | go run persister/persister.go -host=localhost -db=test -coll=words -debug=true
-cat persister/fixture/gerdict.json | persister -host=localhost -db=test -coll=words -debug=true
+export D5_HOSTNAME="localhost"
+export D5_DBNAME="d5"
+export D5_COLL_WORDS="words"
+# export PARSER_DEBUG=1
+cat persister/fixture/gerdict.json | go run persister/persister.go
+cat persister/fixture/gerdict.json | persister
 ```
 
 

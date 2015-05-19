@@ -4,6 +4,12 @@ cd "$(dirname "$0")"
 
 rm output/*
 
+export D5_DBHOST="localhost"
+export D5_DBNAME="d5_test"
+export D5_COLL_WORDS="words"
+export PERSISTER_DEBUG=0
+export PARSER_DEBUG=0
+
 error=0
 
 source util.sh

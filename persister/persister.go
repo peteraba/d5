@@ -3,16 +3,23 @@ package main
 import (
 	"bufio"
 	"errors"
-	"flag"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	german "github.com/peteraba/d5/lib/german"
 	entity "github.com/peteraba/d5/lib/german/entity"
+)
+
+const (
+	d5_dbhost_env       = "D5_HOSTNAME"
+	d5_dbname_env       = "D5_DBNAME"
+	d5_coll_words_env   = "D5_COLL_WORDS"
+	persister_debug_env = "PERSISTER_DEBUG"
 )
 
 func readStdInput() ([]byte, error) {
@@ -71,15 +78,26 @@ func saveCollection(words []entity.Word, url, databaseName, collectionName strin
 	return nil
 }
 
-func parseFlags() (string, string, string, bool) {
-	hostName := flag.String("host", "", "Mongo database host")
-	dbName := flag.String("db", "", "Mongo database name")
-	collectionName := flag.String("coll", "", "Mongo collection for words")
-	debug := flag.Bool("debug", false, "Log errors, halt output")
+func parseEnvs() (string, string, string, bool) {
+	var debug = false
 
-	flag.Parse()
+	// Mongo database host
+	hostname := os.Getenv(d5_dbhost_env)
 
-	return *hostName, *dbName, *collectionName, *debug
+	// Mongo database name
+	dbName := os.Getenv(d5_dbname_env)
+
+	// Mongo collection name
+	collectionName := os.Getenv(d5_coll_words_env)
+
+	// Is debugging enabled
+	debugRaw := os.Getenv(persister_debug_env)
+
+	if debugRaw == "1" || strings.ToLower(debugRaw) == "true" {
+		debug = true
+	}
+
+	return hostname, dbName, collectionName, debug
 }
 
 func main() {
@@ -89,7 +107,7 @@ func main() {
 		err   error
 	)
 
-	hostName, dbName, collectionName, debug := parseFlags()
+	hostName, dbName, collectionName, debug := parseEnvs()
 
 	if input, err = readStdInput(); err != nil {
 		log.Fatalln(err)
