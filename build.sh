@@ -1,5 +1,7 @@
 #! /bin/bash
 
+cd "$(dirname "$0")"
+
 # On ubuntu
 #sudo apt-get install pip3 libxml2 libxml2-dev libxslt1 libxslt1-dev
 
@@ -14,3 +16,6 @@ go install
 cd ../persister
 go install
 
+# Install finder
+cd ../finder
+go install

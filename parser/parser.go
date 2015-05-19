@@ -8,9 +8,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	germanEntity "github.com/peteraba/d5/lib/german/entity"
 )
+
+const parser_debug_env = "PARSER_DEBUG"
 
 func readStdInput() ([]byte, error) {
 	reader := bufio.NewReader(os.Stdin)
@@ -76,14 +79,22 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, 
 	return words, parseErrors
 }
 
-func parseFlags() (string, bool) {
+func parseFlags() string {
 	user := flag.String("user", "", "User to whom the data belongs")
-
-	debug := flag.Bool("debug", false, "Log errors, halt output")
 
 	flag.Parse()
 
-	return *user, *debug
+	return *user
+}
+
+func parseEnvs() bool {
+	debugRaw := os.Getenv(parser_debug_env)
+
+	if debugRaw == "1" || strings.ToLower(debugRaw) == "true" {
+		return true
+	}
+
+	return false
 }
 
 func main() {
@@ -91,9 +102,13 @@ func main() {
 		dictionary = [][8]string{}
 	)
 
-	user, debug := parseFlags()
+	debug := parseEnvs()
+	user := parseFlags()
 
 	if user == "" {
+		if debug {
+			log.Fatalf("Username is not defined")
+		}
 		return
 	}
 

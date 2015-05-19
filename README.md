@@ -152,17 +152,10 @@ Convert excel file into a json file.
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
+# export PARSER_DEBUG=1
 cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba > persister/fixture/gerdict.json
 cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerdict.json
 ```
-
-#### Debugging
-
-```bash
-cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba -debug=true
-cat parser/fixture/gerdict.json | parser -user=peteraba -debug=true
-```
-
 
 ### Persist Parsed JSON
 
