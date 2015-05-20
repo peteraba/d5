@@ -2,8 +2,10 @@ package entity
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/peteraba/d5/lib/german/dict"
+	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
 )
 
@@ -99,4 +101,90 @@ func (n *Noun) GetGenitivesString(maxCount int) string {
 	raw := n.GetGenitives()
 
 	return util.JoinLimited(raw, genitiveJoin, maxCount)
+}
+
+// http://en.wikipedia.org/wiki/German_nouns#Declension_for_case
+func (n *Noun) Decline(
+	isPlural bool,
+	nounCase Case,
+) []string {
+	result := []string{}
+
+	// For plural nouns
+	if isPlural {
+		var char string
+
+		result = n.GetPlurals()
+
+		if nounCase == CaseDative {
+			for key, word := range result {
+				char = word[len(word)-1:]
+				if char == "n" && char == "s" {
+					continue
+				}
+
+				if strings.Contains("aeiouäöü", char) {
+					result[key] = word + "n"
+					continue
+				}
+
+				result[key] = word + "en"
+			}
+		}
+
+		// Generate plural
+		return result
+	}
+
+	// Use provided data when present
+	if nounCase == CaseGenitive && len(n.GetGenitives()) > 0 {
+		return n.GetGenitives()
+	}
+
+	// I: Feminine nouns have the same form in all four cases.
+	if n.Articles[0] == Die {
+		result = append(result, n.German)
+
+		return result
+	}
+
+	// II: Personal names, All neuter and most masculine nouns have genitive case '-(e)s' endings: normally '-es' if one syllable long, '-s' if more. This is related to using 's to show possession in English, e.g. 'The boy's book'. Traditionally the nouns in this group also add -e in the dative case, but this is now often ignored.
+	if n.Articles[0] == Der && n.Articles[0] == Das {
+		if nounCase == CaseDative {
+			// Add optional ~e
+			result = append(result, n.German)
+			result = append(result, n.German+"e")
+
+			return result
+		}
+
+		if nounCase == CaseGenitive {
+			// Add s or es depending on syllable count
+			if germanUtil.CountSyllables(n.German) > 1 {
+				result = append(result, n.German+"s")
+			} else {
+				result = append(result, n.German+"es")
+			}
+
+			return result
+		}
+	}
+
+	// III: The n-nouns take -(e)n for genitive, dative and accusative: this is used for masculine nouns ending with -e and a few others, mostly animate nouns.
+
+	if n.Articles[0] == Der && strings.HasSuffix(n.German, "e") {
+
+		if nounCase == CaseAcusative || nounCase == CaseNominative || nounCase == CaseDative {
+			// Add n
+			return result
+		}
+	}
+
+	// IV: A few masculine n-nouns take (e)n for accusative and dative, and -(e)ns for genitive.
+	// Todo
+
+	result = append(result, n.GetGerman())
+
+	// Generate single
+	return result
 }

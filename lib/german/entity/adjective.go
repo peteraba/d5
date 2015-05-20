@@ -21,12 +21,12 @@ const (
 	Superlative        = 2
 )
 
-type AdjectiveDeclension int
+type Declension int
 
 const (
-	Strong AdjectiveDeclension = 0
-	Weak                       = 1
-	Mixed                      = 2
+	Strong Declension = 0
+	Weak              = 1
+	Mixed             = 2
 )
 
 var (
@@ -105,7 +105,7 @@ func (a *Adjective) GetSuperlativeString(maxCount int) string {
 
 func (a *Adjective) Decline(
 	degree Degree,
-	declension AdjectiveDeclension,
+	declension Declension,
 	nounArticle Article,
 	isPlural bool,
 	nounCase Case,

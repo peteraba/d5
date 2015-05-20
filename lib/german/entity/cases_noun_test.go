@@ -279,3 +279,43 @@ var getGenitiveCases = []struct {
 		"Gulasches",
 	},
 }
+
+var getNounDeclensionCases = []struct {
+	noun               Noun
+	singularNominative []string
+	singularAcusative  []string
+	singularDative     []string
+	singularGenitive   []string
+	pluralNominative   []string
+	pluralAcusative    []string
+	pluralDative       []string
+	pluralGenitive     []string
+}{
+	{
+		Noun{
+			DefaultWord{
+				"Berg",
+				[]Meaning{},
+				[]Meaning{},
+				"",
+				"",
+				time.Now(),
+				5,
+				[]string{},
+				[]string{},
+			},
+			[]Article{Der},
+			[]string{"~e"},
+			[]string{"~s", "~es"},
+			false,
+		},
+		[]string{"Berg"},
+		[]string{"Berg"},
+		[]string{"Berg"},
+		[]string{"Bergs", "Berges"},
+		[]string{"Berge"},
+		[]string{"Berge"},
+		[]string{"Bergen"},
+		[]string{"Berge"},
+	},
+}

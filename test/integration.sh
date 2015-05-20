@@ -143,7 +143,7 @@ function run_task()
 function run_tests()
 {
 	run_task "convert ods to json" 2000
-	run_task "convert csv to json" 100
+	run_task "convert csv to json" 200
 	run_task "convert xlsx to json" 2000
 	run_task "check json sizes" 50
 	run_task "parse json" 500

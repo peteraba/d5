@@ -259,7 +259,7 @@ var declineAdjective = Adjective{
 var declineAdjectiveCases = []struct {
 	adjective      Adjective
 	degree         Degree
-	declension     AdjectiveDeclension
+	declension     Declension
 	nounArticle    Article
 	isPlural       bool
 	nounCase       Case

@@ -3,6 +3,7 @@ package entity
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -137,4 +138,156 @@ func TestGetGenitiveString(t *testing.T) {
 	}
 
 	t.Log(len(getGenitiveCases), "test cases")
+}
+
+func TestSingularNominativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(false, CaseNominative)
+		expected := strings.Join(testCase.singularNominative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Singular nominative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestSingularAcusativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(false, CaseAcusative)
+		expected := strings.Join(testCase.singularAcusative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Singular acusative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestSingularDativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(false, CaseDative)
+		expected := strings.Join(testCase.singularDative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Singular dative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestSingularGenitiveDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(false, CaseGenitive)
+		expected := strings.Join(testCase.singularGenitive, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Singular genitive declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestPluralNominativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(true, CaseNominative)
+		expected := strings.Join(testCase.pluralNominative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Plural nominative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestPluralAcusativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(true, CaseAcusative)
+		expected := strings.Join(testCase.pluralAcusative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Plural acusative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestPluralDativeDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(true, CaseDative)
+		expected := strings.Join(testCase.pluralDative, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Plural dative declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
+}
+
+func TestPluralGenitiveDeclension(t *testing.T) {
+	for num, testCase := range getNounDeclensionCases {
+		result := testCase.noun.Decline(true, CaseGenitive)
+		expected := strings.Join(testCase.pluralGenitive, ",")
+		actual := strings.Join(result, ",")
+
+		if expected != actual {
+			t.Fatalf(
+				"Plural genitive declension of test case #%d is not as expected. Expected: '%s', got: '%s'.",
+				num+1,
+				expected,
+				actual,
+			)
+		}
+	}
+
+	t.Log(len(getNounDeclensionCases), "test cases")
 }
