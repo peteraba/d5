@@ -1,0 +1,1579 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/peteraba/d5/lib/german/entity/adjective.go (100.0%)</option>
+				
+				<option value="file1">github.com/peteraba/d5/lib/german/entity/article.go (100.0%)</option>
+				
+				<option value="file2">github.com/peteraba/d5/lib/german/entity/noun.go (76.2%)</option>
+				
+				<option value="file3">github.com/peteraba/d5/lib/german/entity/verb.go (100.0%)</option>
+				
+				<option value="file4">github.com/peteraba/d5/lib/german/entity/word.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" >package entity
+
+import (
+        "regexp"
+        "strings"
+
+        "github.com/peteraba/d5/lib/german/dict"
+        "github.com/peteraba/d5/lib/util"
+)
+
+const (
+        comparativeJoin = ","
+        superlativeJoin = ","
+)
+
+type Degree int
+
+const (
+        Positive    Degree = 0
+        Comparative        = 1
+        Superlative        = 2
+)
+
+type Declension int
+
+const (
+        Strong Declension = 0
+        Weak              = 1
+        Mixed             = 2
+)
+
+var (
+        // Adjective:
+        // ^                                                       -- match beginning of string
+        //  ([a-zäöüß]+)                                           -- match adjective
+        //              (,([a-zäöüß~⍨-]*))?                        -- match optional comparative, can be an extension only starting with a ⍨, ~
+        //                                 (,([a-zäöüß~⍨-]*))?     -- match optional superlative, can be an extension
+        //                                                    $    -- match end of string
+        AdjectiveRegexp = regexp.MustCompile("^([a-zäöüß]+)(,([a-zäöüß~⍨-]*))?(,([a-zäöüß~⍨-]*))?$")
+)
+
+type Adjective struct {
+        DefaultWord `bson:"word" json:"word,omitempty"`
+        Comparative []string `bson:"comparative" json:"comparative,omitempty"`
+        Superlative []string `bson:"superlative" json:"superlative,omitempty"`
+}
+
+func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective <span class="cov8" title="1">{
+        adjectiveParts := util.TrimSplit(german, conjugationSeparator)
+
+        if len(adjectiveParts) &lt; 1 </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">errors := []string{}
+        comparative := []string{}
+        superlative := []string{}
+
+        german = adjectiveParts[0]
+
+        if len(adjectiveParts) &gt; 1 </span><span class="cov8" title="1">{
+                comparative = util.TrimSplit(adjectiveParts[1], alternativeSeparator)
+        }</span>
+
+        <span class="cov8" title="1">if len(adjectiveParts) &gt; 2 </span><span class="cov8" title="1">{
+                superlative = util.TrimSplit(adjectiveParts[2], alternativeSeparator)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;Adjective{
+                NewDefaultWord(german, english, third, "adjective", user, learned, score, tags, errors),
+                comparative,
+                superlative,
+        }</span>
+}
+
+func (a *Adjective) GetComparative() []string <span class="cov8" title="1">{
+        result := []string{}
+        for _, comparative := range a.Comparative </span><span class="cov8" title="1">{
+                result = append(result, dict.Decline(a.German, comparative))
+        }</span>
+
+        <span class="cov8" title="1">return result</span>
+}
+
+func (a *Adjective) GetComparativeString(maxCount int) string <span class="cov8" title="1">{
+        raw := a.GetComparative()
+
+        return util.JoinLimited(raw, comparativeJoin, maxCount)
+}</span>
+
+func (a *Adjective) GetSuperlative() []string <span class="cov8" title="1">{
+        result := []string{}
+        for _, superlative := range a.Superlative </span><span class="cov8" title="1">{
+                result = append(result, dict.Decline(a.German, superlative))
+        }</span>
+
+        <span class="cov8" title="1">return result</span>
+}
+
+func (a *Adjective) GetSuperlativeString(maxCount int) string <span class="cov8" title="1">{
+        raw := a.GetSuperlative()
+
+        return util.JoinLimited(raw, genitiveJoin, maxCount)
+}</span>
+
+func (a *Adjective) Decline(
+        degree Degree,
+        declension Declension,
+        nounArticle Article,
+        isPlural bool,
+        nounCase Case,
+) []string <span class="cov8" title="1">{
+        var (
+                words  []string
+                ending string
+        )
+
+        switch degree </span>{
+        <span class="cov8" title="1">case Positive:
+                words = []string{a.GetGerman()}
+                break</span>
+        <span class="cov8" title="1">case Comparative:
+                words = a.GetComparative()
+                break</span>
+        <span class="cov8" title="1">default:
+                words = a.GetSuperlative()</span>
+        }
+
+        <span class="cov8" title="1">switch declension </span>{
+        <span class="cov8" title="1">case Strong:
+                ending = strongInflection(nounArticle, isPlural, nounCase)
+                break</span>
+        <span class="cov8" title="1">case Weak:
+                ending = weakInflection(nounArticle, isPlural, nounCase)
+                break</span>
+        <span class="cov8" title="1">default:
+                ending = mixedInlection(nounArticle, isPlural, nounCase)</span>
+        }
+
+        <span class="cov8" title="1">ending = strings.TrimLeft(ending, "~")
+
+        return util.SliceAppend(words, ending)</span>
+}
+
+func strongInflection(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~em"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~em"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        }
+
+        //case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "~en"</span>
+                <span class="cov8" title="1">case Die:
+                        return "~er"</span>
+                <span class="cov8" title="1">case Das:
+                        return "~en"</span>
+                }
+        }
+        <span class="cov8" title="1">return "~er"</span>
+}
+
+func mixedInlection(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~en"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        }
+
+        //case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "~en"</span>
+                <span class="cov8" title="1">case Die:
+                        return "~en"</span>
+                <span class="cov8" title="1">case Das:
+                        return "~en"</span>
+                }
+        }
+        <span class="cov8" title="1">return "~en"</span>
+}
+
+func weakInflection(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~e"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~e"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~en"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        }
+
+        //case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "~en"</span>
+                <span class="cov8" title="1">case Die:
+                        return "~en"</span>
+                <span class="cov8" title="1">case Das:
+                        return "~en"</span>
+                }
+        }
+
+        <span class="cov8" title="1">return "~en"</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package entity
+
+import (
+        "regexp"
+        "strings"
+)
+
+type Article string
+
+const (
+        Der Article = "r"
+        Die         = "e"
+        Das         = "s"
+)
+
+var (
+        // Article:
+        // ^                      -- match beginning of string
+        //  ([res])               -- match first article notion &lt;-- r: der, e: die, s: das
+        //         (/([res]))?    -- match optional second article notion, following a / sign
+        //                    $   -- match end of string
+        ArticleRegexp = regexp.MustCompile("^([res])(/([res]))?$")
+)
+
+func indefiniteEnding(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~em"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~em"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        }
+
+        // Case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "~es"</span>
+                <span class="cov8" title="1">case Die:
+                        return "~er"</span>
+                <span class="cov8" title="1">case Das:
+                        return "~es"</span>
+                }
+        }
+
+        <span class="cov8" title="1">return "~er"</span>
+}
+
+func definiteEnding(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~en"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~e"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~es"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~e"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "~em"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "~er"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "~em"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "~en"</span>
+        }
+
+        // Case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "~es"</span>
+                <span class="cov8" title="1">case Die:
+                        return "~er"</span>
+                <span class="cov8" title="1">case Das:
+                        return "~es"</span>
+                }
+        }
+
+        <span class="cov8" title="1">return "~er"</span>
+}
+
+func IndefiniteArticle(word string, nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        if word == "" </span><span class="cov8" title="1">{
+                word = "ein"
+        }</span>
+
+        <span class="cov8" title="1">if word == "ein" &amp;&amp; isPlural </span><span class="cov8" title="1">{
+                return ""
+        }</span>
+
+        <span class="cov8" title="1">ending := indefiniteEnding(nounArticle, isPlural, nounCase)
+
+        return strings.TrimRight(word, "e") + strings.TrimLeft(ending, "~")</span>
+}
+
+func DefiniteArticle(word string, nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        if word == "der" || word == "die" || word == "das" </span><span class="cov8" title="1">{
+                return declineArticle(nounArticle, isPlural, nounCase)
+        }</span>
+
+        <span class="cov8" title="1">ending := definiteEnding(nounArticle, isPlural, nounCase)
+
+        return strings.TrimRight(word, "e") + strings.TrimLeft(ending, "~")</span>
+}
+
+func declineArticle(nounArticle Article, isPlural bool, nounCase Case) string <span class="cov8" title="1">{
+        switch nounCase </span>{
+        <span class="cov8" title="1">case CaseNominative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "der"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "die"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "das"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "die"</span>
+        <span class="cov8" title="1">case CaseAcusative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "den"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "die"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "das"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "die"</span>
+        <span class="cov8" title="1">case CaseDative:
+                if !isPlural </span><span class="cov8" title="1">{
+                        switch nounArticle </span>{
+                        <span class="cov8" title="1">case Der:
+                                return "dem"</span>
+                        <span class="cov8" title="1">case Die:
+                                return "der"</span>
+                        <span class="cov8" title="1">case Das:
+                                return "dem"</span>
+                        }
+                }
+                <span class="cov8" title="1">return "den"</span>
+        }
+
+        // Case CaseGenitive:
+        <span class="cov8" title="1">if !isPlural </span><span class="cov8" title="1">{
+                switch nounArticle </span>{
+                <span class="cov8" title="1">case Der:
+                        return "des"</span>
+                <span class="cov8" title="1">case Die:
+                        return "der"</span>
+                <span class="cov8" title="1">case Das:
+                        return "des"</span>
+                }
+        }
+
+        <span class="cov8" title="1">return "der"</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package entity
+
+import (
+        "regexp"
+        "strings"
+
+        "github.com/peteraba/d5/lib/german/dict"
+        germanUtil "github.com/peteraba/d5/lib/german/util"
+        "github.com/peteraba/d5/lib/util"
+)
+
+const (
+        pluralJoin   = ", "
+        genitiveJoin = ", "
+)
+
+var (
+        // Noun:
+        // ^                                                                                           -- match beginning of string
+        //  ([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü ]+)                                                                -- match noun in singular, must start with a capital
+        //                             ,                                                               -- match a comma
+        //                              ([A-ZÄÖÜa-zäöü~⍨ -]*)                                          -- match plural part, can be an extension only starting with a ⍨, ~
+        //                                                     (,([A-ZÄÖÜßa-zäöü~⍨ ]*()?               -- match optional genitive, can be an extension
+        //                                                                              ([(]pl[)])     -- match plural only note
+        //                                                                                        $    -- match end of string
+        NounRegexp = regexp.MustCompile("^([A-ZÄÖÜ][A-ZÄÖÜßa-zäöü -]+),([A-ZÄÖÜa-zäöü~⍨/ -]*)(,([A-ZÄÖÜßa-zäöü~⍨/ -]*))?([(]pl[)])?$")
+)
+
+type Noun struct {
+        DefaultWord  `bson:"word" json:"word,omitempty"`
+        Articles     []Article `bson:"article" json:"article,omitempty"`
+        Plural       []string  `bson:"plural" json:"plural,omitempty"`
+        Genitive     []string  `bson:"genitive" json:"genitive,omitempty"`
+        IsPluralOnly bool      `bson:"plural_only" json:"plural_only,omitempty"`
+}
+
+func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun <span class="cov8" title="1">{
+        matches := NounRegexp.FindStringSubmatch(german)
+
+        if len(matches) &lt; 5 </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">errors := []string{}
+
+        articleList := []Article{}
+        for _, article := range util.TrimSplit(articles, alternativeSeparator) </span><span class="cov8" title="1">{
+                switch article </span>{
+                <span class="cov8" title="1">case "r":
+                        articleList = append(articleList, Der)
+                        break</span>
+                <span class="cov8" title="1">case "e":
+                        articleList = append(articleList, Die)
+                        break</span>
+                <span class="cov8" title="1">default:
+                        articleList = append(articleList, Das)
+                        break</span>
+                }
+        }
+
+        <span class="cov8" title="1">german = matches[1]
+
+        return &amp;Noun{
+                NewDefaultWord(german, english, third, "noun", user, learned, score, tags, errors),
+                articleList,
+                util.TrimSplit(matches[2], alternativeSeparator),
+                util.TrimSplit(matches[4], alternativeSeparator),
+                matches[5] == "(pl)",
+        }</span>
+}
+
+func (n *Noun) GetPlurals() []string <span class="cov8" title="1">{
+        if n.IsPluralOnly </span><span class="cov8" title="1">{
+                return []string{n.German}
+        }</span>
+
+        <span class="cov8" title="1">result := []string{}
+        for _, pl := range n.Plural </span><span class="cov8" title="1">{
+                result = append(result, dict.Decline(n.German, pl))
+        }</span>
+
+        <span class="cov8" title="1">return result</span>
+}
+
+func (n *Noun) GetPluralsString(maxCount int) string <span class="cov8" title="1">{
+        raw := n.GetPlurals()
+
+        return util.JoinLimited(raw, pluralJoin, maxCount)
+}</span>
+
+func (n *Noun) GetGenitives() []string <span class="cov8" title="1">{
+        result := []string{}
+        for _, genitive := range n.Genitive </span><span class="cov8" title="1">{
+                result = append(result, dict.Decline(n.German, genitive))
+        }</span>
+
+        <span class="cov8" title="1">return result</span>
+}
+
+func (n *Noun) GetGenitivesString(maxCount int) string <span class="cov8" title="1">{
+        raw := n.GetGenitives()
+
+        return util.JoinLimited(raw, genitiveJoin, maxCount)
+}</span>
+
+// http://en.wikipedia.org/wiki/German_nouns#Declension_for_case
+func (n *Noun) Decline(
+        isPlural bool,
+        nounCase Case,
+) []string <span class="cov8" title="1">{
+        result := []string{}
+
+        // For plural nouns
+        if isPlural </span><span class="cov8" title="1">{
+                var char string
+
+                result = n.GetPlurals()
+
+                if nounCase == CaseDative </span><span class="cov8" title="1">{
+                        for key, word := range result </span><span class="cov8" title="1">{
+                                char = word[len(word)-1:]
+                                if char == "n" &amp;&amp; char == "s" </span><span class="cov0" title="0">{
+                                        continue</span>
+                                }
+
+                                <span class="cov8" title="1">if strings.Contains("aeiouäöü", char) </span><span class="cov8" title="1">{
+                                        result[key] = word + "n"
+                                        continue</span>
+                                }
+
+                                <span class="cov0" title="0">result[key] = word + "en"</span>
+                        }
+                }
+
+                // Generate plural
+                <span class="cov8" title="1">return result</span>
+        }
+
+        // Use provided data when present
+        <span class="cov8" title="1">if nounCase == CaseGenitive &amp;&amp; len(n.GetGenitives()) &gt; 0 </span><span class="cov8" title="1">{
+                return n.GetGenitives()
+        }</span>
+
+        // I: Feminine nouns have the same form in all four cases.
+        <span class="cov8" title="1">if n.Articles[0] == Die </span><span class="cov0" title="0">{
+                result = append(result, n.German)
+
+                return result
+        }</span>
+
+        // II: Personal names, All neuter and most masculine nouns have genitive case '-(e)s' endings: normally '-es' if one syllable long, '-s' if more. This is related to using 's to show possession in English, e.g. 'The boy's book'. Traditionally the nouns in this group also add -e in the dative case, but this is now often ignored.
+        <span class="cov8" title="1">if n.Articles[0] == Der &amp;&amp; n.Articles[0] == Das </span><span class="cov0" title="0">{
+                if nounCase == CaseDative </span><span class="cov0" title="0">{
+                        // Add optional ~e
+                        result = append(result, n.German)
+                        result = append(result, n.German+"e")
+
+                        return result
+                }</span>
+
+                <span class="cov0" title="0">if nounCase == CaseGenitive </span><span class="cov0" title="0">{
+                        // Add s or es depending on syllable count
+                        if germanUtil.CountSyllables(n.German) &gt; 1 </span><span class="cov0" title="0">{
+                                result = append(result, n.German+"s")
+                        }</span><span class="cov0" title="0"> else {
+                                result = append(result, n.German+"es")
+                        }</span>
+
+                        <span class="cov0" title="0">return result</span>
+                }
+        }
+
+        // III: The n-nouns take -(e)n for genitive, dative and accusative: this is used for masculine nouns ending with -e and a few others, mostly animate nouns.
+
+        <span class="cov8" title="1">if n.Articles[0] == Der &amp;&amp; strings.HasSuffix(n.German, "e") </span><span class="cov0" title="0">{
+
+                if nounCase == CaseAcusative || nounCase == CaseNominative || nounCase == CaseDative </span><span class="cov0" title="0">{
+                        // Add n
+                        return result
+                }</span>
+        }
+
+        // IV: A few masculine n-nouns take (e)n for accusative and dative, and -(e)ns for genitive.
+        // Todo
+
+        <span class="cov8" title="1">result = append(result, n.GetGerman())
+
+        // Generate single
+        return result</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package entity
+
+import (
+        "regexp"
+        "strings"
+
+        germanUtil "github.com/peteraba/d5/lib/german/util"
+        "github.com/peteraba/d5/lib/util"
+)
+
+type Reflexive string
+
+const (
+        ReflexiveWithout   Reflexive = ""
+        ReflexiveAcusative           = "A"
+        ReflexiveDative              = "D"
+)
+
+type Case string
+
+const (
+        CaseNominative Case = "N"
+        CaseAcusative       = "A"
+        CaseDative          = "D"
+        CaseGenitive        = "G"
+)
+
+type Auxiliary string
+
+const (
+        Sein  Auxiliary = "s"
+        Haben           = "h"
+)
+
+const (
+        argumentSeparator = "+"
+)
+
+type PersonalPronoun string
+
+const (
+        S1 PersonalPronoun = "S1"
+        S2                 = "S2"
+        S3                 = "S3"
+        P1                 = "P1"
+        P2                 = "P2"
+        P3                 = "P3"
+)
+
+type Tense string
+
+const (
+        Present        Tense = "Present"
+        Preterite            = "Preterite"
+        PastParticiple       = "Past Participle"
+)
+
+var (
+        // Auxiliary:
+        // ^                      -- match beginning of string
+        //  ([sh])                -- match first auxiliary notion &lt;-- s: sein, h: haben
+        //        (/([hs]))?      -- match optional second auxiliary notion, followin a / sign
+        //                  $     -- match end of string
+        AuxiliaryRegexp = regexp.MustCompile("^([sh])(/([hs]))?$")
+
+        // Argument:
+        // ^                                  -- match beginning of string
+        //  ([^(]*)                           -- match any string that is not a open parantheses character
+        //          ?                         -- match optional space character
+        //           (                        -- start of parantheses matching
+        //            [(]                       -- match open parantheses character
+        //               ([NADG])               -- match a case notion character  &lt;-- N: nominative, A: acusative, D: dative, G: genitive
+        //                       [)]            -- match close parantheses character
+        //                          )?          -- end of parantheses matching
+        //                             *      -- match optional spaces
+        //                              $     -- match end of string
+        ArgumentRegexp = regexp.MustCompile("^([^(]*) ?([(]([NADG])[)])? *$")
+
+        // Verb:
+        // ^                                                 -- match beginning of string
+        //  ([A-ZÄÖÜßa-zäöü, ]+)                             -- match verb
+        //                     ([A-ZÄÖÜßa-zäöü+() ]*)?       -- match extension(s), separated by plus signs
+        //                                            $      -- match end of string
+        VerbRegexp = regexp.MustCompile("^([A-ZÄÖÜßa-zäöü|,/ -]+)([A-ZÄÖÜßa-zäöü+()/ -]*)?$")
+)
+
+type Argument struct {
+        Preposition string `bson:"prep" json:"prep,omitempty"`
+        Case        Case   `bson:"case" json:"case,omitempty"`
+}
+
+func NewArgument(word string) Argument <span class="cov8" title="1">{
+        matches := ArgumentRegexp.FindStringSubmatch(word)
+
+        p := strings.Trim(matches[1], defaultWhitespace)
+        c := strings.Trim(matches[3], defaultWhitespace)
+
+        switch c </span>{
+        <span class="cov8" title="1">case "A":
+                return Argument{p, CaseAcusative}</span>
+        <span class="cov8" title="1">case "N":
+                return Argument{p, CaseNominative}</span>
+        <span class="cov8" title="1">case "D":
+                return Argument{p, CaseDative}</span>
+        }
+
+        <span class="cov8" title="1">return Argument{p, CaseGenitive}</span>
+}
+
+func NewArguments(allArguments string) []Argument <span class="cov8" title="1">{
+        arguments := []Argument{}
+
+        allArguments = strings.TrimLeft(allArguments, argumentSeparator)
+
+        for _, word := range util.TrimSplit(allArguments, argumentSeparator) </span><span class="cov8" title="1">{
+                arguments = append(arguments, NewArgument(word))
+        }</span>
+
+        <span class="cov8" title="1">return arguments</span>
+}
+
+func parseArguments(rawArguments string) (Reflexive, []Argument, []string) <span class="cov8" title="1">{
+        var (
+                reflexive = ReflexiveWithout
+                arguments = NewArguments(rawArguments)
+                errors    = []string{}
+        )
+
+        if len(arguments) == 0 </span><span class="cov8" title="1">{
+                return ReflexiveWithout, arguments, errors
+        }</span>
+
+        <span class="cov8" title="1">if arguments[0].Preposition == "sich" </span><span class="cov8" title="1">{
+                sich := arguments[0]
+                arguments = arguments[1:]
+
+                switch sich.Case </span>{
+                <span class="cov8" title="1">case "A":
+                        reflexive = ReflexiveAcusative</span>
+                <span class="cov8" title="1">case "D":
+                        reflexive = ReflexiveDative</span>
+                <span class="cov8" title="1">default:
+                        errors = append(errors, "Reflexive definition is invalid")</span>
+                }
+
+                <span class="cov8" title="1">return reflexive, arguments, errors</span>
+
+        }
+
+        <span class="cov8" title="1">return ReflexiveWithout, arguments, errors</span>
+}
+
+func NewAuxiliary(auxiliaries []string) []Auxiliary <span class="cov8" title="1">{
+        var result []Auxiliary
+
+        for _, auxiliary := range auxiliaries </span><span class="cov8" title="1">{
+                switch auxiliary </span>{
+                <span class="cov8" title="1">case "h":
+                        result = append(result, Haben)
+                        break</span>
+                <span class="cov8" title="1">case "s":
+                        result = append(result, Sein)
+                        break</span>
+                }
+        }
+
+        <span class="cov8" title="1">return result</span>
+}
+
+type Prefix struct {
+        Prefix    string `bson:"prefix" json:"prefix,omitempty"`
+        Separable bool   `bson:"separable" json:"separable,omitempty"`
+}
+
+// array of maps of word to exceptions
+var separablePrefixes = [][]string{
+        // top prio: causes hervor to be checked before her
+        []string{
+                "auseinander",
+                "entgegen",
+                "entlang",
+                "entzwei",
+                "gegenüber",
+                "gles1",
+                "herbei",
+                "herein",
+                "herüber",
+                "herunter",
+                "hervor",
+                "herauf",
+                "heraus",
+                "hinauf",
+                "hinaus",
+                "hinein",
+                "hinterher",
+                "hinunter",
+                "hinweg",
+                "nebenher",
+                "nieder",
+                "voraus",
+                "vorbei",
+                "vorüber",
+                "vorweg",
+                "zurecht",
+                "zurück",
+                "zusammen",
+                "zwischen",
+        },
+        // moderate prio: causes herab to check before her
+        []string{
+                "dabei",
+                "daran",
+                "s2rch",
+                "empor",
+                "fehl",
+                "fest",
+                "fort",
+                "frei",
+                "heim",
+                "herab",
+                "heran",
+                "herum",
+                "hinab",
+                "hinzu",
+                "hoch",
+                "nach",
+                "statt",
+                "voran",
+        },
+        // low prio: causes vor to checked after vorher
+        []string{
+                "an",
+                "auf",
+                "aus",
+                "bei",
+                "da",
+                "dar",
+                "ein",
+                "her",
+                "hin",
+                "los",
+                "mit",
+                "vor",
+                "weg",
+                "zu",
+        },
+}
+
+var separablePrefixExceptions = map[string][]string{
+        "fehl": []string{"fehlen"},
+}
+
+// array of maps of word to exceptions
+var unseparablePrefixes = [][]string{
+        []string{
+                "be",
+                "bei",
+                "emp",
+                "ent",
+                "er",
+                "ge",
+                "miss",
+                "ver",
+                "voll",
+                "zer",
+        },
+}
+
+func NewPrefix(german string) Prefix <span class="cov8" title="1">{
+        idx := strings.Index(german, "|")
+
+        if idx &gt; -1 </span><span class="cov8" title="1">{
+                return Prefix{german[:idx], true}
+        }</span>
+
+        <span class="cov8" title="1">for _, prefixSet := range separablePrefixes </span><span class="cov8" title="1">{
+        separablePrefixLoop:
+                for _, prefix := range prefixSet </span><span class="cov8" title="1">{
+                        if exceptions, ok := separablePrefixExceptions[prefix]; ok </span><span class="cov8" title="1">{
+                                if strings.Contains(strings.Join(exceptions, ","), prefix) </span><span class="cov8" title="1">{
+                                        continue separablePrefixLoop</span>
+                                }
+                        }
+
+                        <span class="cov8" title="1">if strings.Index(german, prefix) == 0 </span><span class="cov8" title="1">{
+                                return Prefix{prefix, true}
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">for _, prefixSet := range unseparablePrefixes </span><span class="cov8" title="1">{
+                for _, prefix := range prefixSet </span><span class="cov8" title="1">{
+                        if strings.Index(german, prefix) == 0 </span><span class="cov8" title="1">{
+                                return Prefix{prefix, false}
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return Prefix{"", false}</span>
+}
+
+type Verb struct {
+        DefaultWord    `bson:"word" json:"word,omitempty"`
+        Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary,omitempty"`
+        Prefix         Prefix      `bson:"prefix" json:"prefix,omitempty"`
+        Noun           string      `bson:"noun" json:"noun,omitempty"`
+        Adjective      string      `bson:"adjective" json:"adjective,omitempty"`
+        PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple,omitempty"`
+        Preterite      []string    `bson:"preterite" json:"preterite,omitempty"`
+        S1             []string    `bson:"s1" json:"s1,omitempty"`
+        S2             []string    `bson:"s2" json:"s2,omitempty"`
+        S3             []string    `bson:"s3" json:"s3,omitempty"`
+        P1             []string    `bson:"p1" json:"p1,omitempty"`
+        P2             []string    `bson:"p2" json:"p2,omitempty"`
+        P3             []string    `bson:"p3" json:"p3,omitempty"`
+        Reflexive      Reflexive   `bson:"reflexive" json:"reflexive,omitempty"`
+        Arguments      []Argument  `bson:"arguments" json:"arguments,omitempty"`
+}
+
+func extractNounAdjective(german string) (string, string, string) <span class="cov8" title="1">{
+        words := strings.Split(german, wordSeparator)
+
+        if len(words) &lt; 2 </span><span class="cov8" title="1">{
+                return german, "", ""
+        }</span>
+
+        <span class="cov8" title="1">german = words[len(words)-1]
+
+        nouns, adjectives := []string{}, []string{}
+
+        for _, word := range words[0 : len(words)-1] </span><span class="cov8" title="1">{
+                if strings.ToLower(word) == word </span><span class="cov8" title="1">{
+                        adjectives = append(adjectives, word)
+                }</span><span class="cov8" title="1"> else {
+                        nouns = append(nouns, word)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return german, strings.Join(nouns, wordSeparator), strings.Join(adjectives, wordSeparator)</span>
+}
+
+func NewVerbP1(german string) string <span class="cov8" title="1">{
+        german = strings.Replace(german, "|", "", -1)
+
+        words := util.TrimSplit(german, wordSeparator)
+
+        return words[len(words)-1]
+}</span>
+
+func NewVerb(auxiliary, german, english, third, user, learned, score, tags string) *Verb <span class="cov8" title="1">{
+        pastParticiple, preterite, s1, s2, s3, p1, p2, p3 := "", "", "", "", "", "", "", ""
+
+        matches := VerbRegexp.FindStringSubmatch(german)
+        if len(matches) &lt; 3 </span><span class="cov8" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">errors := []string{}
+
+        main := util.TrimSplit(matches[1], conjugationSeparator)
+        switch len(main) </span>{
+        <span class="cov8" title="1">case 1:
+                german = main[0]
+                break</span>
+        <span class="cov8" title="1">case 3:
+                german, preterite, pastParticiple = main[0], main[1], main[2]
+                break</span>
+        <span class="cov8" title="1">case 5:
+                german, preterite, pastParticiple, s2, s3 = main[0], main[1], main[2], main[3], main[4]
+                break</span>
+        <span class="cov8" title="1">case 9:
+                german, s1, s2, s3, p1, p2, p3, preterite, pastParticiple = main[0], main[1], main[2], main[3], main[4], main[5], main[6], main[7], main[8]
+                break</span>
+        <span class="cov8" title="1">default:
+                return nil</span>
+        }
+
+        <span class="cov8" title="1">sich, arguments, errors := parseArguments(matches[2])
+
+        german, noun, adjective := extractNounAdjective(german)
+
+        prefix := NewPrefix(german)
+
+        german = strings.Replace(german, "|", "", -1)
+
+        if p1 == "" </span><span class="cov8" title="1">{
+                p1 = NewVerbP1(german)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;Verb{
+                NewDefaultWord(german, english, third, "verb", user, learned, score, tags, errors),
+                NewAuxiliary(util.TrimSplit(auxiliary, alternativeSeparator)),
+                prefix,
+                noun,
+                adjective,
+                util.TrimSplit(pastParticiple, alternativeSeparator),
+                util.TrimSplit(preterite, alternativeSeparator),
+                util.TrimSplit(s1, alternativeSeparator),
+                util.TrimSplit(s2, alternativeSeparator),
+                util.TrimSplit(s3, alternativeSeparator),
+                util.TrimSplit(p1, alternativeSeparator),
+                util.TrimSplit(p2, alternativeSeparator),
+                util.TrimSplit(p3, alternativeSeparator),
+                sich,
+                arguments,
+        }</span>
+}
+
+func (v *Verb) getPresentStem() []string <span class="cov8" title="1">{
+        p1s := []string{}
+
+        for _, p1 := range v.P1 </span><span class="cov8" title="1">{
+                if strings.HasSuffix(p1, "en") </span><span class="cov8" title="1">{
+                        p1s = append(p1s, strings.TrimSuffix(p1, "en"))
+                }</span><span class="cov8" title="1"> else if strings.HasSuffix(p1, "n") </span><span class="cov8" title="1">{
+                        p1s = append(p1s, strings.TrimSuffix(p1, "n"))
+                }</span>
+        }
+
+        <span class="cov8" title="1">return p1s</span>
+}
+
+func (v *Verb) GetPresentS1() []string <span class="cov8" title="1">{
+        if len(v.S1) &gt; 0 </span><span class="cov8" title="1">{
+                return v.S1
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "e")</span>
+}
+
+func (v *Verb) GetPresentS2() []string <span class="cov8" title="1">{
+        if len(v.S2) &gt; 0 </span><span class="cov8" title="1">{
+                return v.S2
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "st")</span>
+}
+
+func (v *Verb) GetPresentS3() []string <span class="cov8" title="1">{
+        if len(v.S3) &gt; 0 </span><span class="cov8" title="1">{
+                return v.S3
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "t")</span>
+}
+
+func (v *Verb) GetPresentP1() []string <span class="cov8" title="1">{
+        return v.P1
+}</span>
+
+func (v *Verb) GetPresentP2() []string <span class="cov8" title="1">{
+        if len(v.P2) &gt; 0 </span><span class="cov8" title="1">{
+                return v.P2
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "t")</span>
+}
+
+func (v *Verb) GetPresentP3() []string <span class="cov8" title="1">{
+        if len(v.P3) &gt; 0 </span><span class="cov8" title="1">{
+                return v.P3
+        }</span>
+
+        <span class="cov8" title="1">return v.P1</span>
+}
+
+func (v *Verb) GetPreteriteS1() []string <span class="cov8" title="1">{
+        if len(v.S1) == 1 &amp;&amp; v.S1[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return v.Preterite
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "te")</span>
+}
+
+func (v *Verb) GetPreteriteS2() []string <span class="cov8" title="1">{
+        if len(v.S2) == 1 &amp;&amp; v.S2[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return germanUtil.SliceAppend(v.Preterite, "st")
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "test")</span>
+}
+
+func (v *Verb) GetPreteriteS3() []string <span class="cov8" title="1">{
+        if len(v.S3) == 1 &amp;&amp; v.S3[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return v.Preterite
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "te")</span>
+}
+
+func (v *Verb) GetPreteriteP1() []string <span class="cov8" title="1">{
+        if len(v.P1) == 1 &amp;&amp; v.P1[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return germanUtil.SliceAppend(v.Preterite, "en")
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "ten")</span>
+}
+
+func (v *Verb) GetPreteriteP2() []string <span class="cov8" title="1">{
+        if len(v.P2) == 1 &amp;&amp; v.P2[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return germanUtil.SliceAppend(v.Preterite, "t")
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "tet")</span>
+}
+
+func (v *Verb) GetPreteriteP3() []string <span class="cov8" title="1">{
+        if len(v.P3) == 1 &amp;&amp; v.P3[0] == "-" </span><span class="cov8" title="1">{
+                return []string{"-"}
+        }</span>
+
+        <span class="cov8" title="1">if len(v.Preterite) &gt; 0 </span><span class="cov8" title="1">{
+                return germanUtil.SliceAppend(v.Preterite, "en")
+        }</span>
+
+        <span class="cov8" title="1">return germanUtil.SliceAppend(v.getPresentStem(), "ten")</span>
+}
+
+func (v *Verb) GetVerbPreterite(pp PersonalPronoun) []string <span class="cov8" title="1">{
+        switch pp </span>{
+        <span class="cov8" title="1">case S1:
+                return v.GetPreteriteS1()</span>
+        <span class="cov8" title="1">case S2:
+                return v.GetPreteriteS2()</span>
+        <span class="cov8" title="1">case S3:
+                return v.GetPreteriteS3()</span>
+        <span class="cov8" title="1">case P1:
+                return v.GetPreteriteP1()</span>
+        <span class="cov8" title="1">case P2:
+                return v.GetPreteriteP2()</span>
+        }
+
+        <span class="cov8" title="1">return v.GetPreteriteP3()</span>
+}
+
+func (v *Verb) GetVerbPresent(pp PersonalPronoun) []string <span class="cov8" title="1">{
+        switch pp </span>{
+        <span class="cov8" title="1">case S1:
+                return v.GetPresentS1()</span>
+        <span class="cov8" title="1">case S2:
+                return v.GetPresentS2()</span>
+        <span class="cov8" title="1">case S3:
+                return v.GetPresentS3()</span>
+        <span class="cov8" title="1">case P1:
+                return v.GetPresentP1()</span>
+        <span class="cov8" title="1">case P2:
+                return v.GetPresentP2()</span>
+        }
+
+        <span class="cov8" title="1">return v.GetPresentP3()</span>
+}
+
+func (v *Verb) GetVerb(pp PersonalPronoun, tense Tense) []string <span class="cov8" title="1">{
+        switch tense </span>{
+        <span class="cov8" title="1">case Preterite:
+                return v.GetVerbPreterite(pp)</span>
+        <span class="cov8" title="1">case Present:
+                return v.GetVerbPresent(pp)</span>
+        }
+
+        <span class="cov8" title="1">return v.PastParticiple</span>
+}
+
+func (v *Verb) GetSeparated(pp PersonalPronoun, tense Tense) [][2]string <span class="cov8" title="1">{
+        var (
+                result       = [][2]string{}
+                resultItem   [2]string
+                nonSeparated []string
+        )
+
+        nonSeparated = v.GetVerb(pp, tense)
+
+        for _, word := range nonSeparated </span><span class="cov8" title="1">{
+                resultItem = [2]string{word, ""}
+                if v.Prefix.Separable &amp;&amp; v.Prefix.Prefix != "" &amp;&amp; tense != PastParticiple </span><span class="cov8" title="1">{
+                        resultItem[0] = strings.TrimLeft(word, v.Prefix.Prefix)
+                        resultItem[1] = v.Prefix.Prefix
+                }</span>
+
+                <span class="cov8" title="1">result = append(result, resultItem)</span>
+        }
+
+        <span class="cov8" title="1">return result</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package entity
+
+import (
+        "regexp"
+        "strconv"
+        "strings"
+        "time"
+
+        "github.com/peteraba/d5/lib/util"
+)
+
+const learnedForm = "2006-01-02"
+
+const (
+        alternativeSeparator = "/"
+        conjugationSeparator = ","
+        meaningSeparator     = ";"
+        synonimSeparator     = ","
+        tagSeparator         = ","
+        defaultWhitespace    = "\t\n\f\r "
+        wordSeparator        = " "
+)
+
+var (
+        // Meaning:
+        // ^                                -- match beginning of string
+        //  ([^(]*)                         -- match any string that is not a open parantheses character
+        //          ?                       -- match optional space character
+        //           (                      -- start of parantheses matching
+        //            [(]                     -- match open parantheses character
+        //               ([^)]*)              -- match parantheses content
+        //                      [)]           -- match close parantheses character
+        //                         )?         -- end of parantheses matching
+        //                           *      -- match optional spaces
+        //                            $     -- match end of string
+        MeaningRegexp = regexp.MustCompile("^([^(]*) ?([(]([^)]*)[)])? *$")
+
+        // English Word:
+        // ^                       -- match beginning of string
+        //  [a-zA-Z,.() ]*         -- English words can only contain letters, dots, parantheses and spaces
+        //                $        -- match end of string
+
+        // German Word:
+        // ^                           -- match beginning of string
+        //  [a-zA-ZäÄöÖüÜß,.() ]*      -- German words can only contain German letters, dots, parantheses and spaces
+        //                       $     -- match end of string
+        GermanRegexp = regexp.MustCompile("^[a-zA-ZäÄöÖüÜß,.() ]*$")
+)
+
+type Word interface {
+        GetGerman() string
+        GetEnglish() []Meaning
+        GetThird() []Meaning
+        GetCategory() string
+        GetUser() string
+        GetScore() int
+        GetLearned() time.Time
+        GetErrors() []string
+}
+
+type Meaning struct {
+        Main        string `bson:"main" json:"main,omitempty"`
+        Parantheses string `bson:"parantheses" json:"parantheses,omitempty"`
+}
+
+func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) <span class="cov8" title="1">{
+        meanings := []Meaning{}
+
+        for _, word := range util.TrimSplit(allMeanings, meaningSeparator) </span><span class="cov8" title="1">{
+                matches := MeaningRegexp.FindStringSubmatch(word)
+
+                if matches == nil </span><span class="cov8" title="1">{
+                        errors = append(errors, "Meaning not parsed: "+word)
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">m := strings.Trim(matches[1], defaultWhitespace)
+                p := strings.Trim(matches[3], defaultWhitespace)
+
+                meanings = append(meanings, Meaning{m, p})</span>
+        }
+
+        <span class="cov8" title="1">return meanings, errors</span>
+}
+
+type DefaultWord struct {
+        German   string    `bson:"german" json:"german,omitempty"`
+        English  []Meaning `bson:"english" json:"english,omitempty"`
+        Third    []Meaning `bson:"third" json:"third,omitempty"`
+        Category string    `bson:"category" json:"category,omitempty"`
+        User     string    `bson:"user" json:"user,omitempty"`
+        Learned  time.Time `bson:"learned" json:"learned,omitempty"`
+        Score    int       `bson:"score" json:"score,omitempty"`
+        Tags     []string  `bson:"tags" json:"tags,omitempty"`
+        Errors   []string  `bson:"errors" json:"errors,omitempty"`
+}
+
+func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord <span class="cov8" title="1">{
+        englishMeanings, errors := NewMeanings(english, errors)
+        thirdMeanings, errors := NewMeanings(third, errors)
+
+        scoreParsed, err := strconv.ParseInt(score, 0, 0)
+        if err != nil || scoreParsed &lt; 1 || scoreParsed &gt; 10 </span><span class="cov8" title="1">{
+                scoreParsed = 5
+        }</span>
+
+        <span class="cov8" title="1">learnedParsed := util.ParseTimeNow(learnedForm, learned)
+
+        return DefaultWord{
+                german,
+                englishMeanings,
+                thirdMeanings,
+                category,
+                user,
+                learnedParsed,
+                int(scoreParsed),
+                util.TrimSplit(tags, tagSeparator),
+                errors,
+        }</span>
+}
+
+func (w DefaultWord) GetGerman() string <span class="cov8" title="1">{
+        return w.German
+}</span>
+
+func (w DefaultWord) GetEnglish() []Meaning <span class="cov8" title="1">{
+        return w.English
+}</span>
+
+func (w DefaultWord) GetThird() []Meaning <span class="cov8" title="1">{
+        return w.Third
+}</span>
+
+func (w DefaultWord) GetCategory() string <span class="cov8" title="1">{
+        return w.Category
+}</span>
+
+func (w DefaultWord) GetScore() int <span class="cov8" title="1">{
+        return w.Score
+}</span>
+
+func (w DefaultWord) GetUser() string <span class="cov8" title="1">{
+        return w.User
+}</span>
+
+func (w DefaultWord) GetLearned() time.Time <span class="cov8" title="1">{
+        return w.Learned
+}</span>
+
+func (w DefaultWord) GetErrors() []string <span class="cov8" title="1">{
+        return w.Errors
+}</span>
+
+type Any struct {
+        DefaultWord `bson:"word" json:"word,omitempty"`
+}
+
+func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any <span class="cov8" title="1">{
+        d := NewDefaultWord(german, english, third, category, user, learned, score, tags, errors)
+
+        return &amp;Any{d}
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible = document.getElementById('file0');
+		files.addEventListener('change', onChange, false);
+		function onChange() {
+			visible.style.display = 'none';
+			visible = document.getElementById(files.value);
+			visible.style.display = 'block';
+			window.scrollTo(0, 0);
+		}
+	})();
+	</script>
+</html>
