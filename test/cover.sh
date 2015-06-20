@@ -16,7 +16,7 @@ function run_test()
 	# Generate coverage file
 	go test github.com/peteraba/d5/lib/$1 -coverprofile=/tmp/coverage.out
 
-	# Generate htmloutput
+	# Generate html output
 	go tool cover -html=/tmp/coverage.out -o=coverage/lib/$f.html
 
 	# Open file in browser
@@ -25,9 +25,8 @@ function run_test()
 			$browser "$PWD"/coverage/lib/"$1".html
 		fi
 	else
-		$(x-www-browser "$PWD"/coverage/lib/"$1".html)
+		x-www-browser "$PWD"/coverage/lib/"$1".html
 	fi
-
 }
 
 function main()
