@@ -8,7 +8,7 @@ source util.sh
 
 function run_test()
 {
-	line=$(go test github.com/peteraba/d5/lib/$f -cover)
+	line=$(go test github.com/peteraba/d5/lib/$1 -cover)
 	if [ ${line:0:2} == "ok" ]; then
 		# remove "ok", trim left
 		line="Dir:\t\t$(echo -e "${line:2}" | sed -e 's/^[[:space:]]*//')"
