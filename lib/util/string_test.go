@@ -90,3 +90,61 @@ func TestJoinLimited(t *testing.T) {
 
 	t.Log(len(joinLimitedCases), "test cases")
 }
+
+var hasSuffixAnyCases = []struct {
+	s              string
+	suffixes       []string
+	expectedResult bool
+}{
+	{
+		"hello",
+		[]string{"ola", "lo"},
+		true,
+	},
+	{
+		"hello",
+		[]string{"ye", "ma"},
+		false,
+	},
+}
+
+func TestHasSuffix(t *testing.T) {
+	for num, testCase := range hasSuffixAnyCases {
+		actualResult := HasSuffixAny(testCase.s, testCase.suffixes)
+
+		if actualResult != testCase.expectedResult {
+			t.Fatalf("Case #%d failed. Expected: '%v', got: '%v'\n", num, testCase.expectedResult, actualResult)
+		}
+	}
+
+	t.Log(len(hasSuffixAnyCases), "test cases")
+}
+
+var stringInCases = []struct {
+	s              string
+	options        []string
+	expectedResult bool
+}{
+	{
+		"hello",
+		[]string{"nope", "hello", "yeah"},
+		true,
+	},
+	{
+		"hello",
+		[]string{"hell", "ello", "hello!"},
+		false,
+	},
+}
+
+func TestStringIn(t *testing.T) {
+	for num, testCase := range stringInCases {
+		actualResult := StringIn(testCase.s, testCase.options)
+
+		if actualResult != testCase.expectedResult {
+			t.Fatalf("Case #%d failed. Expected: '%v', got: '%v'\n", num, testCase.expectedResult, actualResult)
+		}
+	}
+
+	t.Log(len(stringInCases), "test cases")
+}

@@ -27,3 +27,23 @@ func JoinLimited(parts []string, joinBy string, maxCount int) string {
 
 	return strings.Join(parts[0:maxCount], joinBy)
 }
+
+func HasSuffixAny(s string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func StringIn(s string, options []string) bool {
+	for _, option := range options {
+		if option == s {
+			return true
+		}
+	}
+
+	return false
+}

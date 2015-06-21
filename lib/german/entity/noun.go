@@ -112,23 +112,18 @@ func (n *Noun) Decline(
 
 	// For plural nouns
 	if isPlural {
-		var char string
+		var lastChar string
 
 		result = n.GetPlurals()
 
 		if nounCase == CaseDative {
 			for key, word := range result {
-				char = word[len(word)-1:]
-				if char == "n" && char == "s" {
+				lastChar = word[len(word)-1:]
+				if lastChar == "n" || lastChar == "s" {
 					continue
 				}
 
-				if strings.Contains("aeiouäöü", char) {
-					result[key] = word + "n"
-					continue
-				}
-
-				result[key] = word + "en"
+				result[key] = germanUtil.AddSuffix(word, "n")
 			}
 		}
 
@@ -148,8 +143,30 @@ func (n *Noun) Decline(
 		return result
 	}
 
+	// III: The n-nouns take -(e)n for genitive, dative and accusative: this is used for masculine nouns ending with -e and a few others, mostly animate nouns.
+	if n.IsWeak() || n.IsMixed() {
+		if nounCase == CaseAcusative || nounCase == CaseDative || nounCase == CaseGenitive {
+			ending := ""
+
+			if !(n.IsMixed() && nounCase == CaseAcusative) {
+				ending = "en"
+				if germanUtil.IsVowel(n.German[len(n.German)-1:]) {
+					ending = "n"
+				}
+
+				if nounCase == CaseGenitive && n.IsMixed() {
+					ending += "s"
+				}
+			}
+
+			result = append(result, n.German+ending)
+
+			return result
+		}
+	}
+
 	// II: Personal names, All neuter and most masculine nouns have genitive case '-(e)s' endings: normally '-es' if one syllable long, '-s' if more. This is related to using 's to show possession in English, e.g. 'The boy's book'. Traditionally the nouns in this group also add -e in the dative case, but this is now often ignored.
-	if n.Articles[0] == Der && n.Articles[0] == Das {
+	if n.Articles[0] == Der || n.Articles[0] == Das {
 		if nounCase == CaseDative {
 			// Add optional ~e
 			result = append(result, n.German)
@@ -160,22 +177,16 @@ func (n *Noun) Decline(
 
 		if nounCase == CaseGenitive {
 			// Add s or es depending on syllable count
-			if germanUtil.CountSyllables(n.German) > 1 {
-				result = append(result, n.German+"s")
-			} else {
-				result = append(result, n.German+"es")
+			var sAdded = germanUtil.AddSuffix(n.German, "s")
+
+			result = append(result, sAdded)
+
+			if germanUtil.CountSyllables(n.German) == 1 {
+				if strings.LastIndex(sAdded, "es") != len(sAdded)-2 {
+					result = append(result, germanUtil.AddSuffix(n.German, "es"))
+				}
 			}
 
-			return result
-		}
-	}
-
-	// III: The n-nouns take -(e)n for genitive, dative and accusative: this is used for masculine nouns ending with -e and a few others, mostly animate nouns.
-
-	if n.Articles[0] == Der && strings.HasSuffix(n.German, "e") {
-
-		if nounCase == CaseAcusative || nounCase == CaseNominative || nounCase == CaseDative {
-			// Add n
 			return result
 		}
 	}
@@ -187,4 +198,39 @@ func (n *Noun) Decline(
 
 	// Generate single
 	return result
+}
+
+var mixedNouns = []string{"Herz", "Buchstabe", "Gedanke", "Friede", "Glaube", "Wille"}
+
+func (n *Noun) IsMixed() bool {
+	return util.StringIn(n.German, mixedNouns)
+}
+
+var weekEndingExceptions = []string{"Käse"}
+var weakEndings = []string{"ant", "ent", "ist", "aut", "at", "ad"}
+var weakNouns = []string{
+	"Herr", "Bauer", "Bär", "Held", "Mensch",
+	"Nachbarn", "Pilot", "Idiot", "Architekt", "Prinz",
+	"Präsident", "Philosph",
+}
+
+// http://germanforenglishspeakers.com/nouns/weak-nouns-the-n-declension/
+func (n *Noun) IsWeak() bool {
+	if len(n.Articles) > 1 || n.Articles[0] != Der {
+		return false
+	}
+
+	if strings.HasSuffix(n.German, "e") && !util.StringIn(n.German, weekEndingExceptions) {
+		return true
+	}
+
+	if util.HasSuffixAny(n.German, weakEndings) {
+		return true
+	}
+
+	if util.StringIn(n.German, weakNouns) {
+		return true
+	}
+
+	return false
 }
