@@ -54,6 +54,8 @@ function main()
 
 	print_output "All tests finished in $delta_time ms."
 
+	echo ""
+
 	if [ $error -ne 0 ]; then
 		exit 1
 	fi
