@@ -99,7 +99,7 @@ function test_find_solche()
 	
 	if [[ "$result" == *"such"* ]]; then
 		test_success
-		print_output "Word 'solche' and its translation were found ."
+		print_output "Word 'solche' and its translation were found."
 	else
 		test_error
 		print_error "Word 'solche' was not found or translation 'such' was missing"
@@ -163,6 +163,8 @@ function main()
 	fi
 
 	print_output "All tests finished in $delta_time ms."
+
+	echo ""
 
 	if [ $error -ne 0 ]; then
 		exit 1
