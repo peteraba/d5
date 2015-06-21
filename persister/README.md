@@ -21,6 +21,6 @@ Requires the following flags:
  * **coll *{collectionName}* **
 
 ```bash
-cat persister/fixture/gerdict.json | persister --coll german
+cat persister/fixture/gerdict.json | persister --coll=german
 ```
 

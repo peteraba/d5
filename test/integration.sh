@@ -82,7 +82,7 @@ function test_parse_json()
 function test_insert_into_db()
 {
 	if [ -f ../persister/persister.go ]; then
-		cat output/parsed.json | persister --coll $german_test_collection
+		cat output/parsed.json | persister --coll=$german_test_collection
 	else
 		test_error
 		print_error "persister is missing"
@@ -95,7 +95,7 @@ function test_find_solche()
 	local result=""
 	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
-	result=$(echo $search_expression | finder --coll $german_test_collection )
+	result=$(echo $search_expression | finder --coll=$german_test_collection )
 	
 	if [[ "$result" == *"such"* ]]; then
 		test_success

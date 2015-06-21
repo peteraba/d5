@@ -167,14 +167,14 @@ cat parser/fixture/gerdict.json | parser --user=peteraba > persister/fixture/ger
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | persister --coll german
+cat persister/fixture/gerdict.json | persister --coll=german
 ```
 
 
 ### Run the import chain at once
 
 ```bash
-./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser --user=peteraba | persister --coll german
+./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser --user=peteraba | persister --coll=german
 ```
 
 
@@ -183,6 +183,6 @@ cat persister/fixture/gerdict.json | persister --coll german
 Used to find words
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder --coll german
+echo "{\"word.german\": \"solche\"}" | finder --coll=german
 ```
 
