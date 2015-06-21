@@ -73,10 +73,10 @@ function test_check_json_sizes()
 function test_parse_json()
 {
 	if [ -f ../parser/parser.go ]; then
-		cat output/csv.json | go run ../parser/parser.go -user=peteraba > output/parsed.json
+		cat output/csv.json | parser -user=peteraba > output/parsed.json
 	else
 		test_error
-		print_error "parser/parser is missing"
+		print_error "parser is missing"
 		error=1
 	fi
 }
@@ -84,10 +84,10 @@ function test_parse_json()
 function test_insert_into_db()
 {
 	if [ -f ../persister/persister.go ]; then
-		cat output/parsed.json | go run ../persister/persister.go
+		cat output/parsed.json | persister
 	else
 		test_error
-		print_error "persister/persister is missing"
+		print_error "persister is missing"
 		error=1
 	fi
 }
@@ -98,10 +98,10 @@ function test_find_solche()
 	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 	if [ -f ../finder/finder.go ]; then
-		result=$(echo $search_expression | go run ../finder/finder.go)
+		result=$(echo $search_expression | finder)
 	else
 		test_error
-		print_error "finder/finder is missing"
+		print_error "finder is missing"
 		error=1
 	fi
 	
@@ -153,6 +153,8 @@ function run_tests()
 
 function main()
 {
+	../build.sh
+
 	local start_time=`date +%s%N | cut -b1-13`
 
 	run_tests

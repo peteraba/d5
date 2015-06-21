@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd "$(dirname "$0")"
+cd "$GOPATH"/src/github.com/peteraba/d5
 
 # On ubuntu
 #sudo apt-get install pip3 libxml2 libxml2-dev libxslt1 libxslt1-dev
