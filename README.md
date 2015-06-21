@@ -138,9 +138,6 @@ Utils
 ```bash
 export D5_HOSTNAME="localhost"
 export D5_DBNAME="d5"
-
-# For debugging:
-# export PARSER_DEBUG=1
 ```
 
 

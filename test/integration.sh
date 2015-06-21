@@ -6,7 +6,6 @@ rm output/*
 
 export D5_DBHOST="localhost"
 export D5_DBNAME="d5_test"
-export PARSER_DEBUG=0
 
 german_test_collection="german_test"
 
