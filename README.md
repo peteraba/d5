@@ -160,21 +160,21 @@ Convert excel file into a json file.
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
-cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerdict.json
+cat parser/fixture/gerdict.json | parser --user=peteraba > persister/fixture/gerdict.json
 ```
 
 
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | persister
+cat persister/fixture/gerdict.json | persister --coll german
 ```
 
 
 ### Run the import chain at once
 
 ```bash
-./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister -coll german
+./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser --user=peteraba | persister --coll german
 ```
 
 
@@ -183,6 +183,6 @@ cat persister/fixture/gerdict.json | persister
 Used to find words
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder -coll german
+echo "{\"word.german\": \"solche\"}" | finder --coll german
 ```
 

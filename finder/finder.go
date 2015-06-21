@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"gopkg.in/mgo.v2"
@@ -117,7 +119,12 @@ func cli(hostName, dbName, collectionName string, debug bool) {
 }
 
 func server(port int, hostName, dbName, collectionName string, debug bool) {
-	log.Print("Server is not yet implemented")
+	http.HandleFunc("/", serve)
+	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+}
+
+func serve(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "Hello!")
 }
 
 func parseEnvs() (string, string) {

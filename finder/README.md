@@ -21,7 +21,7 @@ Requires the following flags:
  * **coll *{collectionName}* **
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder -coll german
+echo "{\"word.german\": \"solche\"}" | finder --coll german
 ```
 
 
@@ -37,7 +37,7 @@ Requires the following flags:
  * **port *{portnumber}* ** (optional, 17171 by default)
 
 ```bash
-finder -coll german -server true -port 20202
+finder --coll german --server true --port 20202
 ```
 
 Search query should be posted as JSON
