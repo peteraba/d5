@@ -138,12 +138,9 @@ Utils
 ```bash
 export D5_HOSTNAME="localhost"
 export D5_DBNAME="d5"
-export D5_COLL_WORDS="words"
 
 # For debugging:
 # export PARSER_DEBUG=1
-# export PERSISTER_DEBUG=1
-# export FINDER_DEBUG=1
 ```
 
 
@@ -167,14 +164,13 @@ Convert excel file into a json file.
 
 ```bash
 # export PARSER_DEBUG=1
-cat parser/fixture/gerdict.json | go run parser/parser.go -user=peteraba > persister/fixture/gerdict.json
 cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerdict.json
 ```
+
 
 ### Persist Parsed JSON
 
 ```bash
-cat persister/fixture/gerdict.json | go run persister/persister.go
 cat persister/fixture/gerdict.json | persister
 ```
 
@@ -182,7 +178,7 @@ cat persister/fixture/gerdict.json | persister
 ### Run the import chain at once
 
 ```bash
- ./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister
+./spreadsheet/csv spreadsheet/fixture/gerdict.csv 8 | parser -user=peteraba | persister -coll german
 ```
 
 
@@ -191,7 +187,6 @@ cat persister/fixture/gerdict.json | persister
 Used to find words
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | go run finder/finder.go
-echo "{\"word.german\": \"solche\"}" | finder
+echo "{\"word.german\": \"solche\"}" | finder -coll german
 ```
 

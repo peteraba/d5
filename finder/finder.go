@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"gopkg.in/mgo.v2"
 
@@ -16,10 +15,8 @@ import (
 )
 
 const (
-	d5_dbhost_env     = "D5_HOSTNAME"
-	d5_dbname_env     = "D5_DBNAME"
-	d5_coll_words_env = "D5_COLL_WORDS"
-	finder_debug_env  = "FINDER_DEBUG"
+	d5_dbhost_env = "D5_HOSTNAME"
+	d5_dbname_env = "D5_DBNAME"
 )
 
 func readStdInput() ([]byte, error) {
@@ -123,41 +120,33 @@ func server(port int, hostName, dbName, collectionName string, debug bool) {
 	log.Print("Server is not yet implemented")
 }
 
-func parseEnvs() (string, string, string, bool) {
-	var debug = false
-
+func parseEnvs() (string, string) {
 	// Mongo database host
 	hostname := os.Getenv(d5_dbhost_env)
 
 	// Mongo database name
 	dbName := os.Getenv(d5_dbname_env)
 
-	// Mongo collection name
-	collectionName := os.Getenv(d5_coll_words_env)
-
-	// Is debugging enabled
-	debugRaw := os.Getenv(finder_debug_env)
-
-	if debugRaw == "1" || strings.ToLower(debugRaw) == "true" {
-		debug = true
-	}
-
-	return hostname, dbName, collectionName, debug
+	return hostname, dbName
 }
 
-func parseFlags() (bool, int) {
+func parseFlags() (bool, int, string, bool) {
 	isServer := flag.Bool("server", false, "Starts a server")
 	port := flag.Int("port", 17171, "Port for server")
 
+	collectionName := flag.String("coll", "german", "Port for server")
+
+	debug := flag.Bool("debug", false, "Enables debug logs")
+
 	flag.Parse()
 
-	return *isServer, *port
+	return *isServer, *port, *collectionName, *debug
 }
 
 func main() {
-	hostName, dbName, collectionName, debug := parseEnvs()
+	hostName, dbName := parseEnvs()
 
-	isServer, port := parseFlags()
+	isServer, port, collectionName, debug := parseFlags()
 
 	if isServer {
 		server(port, hostName, dbName, collectionName, debug)
