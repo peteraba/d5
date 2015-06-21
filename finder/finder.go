@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -77,6 +78,51 @@ func outputJson(rawData interface{}, debug bool) {
 	}
 }
 
+func runQuery(query interface{}, hostName, dbName, collectionName string) german.Dictionary {
+	var (
+		err          error
+		searchResult []german.Superword
+	)
+
+	searchResult, err = getCollection(query, hostName, dbName, collectionName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dictionary := german.SuperwordsToDictionary(searchResult)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return dictionary
+}
+
+func cli(hostName, dbName, collectionName string, debug bool) {
+	var (
+		input      []byte
+		query      interface{}
+		err        error
+		dictionary german.Dictionary
+	)
+
+	if input, err = readStdInput(); err != nil {
+		log.Fatalln(err)
+	}
+
+	query, err = getSearchQuery(input)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dictionary = runQuery(query, hostName, dbName, collectionName)
+
+	outputJson(dictionary, debug)
+}
+
+func server(port int, hostName, dbName, collectionName string, debug bool) {
+	log.Print("Server is not yet implemented")
+}
+
 func parseEnvs() (string, string, string, bool) {
 	var debug = false
 
@@ -99,35 +145,23 @@ func parseEnvs() (string, string, string, bool) {
 	return hostname, dbName, collectionName, debug
 }
 
-func main() {
-	var (
-		input        []byte
-		err          error
-		query        interface{}
-		searchResult []german.Superword
-		dictionary   german.Dictionary
-	)
+func parseFlags() (bool, int) {
+	isServer := flag.Bool("server", false, "Starts a server")
+	port := flag.Int("port", 17171, "Port for server")
 
+	flag.Parse()
+
+	return *isServer, *port
+}
+
+func main() {
 	hostName, dbName, collectionName, debug := parseEnvs()
 
-	if input, err = readStdInput(); err != nil {
-		log.Fatalln(err)
-	}
+	isServer, port := parseFlags()
 
-	query, err = getSearchQuery(input)
-	if err != nil {
-		log.Fatalln(err)
+	if isServer {
+		server(port, hostName, dbName, collectionName, debug)
+	} else {
+		cli(hostName, dbName, collectionName, debug)
 	}
-
-	searchResult, err = getCollection(query, hostName, dbName, collectionName)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	dictionary = german.SuperwordsToDictionary(searchResult)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	outputJson(dictionary, debug)
 }
