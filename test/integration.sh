@@ -108,6 +108,28 @@ function test_find_solche()
 	fi
 }
 
+function test_find_solche_via_server()
+{
+	local result=""
+	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+
+	(finder -coll=$german_test_collection --server=true --port=11111 & )
+
+	result=$(curl --data 'query={"word.german":"solche"}' http://localhost:11111/ 2>&1 )
+
+	killall finder
+	
+	if [[ "$result" == *"such"* ]]; then
+		test_success
+		print_output "Word 'solche' and its translation were found."
+	else
+		test_error
+		print_error "Word 'solche' was not found or translation 'such' was missing"
+		print_error "Result: $result"
+		error=1
+	fi
+}
+
 function run_task()
 {
 	local task="$(echo $1 | tr "[:upper:]" "[:lower:]" | sed 's/ /_/g')"
@@ -141,6 +163,7 @@ function run_tests()
 	run_task "parse json" 500
 	run_task "insert into db" 2000
 	run_task "find solche" 1000
+	run_task "find solche via server" 2000
 }
 
 function main()
