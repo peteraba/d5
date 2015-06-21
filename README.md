@@ -160,7 +160,6 @@ Convert excel file into a json file.
 ### Convert Plain JSON to Parsed JSON
 
 ```bash
-# export PARSER_DEBUG=1
 cat parser/fixture/gerdict.json | parser -user=peteraba > persister/fixture/gerdict.json
 ```
 
