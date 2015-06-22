@@ -61,7 +61,7 @@ func fetchGeneralCollection(mgoSession *mgo.Session, databaseName, collectionNam
 	return result, err
 }
 
-func fetchGermanCollection(mgoSession *mgo.Session, databaseName, collectionName string, query interface{}) ([]german.Superword, error) {
+func fetchGermanCollection(mgoSession *mgo.Session, databaseName, collectionName string, query map[string]string) ([]german.Superword, error) {
 	var (
 		collection *mgo.Collection
 		err        error
@@ -75,7 +75,7 @@ func fetchGermanCollection(mgoSession *mgo.Session, databaseName, collectionName
 	return result, err
 }
 
-func getSearchQuery(bytes []byte) (interface{}, error) {
+func getSearchQuery(bytes []byte) (map[string]string, error) {
 	var search = make(map[string]string)
 
 	err := json.Unmarshal(bytes, &search)
@@ -87,7 +87,7 @@ func getSearchQuery(bytes []byte) (interface{}, error) {
  * DOMAIN
  */
 
-func createGermanDictionary(mgoSession *mgo.Session, dbName, collectionName string, query interface{}) (german.Dictionary, error) {
+func createGermanDictionary(mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (german.Dictionary, error) {
 	var (
 		err          error
 		searchResult []german.Superword
@@ -104,7 +104,11 @@ func createGermanDictionary(mgoSession *mgo.Session, dbName, collectionName stri
 	return dictionary, err
 }
 
-func getResponseData(isGerman bool, mgoSession *mgo.Session, dbName, collectionName string, query interface{}) (interface{}, error) {
+func getResponseData(isGerman bool, mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (interface{}, error) {
+	if _, ok := query["word.user"]; !ok {
+		return nil, errors.New("word.user key must be defined for searches.")
+	}
+
 	if isGerman {
 		return createGermanDictionary(mgoSession, dbName, collectionName, query)
 	}
@@ -132,7 +136,7 @@ func cli(mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, 
 func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, isGerman, debug bool) (interface{}, error) {
 	var (
 		input []byte
-		query interface{}
+		query map[string]string
 		err   error
 		data  interface{}
 	)
@@ -202,6 +206,7 @@ func makeHandler(
 
 		err := fn(w, r, mgoSession, dbName, collectionName, isGerman, debug)
 		if err != nil {
+			json.NewEncoder(w).Encode(fmt.Sprint(err))
 			log.Println(err)
 		}
 	}
