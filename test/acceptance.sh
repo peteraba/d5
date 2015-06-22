@@ -111,11 +111,10 @@ function test_find_solche()
 function test_find_solche_via_server()
 {
 	local result=""
-	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 	(finder -coll=$german_test_collection --server=true --port=11111 & )
 
-	result=$(curl --data 'query={"word.german":"solche"}' http://localhost:11111/ 2>&1 )
+	result=$(curl --data 'query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
 
 	killall finder
 	
