@@ -11,9 +11,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/peteraba/d5/finder/repository"
 	"gopkg.in/mgo.v2"
-
-	german "github.com/peteraba/d5/lib/german"
 )
 
 const (
@@ -47,34 +46,6 @@ func createMgoSession(url string) (*mgo.Session, error) {
 	return session, err
 }
 
-func fetchGeneralCollection(mgoSession *mgo.Session, databaseName, collectionName string, query interface{}) ([]interface{}, error) {
-	var (
-		collection *mgo.Collection
-		err        error
-		result     []interface{}
-	)
-
-	collection = mgoSession.DB(databaseName).C(collectionName)
-
-	err = collection.Find(query).All(&result)
-
-	return result, err
-}
-
-func fetchGermanCollection(mgoSession *mgo.Session, databaseName, collectionName string, query map[string]string) ([]german.Superword, error) {
-	var (
-		collection *mgo.Collection
-		err        error
-		result     = []german.Superword{}
-	)
-
-	collection = mgoSession.DB(databaseName).C(collectionName)
-
-	err = collection.Find(query).All(&result)
-
-	return result, err
-}
-
 func getSearchQuery(bytes []byte) (map[string]string, error) {
 	var search = make(map[string]string)
 
@@ -87,41 +58,20 @@ func getSearchQuery(bytes []byte) (map[string]string, error) {
  * DOMAIN
  */
 
-func createGermanDictionary(mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (german.Dictionary, error) {
-	var (
-		err          error
-		searchResult []german.Superword
-		dictionary   german.Dictionary
-	)
-
-	searchResult, err = fetchGermanCollection(mgoSession, dbName, collectionName, query)
-	if err != nil {
-		return dictionary, err
-	}
-
-	dictionary = german.SuperwordsToDictionary(searchResult)
-
-	return dictionary, err
-}
-
-func getResponseData(isGerman bool, mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (interface{}, error) {
+func getResponseData(repo repository.QueryRepo, mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (interface{}, error) {
 	if _, ok := query["word.user"]; !ok {
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
 
-	if isGerman {
-		return createGermanDictionary(mgoSession, dbName, collectionName, query)
-	}
-
-	return fetchGeneralCollection(mgoSession, dbName, collectionName, query)
+	return repo.CreateDictionary(mgoSession, dbName, collectionName, query)
 }
 
 /**
  * CLI
  */
 
-func cli(mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, debug bool) {
-	result, err := cliWrapped(mgoSession, dbName, collectionName, isGerman, debug)
+func cli(mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) {
+	result, err := cliWrapped(mgoSession, dbName, collectionName, repo, debug)
 	if err != nil {
 		if debug {
 			log.Println(err)
@@ -133,7 +83,7 @@ func cli(mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, 
 	fmt.Print(result)
 }
 
-func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, isGerman, debug bool) (interface{}, error) {
+func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) (interface{}, error) {
 	var (
 		input []byte
 		query map[string]string
@@ -150,7 +100,7 @@ func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, isGerman
 		return nil, err
 	}
 
-	data, err = getResponseData(isGerman, mgoSession, dbName, collectionName, query)
+	data, err = getResponseData(repo, mgoSession, dbName, collectionName, query)
 	if err != nil {
 		return nil, err
 	}
@@ -183,18 +133,18 @@ func dataToJson(rawData interface{}, debug bool) (string, error) {
  * SERVER
  */
 
-func server(mgoSession *mgo.Session, port int, dbName, collectionName string, isGerman bool, debug bool) {
-	http.HandleFunc("/", makeHandler(findHandle, mgoSession, dbName, collectionName, isGerman, debug))
+func server(mgoSession *mgo.Session, port int, dbName, collectionName string, repo repository.QueryRepo, debug bool) {
+	http.HandleFunc("/", makeHandler(findHandle, mgoSession, dbName, collectionName, repo, debug))
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 func makeHandler(
-	fn func(http.ResponseWriter, *http.Request, *mgo.Session, string, string, bool, bool) error,
+	fn func(http.ResponseWriter, *http.Request, *mgo.Session, string, string, repository.QueryRepo, bool) error,
 	mgoSession *mgo.Session,
 	dbName string,
 	collectionName string,
-	isGerman bool,
+	repo repository.QueryRepo,
 	debug bool,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -204,7 +154,7 @@ func makeHandler(
 			return
 		}
 
-		err := fn(w, r, mgoSession, dbName, collectionName, isGerman, debug)
+		err := fn(w, r, mgoSession, dbName, collectionName, repo, debug)
 		if err != nil {
 			json.NewEncoder(w).Encode(fmt.Sprint(err))
 			log.Println(err)
@@ -212,7 +162,7 @@ func makeHandler(
 	}
 }
 
-func findHandle(w http.ResponseWriter, r *http.Request, mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, debug bool) error {
+func findHandle(w http.ResponseWriter, r *http.Request, mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) error {
 	rawQuery, err := getQueryValue(r)
 	if err != nil {
 		return err
@@ -223,7 +173,7 @@ func findHandle(w http.ResponseWriter, r *http.Request, mgoSession *mgo.Session,
 		return err
 	}
 
-	data, err := getResponseData(isGerman, mgoSession.Clone(), dbName, collectionName, query)
+	data, err := getResponseData(repo, mgoSession.Clone(), dbName, collectionName, query)
 	if err != nil {
 		return err
 	}
@@ -294,9 +244,11 @@ func main() {
 		log.Fatalf("MongoDB session could not be built")
 	}
 
+	repo := repository.CreateRepo(isGerman)
+
 	if isServer {
-		server(mgoSession, port, dbName, collectionName, isGerman, debug)
+		server(mgoSession, port, dbName, collectionName, repo, debug)
 	} else {
-		cli(mgoSession, dbName, collectionName, isGerman, debug)
+		cli(mgoSession, dbName, collectionName, repo, debug)
 	}
 }
