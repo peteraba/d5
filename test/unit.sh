@@ -30,8 +30,12 @@ function run_tests()
 {
 	for f in $(find ../lib -type d -printf '%d\t%P\n' | sort -r -nk1 | cut -f2-); 
 	do 
-		print_title "Starting test: $f"
-		run_test $f
+		count=`ls -1 ../lib/$f/*.go 2>/dev/null | wc -l`
+		if [ $count != 0 ]
+		then 
+			print_title "Starting test: $f"
+			run_test $f
+		fi 
 	done
 }
 
