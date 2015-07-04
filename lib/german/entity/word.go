@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/peteraba/d5/lib/general"
 	"github.com/peteraba/d5/lib/util"
 )
 
@@ -84,15 +85,16 @@ func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
 }
 
 type DefaultWord struct {
-	German   string    `bson:"german" json:"german,omitempty"`
-	English  []Meaning `bson:"english" json:"english,omitempty"`
-	Third    []Meaning `bson:"third" json:"third,omitempty"`
-	Category string    `bson:"category" json:"category,omitempty"`
-	User     string    `bson:"user" json:"user,omitempty"`
-	Learned  time.Time `bson:"learned" json:"learned,omitempty"`
-	Score    int       `bson:"score" json:"score,omitempty"`
-	Tags     []string  `bson:"tags" json:"tags,omitempty"`
-	Errors   []string  `bson:"errors" json:"errors,omitempty"`
+	German   string           `bson:"german" json:"german,omitempty"`
+	English  []Meaning        `bson:"english" json:"english,omitempty"`
+	Third    []Meaning        `bson:"third" json:"third,omitempty"`
+	Category string           `bson:"category" json:"category,omitempty"`
+	User     string           `bson:"user" json:"user,omitempty"`
+	Learned  time.Time        `bson:"learned" json:"learned,omitempty"`
+	Score    int              `bson:"score" json:"score,omitempty"`
+	Tags     []string         `bson:"tags" json:"tags,omitempty"`
+	Errors   []string         `bson:"errors" json:"errors,omitempty"`
+	Scores   []*general.Score `bson:"scores" json:"scores,omitempty"`
 }
 
 func NewDefaultWord(german, english, third, category, user, learned, score, tags string, errors []string) DefaultWord {
@@ -116,6 +118,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 		int(scoreParsed),
 		util.TrimSplit(tags, tagSeparator),
 		errors,
+		[]*general.Score{},
 	}
 }
 
@@ -149,6 +152,10 @@ func (w DefaultWord) GetLearned() time.Time {
 
 func (w DefaultWord) GetErrors() []string {
 	return w.Errors
+}
+
+func (w DefaultWord) GetScores() []*general.Score {
+	return w.Scores
 }
 
 type Any struct {

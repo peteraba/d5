@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/peteraba/d5/lib/general"
+)
 
 var adjectiveRegexpSuccessCases = []struct {
 	raw, german, comparative, superlative string
@@ -48,6 +52,7 @@ var adjectiveCreationSuccessCases = []struct {
 				5,
 				[]string{"object_from"},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{},
 			[]string{},
@@ -77,6 +82,7 @@ var adjectiveCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{"-"},
 			[]string{},
@@ -107,6 +113,7 @@ var adjectiveCreationSuccessCases = []struct {
 				5,
 				[]string{"person", "animal"},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{},
 			[]string{},
@@ -135,6 +142,7 @@ var adjectiveCreationSuccessCases = []struct {
 				5,
 				[]string{"person"},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
@@ -163,6 +171,7 @@ var adjectiveCreationSuccessCases = []struct {
 				5,
 				[]string{"room", "clothes"},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{"~er", "⍨er"},
 			[]string{"~sten", "⍨sten"},
@@ -202,6 +211,7 @@ var getComparativeCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
@@ -230,6 +240,7 @@ var getSuperlativeCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
@@ -251,6 +262,7 @@ var declineAdjective = Adjective{
 		5,
 		[]string{},
 		[]string{},
+		[]*general.Score{},
 	},
 	[]string{"~er"},
 	[]string{"~sten"},

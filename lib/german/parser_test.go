@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/peteraba/d5/lib/general"
 	"github.com/peteraba/d5/lib/german/entity"
 )
 
@@ -20,6 +21,7 @@ func newEmptySuperword(category string) Superword {
 			5,
 			[]string{},
 			[]string{},
+			[]*general.Score{},
 		},
 		[]entity.Auxiliary{},
 		entity.Prefix{},

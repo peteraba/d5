@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/peteraba/d5/lib/general"
+)
 
 var auxiliaryRegexpSuccessCases = []struct {
 	raw, first, second string
@@ -128,6 +132,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{},
@@ -186,6 +191,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{
@@ -248,6 +254,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{
@@ -311,6 +318,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{},
@@ -372,6 +380,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{},
@@ -430,6 +439,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{},
@@ -488,6 +498,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{},
@@ -548,6 +559,7 @@ var verbCreationSuccessCases = []struct {
 				1,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{"ver", false},
@@ -606,6 +618,7 @@ var verbCreationSuccessCases = []struct {
 				1,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{"be", false},
@@ -665,6 +678,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{"", false},
@@ -723,6 +737,7 @@ var verbCreationSuccessCases = []struct {
 				5,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{"ge", false},
@@ -781,6 +796,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{"", false},
@@ -839,6 +855,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Sein},
 			Prefix{"", false},
@@ -897,6 +914,7 @@ var verbCreationSuccessCases = []struct {
 				2,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{"aus", true},
@@ -955,6 +973,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{"be", false},
@@ -1013,6 +1032,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{"be", false},
@@ -1071,6 +1091,7 @@ var verbCreationSuccessCases = []struct {
 				10,
 				[]string{},
 				[]string{"Reflexive definition is invalid"},
+				[]*general.Score{},
 			},
 			[]Auxiliary{Haben},
 			Prefix{"be", false},

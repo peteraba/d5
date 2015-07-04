@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/peteraba/d5/lib/general"
+)
 
 var meaningRegexpSuccessCases = []struct {
 	raw, main, parant string
@@ -79,6 +83,7 @@ var wordCreationSuccessCases = []struct {
 				5,
 				[]string{"idiom", "ithinkispider.com"},
 				[]string{},
+				[]*general.Score{},
 			},
 		},
 	},
