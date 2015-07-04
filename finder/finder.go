@@ -17,11 +17,6 @@ import (
 )
 
 const (
-	d5_dbhost_env = "D5_DBHOST"
-	d5_dbname_env = "D5_DBNAME"
-)
-
-const (
 	COLL_TYPE_DEFAULT = "default"
 	COLL_TYPE_GERMAN  = "german"
 )
