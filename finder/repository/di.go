@@ -7,13 +7,24 @@ import (
 )
 
 type QueryRepo interface {
-	CreateDictionary(mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (interface{}, error)
+	SetDb(db *mgo.Database)
+	CreateDictionary(collectionName string, query map[string]string) (interface{}, error)
 }
 
-func CreateRepo(isGerman bool) QueryRepo {
+func CreateRepo(mgoSession *mgo.Session, dbName string, isGerman bool) QueryRepo {
+	var (
+		repo QueryRepo
+	)
+
 	if isGerman {
-		return germanRepo.Repo{}
+		repo = &germanRepo.Repo{}
+	} else {
+		repo = &generalRepo.Repo{}
 	}
 
-	return generalRepo.Repo{}
+	mgoSession = mgoSession.Clone()
+
+	repo.SetDb(mgoSession.DB(dbName))
+
+	return repo
 }

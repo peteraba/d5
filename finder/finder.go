@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/peteraba/d5/finder/repository"
+	"github.com/peteraba/d5/lib/mongo"
 	"gopkg.in/mgo.v2"
 )
 
@@ -29,23 +30,6 @@ const (
  * MGO
  */
 
-func createMgoSession(url string) (*mgo.Session, error) {
-	var (
-		err     error
-		session *mgo.Session
-	)
-
-	session, err = mgo.Dial(url)
-	if err != nil {
-		return session, err
-	}
-
-	//session.SetMode(mgo.Monotonic, true)
-	//session.SetSafe(&mgo.Safe{})
-
-	return session, err
-}
-
 func getSearchQuery(bytes []byte) (map[string]string, error) {
 	var search = make(map[string]string)
 
@@ -58,20 +42,26 @@ func getSearchQuery(bytes []byte) (map[string]string, error) {
  * DOMAIN
  */
 
-func getResponseData(repo repository.QueryRepo, mgoSession *mgo.Session, dbName, collectionName string, query map[string]string) (interface{}, error) {
+func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string) (interface{}, error) {
 	if _, ok := query["word.user"]; !ok {
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
 
-	return repo.CreateDictionary(mgoSession, dbName, collectionName, query)
+	return repo.CreateDictionary(collectionName, query)
 }
 
 /**
  * CLI
  */
 
-func cli(mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) {
-	result, err := cliWrapped(mgoSession, dbName, collectionName, repo, debug)
+func cli(
+	mgoSession *mgo.Session,
+	dbName,
+	collectionName string,
+	isGerman bool,
+	debug bool,
+) {
+	result, err := cliWrapped(mgoSession, dbName, collectionName, isGerman, debug)
 	if err != nil {
 		if debug {
 			log.Println(err)
@@ -83,7 +73,13 @@ func cli(mgoSession *mgo.Session, dbName, collectionName string, repo repository
 	fmt.Print(result)
 }
 
-func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) (interface{}, error) {
+func cliWrapped(
+	mgoSession *mgo.Session,
+	dbName,
+	collectionName string,
+	isGerman bool,
+	debug bool,
+) (interface{}, error) {
 	var (
 		input []byte
 		query map[string]string
@@ -100,7 +96,9 @@ func cliWrapped(mgoSession *mgo.Session, dbName, collectionName string, repo rep
 		return nil, err
 	}
 
-	data, err = getResponseData(repo, mgoSession, dbName, collectionName, query)
+	repo := repository.CreateRepo(mgoSession, dbName, isGerman)
+
+	data, err = getResponseData(repo, collectionName, query)
 	if err != nil {
 		return nil, err
 	}
@@ -133,18 +131,18 @@ func dataToJson(rawData interface{}, debug bool) (string, error) {
  * SERVER
  */
 
-func server(mgoSession *mgo.Session, port int, dbName, collectionName string, repo repository.QueryRepo, debug bool) {
-	http.HandleFunc("/", makeHandler(findHandle, mgoSession, dbName, collectionName, repo, debug))
+func server(port int, mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, debug bool) {
+	http.HandleFunc("/", makeHandler(findHandle, mgoSession, dbName, collectionName, isGerman, debug))
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 func makeHandler(
-	fn func(http.ResponseWriter, *http.Request, *mgo.Session, string, string, repository.QueryRepo, bool) error,
+	fn func(http.ResponseWriter, *http.Request, *mgo.Session, string, string, bool, bool) error,
 	mgoSession *mgo.Session,
 	dbName string,
 	collectionName string,
-	repo repository.QueryRepo,
+	isGerman bool,
 	debug bool,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +152,7 @@ func makeHandler(
 			return
 		}
 
-		err := fn(w, r, mgoSession, dbName, collectionName, repo, debug)
+		err := fn(w, r, mgoSession, dbName, collectionName, isGerman, debug)
 		if err != nil {
 			json.NewEncoder(w).Encode(fmt.Sprint(err))
 			log.Println(err)
@@ -162,7 +160,15 @@ func makeHandler(
 	}
 }
 
-func findHandle(w http.ResponseWriter, r *http.Request, mgoSession *mgo.Session, dbName, collectionName string, repo repository.QueryRepo, debug bool) error {
+func findHandle(
+	w http.ResponseWriter,
+	r *http.Request,
+	mgoSession *mgo.Session,
+	dbName,
+	collectionName string,
+	isGerman bool,
+	debug bool,
+) error {
 	rawQuery, err := getQueryValue(r)
 	if err != nil {
 		return err
@@ -173,7 +179,9 @@ func findHandle(w http.ResponseWriter, r *http.Request, mgoSession *mgo.Session,
 		return err
 	}
 
-	data, err := getResponseData(repo, mgoSession.Clone(), dbName, collectionName, query)
+	repo := repository.CreateRepo(mgoSession.Clone(), dbName, isGerman)
+
+	data, err := getResponseData(repo, collectionName, query)
 	if err != nil {
 		return err
 	}
@@ -204,16 +212,6 @@ func getQueryValue(r *http.Request) (string, error) {
  * INPUT PARSING
  */
 
-func parseEnvs() (string, string) {
-	// Mongo database host
-	hostname := os.Getenv(d5_dbhost_env)
-
-	// Mongo database name
-	dbName := os.Getenv(d5_dbname_env)
-
-	return hostname, dbName
-}
-
 func parseFlags() (bool, int, string, string, bool) {
 	isServer := flag.Bool("server", false, "Starts a server")
 	port := flag.Int("port", 17171, "Port for server")
@@ -233,22 +231,20 @@ func parseFlags() (bool, int, string, string, bool) {
  */
 
 func main() {
-	hostName, dbName := parseEnvs()
+	hostName, dbName := mongo.ParseEnvs()
 
 	isServer, port, collectionName, collectionType, debug := parseFlags()
 
 	isGerman := !(collectionType == "" || collectionType == COLL_TYPE_DEFAULT)
 
-	mgoSession, err := createMgoSession(hostName)
+	mgoSession, err := mongo.GetMgoSession(hostName)
 	if err != nil {
 		log.Fatalf("MongoDB session could not be built")
 	}
 
-	repo := repository.CreateRepo(isGerman)
-
 	if isServer {
-		server(mgoSession, port, dbName, collectionName, repo, debug)
+		server(port, mgoSession, dbName, collectionName, isGerman, debug)
 	} else {
-		cli(mgoSession, dbName, collectionName, repo, debug)
+		cli(mgoSession, dbName, collectionName, isGerman, debug)
 	}
 }
