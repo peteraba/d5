@@ -101,7 +101,7 @@ function test_find_annehmbar()
 	
 	if [[ "$result" == *"acceptable"* ]]; then
 		test_success
-		print_output "Word 'annehmbar' and its acceptable were found."
+		print_output "Word 'annehmbar' and its translation were found."
 	else
 		test_error
 		print_error "Word 'annehmbar' was not found or translation 'acceptable' was missing"
