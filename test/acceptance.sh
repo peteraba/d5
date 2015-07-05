@@ -11,6 +11,8 @@ german_test_collection="german_test"
 
 error=0
 
+solcheId=""
+
 source util.sh
 
 function test_convert_ods_to_json()
@@ -90,14 +92,55 @@ function test_insert_into_db()
 	fi
 }
 
-function test_find_solche()
+function test_find_annehmbar()
 {
 	local result=""
-	local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+	local search_expression="{\"word.german\": \"annehmbar\",\"word.user\": \"peteraba\"}"
 
 	result=$(echo $search_expression | finder --coll=$german_test_collection )
 	
+	if [[ "$result" == *"acceptable"* ]]; then
+		test_success
+		print_output "Word 'annehmbar' and its acceptable were found."
+	else
+		test_error
+		print_error "Word 'annehmbar' was not found or translation 'acceptable' was missing"
+		print_error "Result: $result"
+		error=1
+	fi
+}
+
+function test_find_aufbauen()
+{
+	local result=""
+	local search_expression="{\"word.german\": \"aufbauen\",\"word.user\": \"peteraba\"}"
+
+	result=$(echo $search_expression | finder --coll=$german_test_collection )
+
+	if [[ "$result" == *"build"* ]]; then
+		test_success
+		print_output "Word 'aufbauen' and its translation were found."
+	else
+		test_error
+		print_error "Word 'aufbauen' was not found or translation 'build' was missing"
+		print_error "Result: $result"
+		error=1
+	fi
+}
+
+function test_find_solche_via_server()
+{
+	local result=""
+
+	(finder --coll=$german_test_collection --server=true --port=11111 & )
+
+	result=$(curl --data 'query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
+
+	killall finder
+	
 	if [[ "$result" == *"such"* ]]; then
+		solcheId=$(echo "$result" | grep -o "[0-9a-f]\{10,\}")
+
 		test_success
 		print_output "Word 'solche' and its translation were found."
 	else
@@ -108,23 +151,38 @@ function test_find_solche()
 	fi
 }
 
-function test_find_solche_via_server()
+function test_score_solche()
 {
 	local result=""
 
-	(finder -coll=$german_test_collection --server=true --port=11111 & )
+	echo "$solcheId"
 
-	result=$(curl --data 'query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
-
-	killall finder
+	if [ "$solcheId" != "" ]; then
+		result=$(scorer --coll=$german_test_collection --wordId=$solcheId --score=7 )
 	
-	if [[ "$result" == *"such"* ]]; then
-		test_success
-		print_output "Word 'solche' and its translation were found."
+		echo $result
 	else
-		test_error
-		print_error "Word 'solche' was not found or translation 'such' was missing"
-		print_error "Result: $result"
+		test_err
+		print_error "Id for word solche is empty."
+		error=1
+	fi
+}
+
+function test_score_solche_via_server()
+{
+	local result=""
+
+	if [ "$solcheId" != "" ]; then
+		(scorer --coll=$german_test_collection --server=true --port=11112 & )
+
+		result=$(curl --data 'wordId=12&score=5' http://localhost:11112/ 2>&1 )
+
+		killall scorer
+		
+		echo $result
+	else
+		test_err
+		print_error "Id for word solche is empty."
 		error=1
 	fi
 }
@@ -161,8 +219,11 @@ function run_tests()
 	run_task "check json sizes" 50
 	run_task "parse json" 500
 	run_task "insert into db" 2000
-	run_task "find solche" 1000
+	run_task "find annehmbar" 1000
+	run_task "find aufbauen" 1000
 	run_task "find solche via server" 2000
+	#run_task "score solche" 1000
+	#run_task "score solche via server" 2000
 }
 
 function main()

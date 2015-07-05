@@ -39,6 +39,7 @@ var adjectiveCreationSuccessCases = []struct {
 		"object_from",
 		&Adjective{
 			DefaultWord{
+				"",
 				"ägyptisch",
 				[]Meaning{
 					Meaning{"Egyptian", ""},
@@ -68,6 +69,7 @@ var adjectiveCreationSuccessCases = []struct {
 		"",
 		&Adjective{
 			DefaultWord{
+				"",
 				"andauernd",
 				[]Meaning{
 					Meaning{"continuous", ""},
@@ -98,6 +100,7 @@ var adjectiveCreationSuccessCases = []struct {
 		"person, animal",
 		&Adjective{
 			DefaultWord{
+				"",
 				"aufmerksam",
 				[]Meaning{
 					Meaning{"alert, observant", "animal"},
@@ -129,6 +132,7 @@ var adjectiveCreationSuccessCases = []struct {
 		"person",
 		&Adjective{
 			DefaultWord{
+				"",
 				"jung",
 				[]Meaning{
 					Meaning{"junior", ""},
@@ -158,6 +162,7 @@ var adjectiveCreationSuccessCases = []struct {
 		"room, clothes",
 		&Adjective{
 			DefaultWord{
+				"",
 				"schmal",
 				[]Meaning{
 					Meaning{"narrow", ""},
@@ -202,6 +207,7 @@ var getComparativeCases = []struct {
 	{
 		Adjective{
 			DefaultWord{
+				"",
 				"jung",
 				[]Meaning{},
 				[]Meaning{},
@@ -231,6 +237,7 @@ var getSuperlativeCases = []struct {
 	{
 		Adjective{
 			DefaultWord{
+				"",
 				"jung",
 				[]Meaning{},
 				[]Meaning{},
@@ -253,6 +260,7 @@ var getSuperlativeCases = []struct {
 
 var declineAdjective = Adjective{
 	DefaultWord{
+		"",
 		"neu",
 		[]Meaning{},
 		[]Meaning{},

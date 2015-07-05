@@ -49,6 +49,7 @@ var (
 )
 
 type Word interface {
+	GetId() string
 	GetGerman() string
 	GetEnglish() []Meaning
 	GetThird() []Meaning
@@ -85,6 +86,7 @@ func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
 }
 
 type DefaultWord struct {
+	Id       string           `bson:"_id,omitempty" json:"_id,omitempty"`
 	German   string           `bson:"german" json:"german,omitempty"`
 	English  []Meaning        `bson:"english" json:"english,omitempty"`
 	Third    []Meaning        `bson:"third" json:"third,omitempty"`
@@ -109,6 +111,7 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 	learnedParsed := util.ParseTimeNow(learnedForm, learned)
 
 	return DefaultWord{
+		"",
 		german,
 		englishMeanings,
 		thirdMeanings,
@@ -122,40 +125,48 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 	}
 }
 
-func (w DefaultWord) GetGerman() string {
+func (w *DefaultWord) GetGerman() string {
 	return w.German
 }
 
-func (w DefaultWord) GetEnglish() []Meaning {
+func (w *DefaultWord) GetEnglish() []Meaning {
 	return w.English
 }
 
-func (w DefaultWord) GetThird() []Meaning {
+func (w *DefaultWord) GetThird() []Meaning {
 	return w.Third
 }
 
-func (w DefaultWord) GetCategory() string {
+func (w *DefaultWord) GetCategory() string {
 	return w.Category
 }
 
-func (w DefaultWord) GetScore() int {
+func (w *DefaultWord) GetScore() int {
 	return w.Score
 }
 
-func (w DefaultWord) GetUser() string {
+func (w *DefaultWord) GetUser() string {
 	return w.User
 }
 
-func (w DefaultWord) GetLearned() time.Time {
+func (w *DefaultWord) GetLearned() time.Time {
 	return w.Learned
 }
 
-func (w DefaultWord) GetErrors() []string {
+func (w *DefaultWord) GetErrors() []string {
 	return w.Errors
 }
 
-func (w DefaultWord) GetScores() []*general.Score {
+func (w *DefaultWord) AddScore(score *general.Score) {
+	w.Scores = append(w.Scores, score)
+}
+
+func (w *DefaultWord) GetScores() []*general.Score {
 	return w.Scores
+}
+
+func (w *DefaultWord) GetId() string {
+	return w.Id
 }
 
 type Any struct {

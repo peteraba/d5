@@ -13,6 +13,7 @@ func newEmptySuperword(category string) Superword {
 	return Superword{
 		entity.DefaultWord{
 			"",
+			"",
 			[]entity.Meaning{},
 			[]entity.Meaning{},
 			category,
@@ -23,6 +24,7 @@ func newEmptySuperword(category string) Superword {
 			[]string{},
 			[]*general.Score{},
 		},
+		"",
 		[]entity.Auxiliary{},
 		entity.Prefix{},
 		"",
@@ -46,24 +48,24 @@ func newEmptySuperword(category string) Superword {
 	}
 }
 
-func newEmptyIdiom() entity.DefaultWord {
+func newEmptyIdiom() *entity.DefaultWord {
 	w := entity.DefaultWord{}
 
 	w.Category = "idiom"
 
-	return w
+	return &w
 }
 
-func newEmptyNoun() entity.Noun {
-	return entity.Noun{}
+func newEmptyNoun() *entity.Noun {
+	return &entity.Noun{}
 }
 
-func newEmptyAdjective() entity.Adjective {
-	return entity.Adjective{}
+func newEmptyAdjective() *entity.Adjective {
+	return &entity.Adjective{}
 }
 
-func newEmptyVerb() entity.Verb {
-	return entity.Verb{}
+func newEmptyVerb() *entity.Verb {
+	return &entity.Verb{}
 }
 
 var parseWordCases = []struct {

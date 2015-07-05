@@ -2,12 +2,15 @@ package german
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/peteraba/d5/lib/german/entity"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Superword struct {
 	entity.DefaultWord `bson:"word" json:"word"`
+	Id                 bson.ObjectId      `bson:"_id,omitempty" json:"_id,omitempty"`
 	Auxiliary          []entity.Auxiliary `bson:"auxiliary" json:"auxiliary,omitempty"`
 	Prefix             entity.Prefix      `bson:"prefix" json:"prefix,omitempty"`
 	Noun               string             `bson:"noun" json:"noun,omitempty"`
@@ -28,6 +31,10 @@ type Superword struct {
 	IsPluralOnly       bool               `bson:"plural_only" json:"plural_only,omitempty"`
 	Comparative        []string           `bson:"comparative" json:"comparative,omitempty"`
 	Superlative        []string           `bson:"superlative" json:"superlative,omitempty"`
+}
+
+func (s Superword) GetId() string {
+	return fmt.Sprintf("%x", string(s.Id))
 }
 
 type Dictionary struct {
@@ -56,10 +63,10 @@ func ParseWords(input []byte) ([]entity.Word, error) {
 		return words, err
 	}
 
-	return SuperwordsToWords(superwords)
+	return SuperwordsToWords(superwords), nil
 }
 
-func SuperwordsToWords(superwords []Superword) ([]entity.Word, error) {
+func SuperwordsToWords(superwords []Superword) []entity.Word {
 	var (
 		words = []entity.Word{}
 		word  entity.Word
@@ -68,51 +75,35 @@ func SuperwordsToWords(superwords []Superword) ([]entity.Word, error) {
 	for _, superword := range superwords {
 		switch superword.Category {
 		case "verb":
-			word = &entity.Verb{
-				superword.DefaultWord,
-				superword.Auxiliary,
-				superword.Prefix,
-				superword.Noun,
-				superword.Adjective,
-				superword.PastParticiple,
-				superword.Preterite,
-				superword.S1,
-				superword.S2,
-				superword.S3,
-				superword.P1,
-				superword.P2,
-				superword.P3,
-				superword.Reflexive,
-				superword.Arguments,
-			}
+			verb := superwordToVerb(superword)
+
+			word = &verb
+
 			break
 		case "noun":
-			word = &entity.Noun{
-				superword.DefaultWord,
-				superword.Articles,
-				superword.Plural,
-				superword.Genitive,
-				superword.IsPluralOnly,
-			}
+			noun := superwordToNoun(superword)
+
+			word = &noun
+
 			break
 		case "adj":
-			word = &entity.Adjective{
-				superword.DefaultWord,
-				superword.Comparative,
-				superword.Superlative,
-			}
+			adjective := superwordToAdjective(superword)
+
+			word = &adjective
+
 			break
 		default:
-			word = &entity.Any{
-				superword.DefaultWord,
-			}
+			any := superwordToAny(superword)
+
+			word = &any
+
 			break
 		}
 
 		words = append(words, word)
 	}
 
-	return words, nil
+	return words
 }
 
 func SuperwordsToDictionary(superwords []Superword) Dictionary {
@@ -125,65 +116,136 @@ func SuperwordsToDictionary(superwords []Superword) Dictionary {
 
 		switch cat {
 		case "verb":
-			dictionary.Verbs = append(
-				dictionary.Verbs,
-				entity.Verb{
-					superword.DefaultWord,
-					superword.Auxiliary,
-					superword.Prefix,
-					superword.Noun,
-					superword.Adjective,
-					superword.PastParticiple,
-					superword.Preterite,
-					superword.S1,
-					superword.S2,
-					superword.S3,
-					superword.P1,
-					superword.P2,
-					superword.P3,
-					superword.Reflexive,
-					superword.Arguments,
-				},
-			)
+			verb := superwordToVerb(superword)
+
+			dictionary.Verbs = append(dictionary.Verbs, verb)
+
 			break
 		case "noun":
-			dictionary.Nouns = append(
-				dictionary.Nouns,
-				entity.Noun{
-					superword.DefaultWord,
-					superword.Articles,
-					superword.Plural,
-					superword.Genitive,
-					superword.IsPluralOnly,
-				},
-			)
+			noun := superwordToNoun(superword)
+
+			dictionary.Nouns = append(dictionary.Nouns, noun)
+
 			break
 		case "adj":
-			dictionary.Adjectives = append(
-				dictionary.Adjectives,
-				entity.Adjective{
-					superword.DefaultWord,
-					superword.Comparative,
-					superword.Superlative,
-				},
-			)
+			adjective := superwordToAdjective(superword)
+
+			dictionary.Adjectives = append(dictionary.Adjectives, adjective)
+
 			break
 		default:
 			if _, ok := dictionary.Words[cat]; !ok {
 				dictionary.Words[cat] = []entity.Any{}
 			}
 
-			dictionary.Words[cat] = append(
-				dictionary.Words[cat],
-				entity.Any{
-					superword.DefaultWord,
-				},
-			)
+			any := superwordToAny(superword)
+
+			dictionary.Words[cat] = append(dictionary.Words[cat], any)
+
 			break
 		}
 	}
 
 	return dictionary
+}
+
+func superwordToNoun(superword Superword) entity.Noun {
+	noun := entity.Noun{}
+
+	noun.DefaultWord.German = superword.DefaultWord.German
+	noun.DefaultWord.English = superword.DefaultWord.English
+	noun.DefaultWord.Third = superword.DefaultWord.Third
+	noun.DefaultWord.Category = superword.DefaultWord.Category
+	noun.DefaultWord.User = superword.DefaultWord.User
+	noun.DefaultWord.Learned = superword.DefaultWord.Learned
+	noun.DefaultWord.Score = superword.DefaultWord.Score
+	noun.DefaultWord.Tags = superword.DefaultWord.Tags
+	noun.DefaultWord.Errors = superword.DefaultWord.Errors
+	noun.DefaultWord.Scores = superword.DefaultWord.Scores
+
+	noun.DefaultWord.Id = superword.GetId()
+
+	noun.Articles = superword.Articles
+	noun.Plural = superword.Plural
+	noun.Genitive = superword.Genitive
+	noun.IsPluralOnly = superword.IsPluralOnly
+
+	return noun
+}
+
+func superwordToVerb(superword Superword) entity.Verb {
+	verb := entity.Verb{}
+
+	verb.DefaultWord.German = superword.DefaultWord.German
+	verb.DefaultWord.English = superword.DefaultWord.English
+	verb.DefaultWord.Third = superword.DefaultWord.Third
+	verb.DefaultWord.Category = superword.DefaultWord.Category
+	verb.DefaultWord.User = superword.DefaultWord.User
+	verb.DefaultWord.Learned = superword.DefaultWord.Learned
+	verb.DefaultWord.Score = superword.DefaultWord.Score
+	verb.DefaultWord.Tags = superword.DefaultWord.Tags
+	verb.DefaultWord.Errors = superword.DefaultWord.Errors
+	verb.DefaultWord.Scores = superword.DefaultWord.Scores
+
+	verb.DefaultWord.Id = superword.GetId()
+
+	verb.Auxiliary = superword.Auxiliary
+	verb.Prefix = superword.Prefix
+	verb.Noun = superword.Noun
+	verb.Adjective = superword.Adjective
+	verb.PastParticiple = superword.PastParticiple
+	verb.Preterite = superword.Preterite
+	verb.S1 = superword.S1
+	verb.S2 = superword.S2
+	verb.S3 = superword.S3
+	verb.P1 = superword.P1
+	verb.P2 = superword.P2
+	verb.P3 = superword.P3
+	verb.Reflexive = superword.Reflexive
+	verb.Arguments = superword.Arguments
+
+	return verb
+}
+
+func superwordToAdjective(superword Superword) entity.Adjective {
+	adjective := entity.Adjective{}
+
+	adjective.DefaultWord.German = superword.DefaultWord.German
+	adjective.DefaultWord.English = superword.DefaultWord.English
+	adjective.DefaultWord.Third = superword.DefaultWord.Third
+	adjective.DefaultWord.Category = superword.DefaultWord.Category
+	adjective.DefaultWord.User = superword.DefaultWord.User
+	adjective.DefaultWord.Learned = superword.DefaultWord.Learned
+	adjective.DefaultWord.Score = superword.DefaultWord.Score
+	adjective.DefaultWord.Tags = superword.DefaultWord.Tags
+	adjective.DefaultWord.Errors = superword.DefaultWord.Errors
+	adjective.DefaultWord.Scores = superword.DefaultWord.Scores
+
+	adjective.DefaultWord.Id = superword.GetId()
+
+	adjective.Comparative = superword.Comparative
+	adjective.Superlative = superword.Superlative
+
+	return adjective
+}
+
+func superwordToAny(superword Superword) entity.Any {
+	any := entity.Any{}
+
+	any.DefaultWord.German = superword.DefaultWord.German
+	any.DefaultWord.English = superword.DefaultWord.English
+	any.DefaultWord.Third = superword.DefaultWord.Third
+	any.DefaultWord.Category = superword.DefaultWord.Category
+	any.DefaultWord.User = superword.DefaultWord.User
+	any.DefaultWord.Learned = superword.DefaultWord.Learned
+	any.DefaultWord.Score = superword.DefaultWord.Score
+	any.DefaultWord.Tags = superword.DefaultWord.Tags
+	any.DefaultWord.Errors = superword.DefaultWord.Errors
+	any.DefaultWord.Scores = superword.DefaultWord.Scores
+
+	any.DefaultWord.Id = superword.GetId()
+
+	return any
 }
 
 func (d *Dictionary) GetCount() int {

@@ -21,4 +21,5 @@ func NewScore(result int) (*Score, error) {
 
 type Word interface {
 	GetScores() []Score
+	AddScore(*Score)
 }

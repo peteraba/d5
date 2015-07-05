@@ -70,6 +70,7 @@ var wordCreationSuccessCases = []struct {
 		[]string{},
 		&Any{
 			DefaultWord{
+				"",
 				"Ich versteh nur Bahnhof",
 				[]Meaning{
 					Meaning{"I understand just train-station", ""},

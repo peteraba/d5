@@ -119,6 +119,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"brechen",
 				[]Meaning{
 					Meaning{"to break, to get broken", ""},
@@ -178,6 +179,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"durchfallen",
 				[]Meaning{
 					Meaning{"to check through", ""},
@@ -240,6 +242,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"einfallen",
 				[]Meaning{
 					Meaning{"to come to mind", ""},
@@ -305,6 +308,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"fehlen",
 				[]Meaning{
 					Meaning{"to lack", ""},
@@ -367,6 +371,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"tun",
 				[]Meaning{
 					Meaning{"to do", ""},
@@ -426,6 +431,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"treiben",
 				[]Meaning{
 					Meaning{"to sport", ""},
@@ -485,6 +491,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to sneeze", ""},
@@ -546,6 +553,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"verzweifeln",
 				[]Meaning{
 					Meaning{"to panic", ""},
@@ -605,6 +613,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"bewegen",
 				[]Meaning{
 					Meaning{"to persuade sb, to induce sb", ""},
@@ -665,6 +674,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to agree", ""},
@@ -724,6 +734,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"geschehen",
 				[]Meaning{
 					Meaning{"to occur, to happen", "formal"},
@@ -783,6 +794,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to agree in sth, to have the same opinion on sth", ""},
@@ -842,6 +854,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to be", ""},
@@ -901,6 +914,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"ausgeben",
 				[]Meaning{
 					Meaning{"to pose as sb, to personate sb", ""},
@@ -962,6 +976,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
@@ -1021,6 +1036,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
@@ -1080,6 +1096,7 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
+				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
