@@ -315,6 +315,7 @@ type Verb struct {
 	P3             []string    `bson:"p3" json:"p3,omitempty"`
 	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive,omitempty"`
 	Arguments      []Argument  `bson:"arguments" json:"arguments,omitempty"`
+	Id             string      `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func extractNounAdjective(german string) (string, string, string) {
@@ -403,7 +404,16 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 		util.TrimSplit(p3, alternativeSeparator),
 		sich,
 		arguments,
+		"",
 	}
+}
+
+func (v *Verb) GetId() string {
+	return v.Id
+}
+
+func (v *Verb) SetId(id string) {
+	v.Id = id
 }
 
 func (v *Verb) getPresentStem() []string {

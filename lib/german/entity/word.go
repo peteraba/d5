@@ -50,6 +50,7 @@ var (
 
 type Word interface {
 	GetId() string
+	SetId(string)
 	GetGerman() string
 	GetEnglish() []Meaning
 	GetThird() []Meaning
@@ -86,7 +87,6 @@ func NewMeanings(allMeanings string, errors []string) ([]Meaning, []string) {
 }
 
 type DefaultWord struct {
-	Id       string           `bson:"_id,omitempty" json:"_id,omitempty"`
 	German   string           `bson:"german" json:"german,omitempty"`
 	English  []Meaning        `bson:"english" json:"english,omitempty"`
 	Third    []Meaning        `bson:"third" json:"third,omitempty"`
@@ -111,7 +111,6 @@ func NewDefaultWord(german, english, third, category, user, learned, score, tags
 	learnedParsed := util.ParseTimeNow(learnedForm, learned)
 
 	return DefaultWord{
-		"",
 		german,
 		englishMeanings,
 		thirdMeanings,
@@ -166,15 +165,27 @@ func (w *DefaultWord) GetScores() []*general.Score {
 }
 
 func (w *DefaultWord) GetId() string {
-	return w.Id
+	return ""
+}
+
+func (w *DefaultWord) SetId(id string) {
 }
 
 type Any struct {
 	DefaultWord `bson:"word" json:"word,omitempty"`
+	Id          string `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any {
 	d := NewDefaultWord(german, english, third, category, user, learned, score, tags, errors)
 
-	return &Any{d}
+	return &Any{d, ""}
+}
+
+func (a *Any) GetId() string {
+	return a.Id
+}
+
+func (a *Any) SetId(id string) {
+	a.Id = id
 }

@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 
+	"code.google.com/p/go-uuid/uuid"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -35,12 +37,19 @@ func removeUserCollection(collection *mgo.Collection, user string) error {
 }
 
 func insertWords(collection *mgo.Collection, words []entity.Word) error {
-	var err error
+	var (
+		uid string
+		err error
+	)
 
 	for _, word := range words {
 		if word.GetUser() == "" {
 			continue
 		}
+
+		uid = uuid.New()
+
+		word.SetId(uid)
 
 		if err = collection.Insert(word); err != nil {
 			return err

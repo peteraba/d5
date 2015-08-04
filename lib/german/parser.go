@@ -163,7 +163,7 @@ func superwordToNoun(superword Superword) entity.Noun {
 	noun.DefaultWord.Errors = superword.DefaultWord.Errors
 	noun.DefaultWord.Scores = superword.DefaultWord.Scores
 
-	noun.DefaultWord.Id = superword.GetId()
+	noun.SetId(superword.GetId())
 
 	noun.Articles = superword.Articles
 	noun.Plural = superword.Plural
@@ -187,7 +187,7 @@ func superwordToVerb(superword Superword) entity.Verb {
 	verb.DefaultWord.Errors = superword.DefaultWord.Errors
 	verb.DefaultWord.Scores = superword.DefaultWord.Scores
 
-	verb.DefaultWord.Id = superword.GetId()
+	verb.SetId(superword.GetId())
 
 	verb.Auxiliary = superword.Auxiliary
 	verb.Prefix = superword.Prefix
@@ -221,7 +221,7 @@ func superwordToAdjective(superword Superword) entity.Adjective {
 	adjective.DefaultWord.Errors = superword.DefaultWord.Errors
 	adjective.DefaultWord.Scores = superword.DefaultWord.Scores
 
-	adjective.DefaultWord.Id = superword.GetId()
+	adjective.SetId(superword.GetId())
 
 	adjective.Comparative = superword.Comparative
 	adjective.Superlative = superword.Superlative
@@ -243,7 +243,7 @@ func superwordToAny(superword Superword) entity.Any {
 	any.DefaultWord.Errors = superword.DefaultWord.Errors
 	any.DefaultWord.Scores = superword.DefaultWord.Scores
 
-	any.DefaultWord.Id = superword.GetId()
+	any.SetId(superword.GetId())
 
 	return any
 }

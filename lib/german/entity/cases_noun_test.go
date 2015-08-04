@@ -42,7 +42,6 @@ var nounCreationSuccessCases = []struct {
 		"sound",
 		&Noun{
 			DefaultWord{
-				"",
 				"Hintergeräusch",
 				[]Meaning{
 					Meaning{"background noise", ""},
@@ -62,6 +61,7 @@ var nounCreationSuccessCases = []struct {
 			[]string{"~e"},
 			[]string{"~s", "~es"},
 			false,
+			"",
 		},
 	},
 	{
@@ -75,7 +75,6 @@ var nounCreationSuccessCases = []struct {
 		"studies",
 		&Noun{
 			DefaultWord{
-				"",
 				"Jurastudium",
 				[]Meaning{
 					Meaning{"law studies", ""},
@@ -95,6 +94,7 @@ var nounCreationSuccessCases = []struct {
 			[]string{"Jurastudien"},
 			[]string{},
 			false,
+			"",
 		},
 	},
 	{
@@ -108,7 +108,6 @@ var nounCreationSuccessCases = []struct {
 		"visible",
 		&Noun{
 			DefaultWord{
-				"",
 				"Nebel",
 				[]Meaning{
 					Meaning{"fog, mist, haze", ""},
@@ -129,6 +128,7 @@ var nounCreationSuccessCases = []struct {
 			[]string{"~"},
 			[]string{},
 			false,
+			"",
 		},
 	},
 	{
@@ -142,7 +142,6 @@ var nounCreationSuccessCases = []struct {
 		"country",
 		&Noun{
 			DefaultWord{
-				"",
 				"Vereinigten Staaten von Amerika",
 				[]Meaning{
 					Meaning{"United States of America", ""},
@@ -162,6 +161,7 @@ var nounCreationSuccessCases = []struct {
 			[]string{"-"},
 			[]string{},
 			true,
+			"",
 		},
 	},
 }
@@ -175,7 +175,6 @@ var getPluralCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Gulasch",
 				[]Meaning{},
 				[]Meaning{},
@@ -191,6 +190,7 @@ var getPluralCases = []struct {
 			[]string{"~s", "~e"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Gulaschs", "Gulasche"},
 		1,
@@ -199,7 +199,6 @@ var getPluralCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Klamotten",
 				[]Meaning{},
 				[]Meaning{},
@@ -215,6 +214,7 @@ var getPluralCases = []struct {
 			[]string{},
 			[]string{},
 			true,
+			"",
 		},
 		[]string{"Klamotten"},
 		1,
@@ -223,7 +223,6 @@ var getPluralCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Jurastudium",
 				[]Meaning{},
 				[]Meaning{},
@@ -239,6 +238,7 @@ var getPluralCases = []struct {
 			[]string{"Jurastudien"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Jurastudien"},
 		1,
@@ -247,7 +247,6 @@ var getPluralCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Knast",
 				[]Meaning{},
 				[]Meaning{},
@@ -263,6 +262,7 @@ var getPluralCases = []struct {
 			[]string{"⍨e"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Knäste"},
 		1,
@@ -279,7 +279,6 @@ var getGenitiveCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Gulasch",
 				[]Meaning{},
 				[]Meaning{},
@@ -295,6 +294,7 @@ var getGenitiveCases = []struct {
 			[]string{},
 			[]string{"~es", "~s"},
 			false,
+			"",
 		},
 		[]string{"Gulasches", "Gulaschs"},
 		1,
@@ -316,7 +316,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Berg",
 				[]Meaning{},
 				[]Meaning{},
@@ -332,6 +331,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~e"},
 			[]string{"~s", "~es"},
 			false,
+			"",
 		},
 		[]string{"Berg"},
 		[]string{"Berg"},
@@ -345,7 +345,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Tag",
 				[]Meaning{},
 				[]Meaning{},
@@ -361,6 +360,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~e"},
 			[]string{"~s", "~es"},
 			false,
+			"",
 		},
 		[]string{"Tag"},
 		[]string{"Tag"},
@@ -374,7 +374,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Bedingung",
 				[]Meaning{},
 				[]Meaning{},
@@ -390,6 +389,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~en"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Bedingung"},
 		[]string{"Bedingung"},
@@ -403,7 +403,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Neffe",
 				[]Meaning{},
 				[]Meaning{},
@@ -419,6 +418,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~n"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Neffe"},
 		[]string{"Neffen"},
@@ -432,7 +432,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Prinz",
 				[]Meaning{},
 				[]Meaning{},
@@ -448,6 +447,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~en"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Prinz"},
 		[]string{"Prinzen"},
@@ -461,7 +461,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Umsatz",
 				[]Meaning{},
 				[]Meaning{},
@@ -477,6 +476,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"⍨e"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Umsatz"},
 		[]string{"Umsatz"},
@@ -490,7 +490,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Herz",
 				[]Meaning{},
 				[]Meaning{},
@@ -506,6 +505,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~en"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Herz"},
 		[]string{"Herz"},
@@ -519,7 +519,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Zug",
 				[]Meaning{},
 				[]Meaning{},
@@ -535,6 +534,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"⍨e"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Zug"},
 		[]string{"Zug"},
@@ -548,7 +548,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Wurst",
 				[]Meaning{},
 				[]Meaning{},
@@ -564,6 +563,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"⍨e"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Wurst"},
 		[]string{"Wurst"},
@@ -577,7 +577,6 @@ var getNounDeclensionCases = []struct {
 	{
 		Noun{
 			DefaultWord{
-				"",
 				"Elefant",
 				[]Meaning{},
 				[]Meaning{},
@@ -593,6 +592,7 @@ var getNounDeclensionCases = []struct {
 			[]string{"~en"},
 			[]string{},
 			false,
+			"",
 		},
 		[]string{"Elefant"},
 		[]string{"Elefanten"},

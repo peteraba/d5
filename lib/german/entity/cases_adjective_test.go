@@ -39,7 +39,6 @@ var adjectiveCreationSuccessCases = []struct {
 		"object_from",
 		&Adjective{
 			DefaultWord{
-				"",
 				"ägyptisch",
 				[]Meaning{
 					Meaning{"Egyptian", ""},
@@ -57,6 +56,7 @@ var adjectiveCreationSuccessCases = []struct {
 			},
 			[]string{},
 			[]string{},
+			"",
 		},
 	},
 	{
@@ -69,7 +69,6 @@ var adjectiveCreationSuccessCases = []struct {
 		"",
 		&Adjective{
 			DefaultWord{
-				"",
 				"andauernd",
 				[]Meaning{
 					Meaning{"continuous", ""},
@@ -88,6 +87,7 @@ var adjectiveCreationSuccessCases = []struct {
 			},
 			[]string{"-"},
 			[]string{},
+			"",
 		},
 	},
 	{
@@ -100,7 +100,6 @@ var adjectiveCreationSuccessCases = []struct {
 		"person, animal",
 		&Adjective{
 			DefaultWord{
-				"",
 				"aufmerksam",
 				[]Meaning{
 					Meaning{"alert, observant", "animal"},
@@ -120,6 +119,7 @@ var adjectiveCreationSuccessCases = []struct {
 			},
 			[]string{},
 			[]string{},
+			"",
 		},
 	},
 	{
@@ -132,7 +132,6 @@ var adjectiveCreationSuccessCases = []struct {
 		"person",
 		&Adjective{
 			DefaultWord{
-				"",
 				"jung",
 				[]Meaning{
 					Meaning{"junior", ""},
@@ -150,6 +149,7 @@ var adjectiveCreationSuccessCases = []struct {
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
+			"",
 		},
 	},
 	{
@@ -162,7 +162,6 @@ var adjectiveCreationSuccessCases = []struct {
 		"room, clothes",
 		&Adjective{
 			DefaultWord{
-				"",
 				"schmal",
 				[]Meaning{
 					Meaning{"narrow", ""},
@@ -180,6 +179,7 @@ var adjectiveCreationSuccessCases = []struct {
 			},
 			[]string{"~er", "⍨er"},
 			[]string{"~sten", "⍨sten"},
+			"",
 		},
 	},
 }
@@ -207,7 +207,6 @@ var getComparativeCases = []struct {
 	{
 		Adjective{
 			DefaultWord{
-				"",
 				"jung",
 				[]Meaning{},
 				[]Meaning{},
@@ -221,6 +220,7 @@ var getComparativeCases = []struct {
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
+			"",
 		},
 		[]string{"jünger"},
 		1,
@@ -237,7 +237,6 @@ var getSuperlativeCases = []struct {
 	{
 		Adjective{
 			DefaultWord{
-				"",
 				"jung",
 				[]Meaning{},
 				[]Meaning{},
@@ -251,6 +250,7 @@ var getSuperlativeCases = []struct {
 			},
 			[]string{"⍨er"},
 			[]string{"⍨sten"},
+			"",
 		},
 		[]string{"jüngsten"},
 		1,
@@ -260,7 +260,6 @@ var getSuperlativeCases = []struct {
 
 var declineAdjective = Adjective{
 	DefaultWord{
-		"",
 		"neu",
 		[]Meaning{},
 		[]Meaning{},
@@ -274,6 +273,7 @@ var declineAdjective = Adjective{
 	},
 	[]string{"~er"},
 	[]string{"~sten"},
+	"",
 }
 
 var declineAdjectiveCases = []struct {

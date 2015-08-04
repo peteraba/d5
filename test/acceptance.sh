@@ -139,7 +139,7 @@ function test_find_solche_via_server()
 	killall finder
 	
 	if [[ "$result" == *"such"* ]]; then
-		solcheId=$(echo "$result" | grep -o "[0-9a-f]\{10,\}")
+		solcheId=$(echo "$result" | grep -o "[0-9a-f\-]\{36,\}")
 
 		test_success
 		print_output "Word 'solche' and its translation were found."
@@ -160,6 +160,7 @@ function test_score_solche()
 	if [ "$solcheId" != "" ]; then
 		result=$(scorer --coll=$german_test_collection --wordId=$solcheId --score=7 )
 	
+		echo $solcheId
 		echo $result
 	else
 		test_err
@@ -175,7 +176,7 @@ function test_score_solche_via_server()
 	if [ "$solcheId" != "" ]; then
 		(scorer --coll=$german_test_collection --server=true --port=11112 & )
 
-		result=$(curl --data 'wordId=12&score=5' http://localhost:11112/ 2>&1 )
+		result=$(curl --data 'wordId=$solcheId&score=5' http://localhost:11112/ 2>&1 )
 
 		killall scorer
 		
@@ -222,7 +223,7 @@ function run_tests()
 	run_task "find annehmbar" 1000
 	run_task "find aufbauen" 1000
 	run_task "find solche via server" 2000
-	#run_task "score solche" 1000
+	run_task "score solche" 1000
 	#run_task "score solche via server" 2000
 }
 

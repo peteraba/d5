@@ -32,6 +32,7 @@ type Noun struct {
 	Plural       []string  `bson:"plural" json:"plural,omitempty"`
 	Genitive     []string  `bson:"genitive" json:"genitive,omitempty"`
 	IsPluralOnly bool      `bson:"plural_only" json:"plural_only,omitempty"`
+	Id           string    `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
@@ -66,7 +67,16 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 		util.TrimSplit(matches[2], alternativeSeparator),
 		util.TrimSplit(matches[4], alternativeSeparator),
 		matches[5] == "(pl)",
+		"",
 	}
+}
+
+func (n *Noun) GetId() string {
+	return n.Id
+}
+
+func (n *Noun) SetId(id string) {
+	n.Id = id
 }
 
 func (n *Noun) GetPlurals() []string {

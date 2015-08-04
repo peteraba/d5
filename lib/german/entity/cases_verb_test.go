@@ -119,7 +119,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"brechen",
 				[]Meaning{
 					Meaning{"to break, to get broken", ""},
@@ -149,6 +148,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"breche"},
 		[]string{"brichst"},
@@ -179,7 +179,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"durchfallen",
 				[]Meaning{
 					Meaning{"to check through", ""},
@@ -212,6 +211,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"durchfalle"},
 		[]string{"durchfällst"},
@@ -242,7 +242,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"einfallen",
 				[]Meaning{
 					Meaning{"to come to mind", ""},
@@ -278,6 +277,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"", CaseDative},
 			},
+			"",
 		},
 		[]string{"einfalle"},
 		[]string{"einfällst"},
@@ -308,7 +308,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"fehlen",
 				[]Meaning{
 					Meaning{"to lack", ""},
@@ -341,6 +340,7 @@ var verbCreationSuccessCases = []struct {
 				Argument{"", CaseDative},
 				Argument{"an", CaseDative},
 			},
+			"",
 		},
 		[]string{"fehle"},
 		[]string{"fehlst"},
@@ -371,7 +371,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"tun",
 				[]Meaning{
 					Meaning{"to do", ""},
@@ -401,6 +400,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{"tun"},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"tue"},
 		[]string{"tust"},
@@ -431,7 +431,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"treiben",
 				[]Meaning{
 					Meaning{"to sport", ""},
@@ -461,6 +460,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"treibe"},
 		[]string{"treibst"},
@@ -491,7 +491,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to sneeze", ""},
@@ -523,6 +522,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"zu", "D"},
 			},
+			"",
 		},
 		[]string{"bin"},
 		[]string{"bist"},
@@ -553,7 +553,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"verzweifeln",
 				[]Meaning{
 					Meaning{"to panic", ""},
@@ -583,6 +582,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"verzweifele"},
 		[]string{"verzweifelst"},
@@ -613,7 +613,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"bewegen",
 				[]Meaning{
 					Meaning{"to persuade sb, to induce sb", ""},
@@ -643,6 +642,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"bewege"},
 		[]string{"bewegst"},
@@ -674,7 +674,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to agree", ""},
@@ -704,6 +703,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{"sein"},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"bin"},
 		[]string{"bist"},
@@ -734,7 +734,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"geschehen",
 				[]Meaning{
 					Meaning{"to occur, to happen", "formal"},
@@ -764,6 +763,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{"geschehen"},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"-"},
 		[]string{"-"},
@@ -794,7 +794,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to agree in sth, to have the same opinion on sth", ""},
@@ -824,6 +823,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{"sein"},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"bin"},
 		[]string{"bist"},
@@ -854,7 +854,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"sein",
 				[]Meaning{
 					Meaning{"to be", ""},
@@ -884,6 +883,7 @@ var verbCreationSuccessCases = []struct {
 			[]string{"-"},
 			ReflexiveWithout,
 			[]Argument{},
+			"",
 		},
 		[]string{"bin"},
 		[]string{"-"},
@@ -914,7 +914,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"ausgeben",
 				[]Meaning{
 					Meaning{"to pose as sb, to personate sb", ""},
@@ -946,6 +945,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"als", CaseNominative},
 			},
+			"",
 		},
 		[]string{"ausgebe"},
 		[]string{"ausgibst"},
@@ -976,7 +976,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
@@ -1006,6 +1005,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"", CaseGenitive},
 			},
+			"",
 		},
 		[]string{"besinne"},
 		[]string{"besinnst"},
@@ -1036,7 +1036,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
@@ -1066,6 +1065,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"", CaseGenitive},
 			},
+			"",
 		},
 		[]string{"besinne"},
 		[]string{"besinnst"},
@@ -1096,7 +1096,6 @@ var verbCreationSuccessCases = []struct {
 		"",
 		&Verb{
 			DefaultWord{
-				"",
 				"besinnen",
 				[]Meaning{
 					Meaning{"to think better of sth", ""},
@@ -1126,6 +1125,7 @@ var verbCreationSuccessCases = []struct {
 			[]Argument{
 				Argument{"", CaseGenitive},
 			},
+			"",
 		},
 		[]string{"besinne"},
 		[]string{"besinnst"},

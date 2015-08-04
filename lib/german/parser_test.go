@@ -13,7 +13,6 @@ func newEmptySuperword(category string) Superword {
 	return Superword{
 		entity.DefaultWord{
 			"",
-			"",
 			[]entity.Meaning{},
 			[]entity.Meaning{},
 			category,

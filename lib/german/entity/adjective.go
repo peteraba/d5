@@ -43,6 +43,7 @@ type Adjective struct {
 	DefaultWord `bson:"word" json:"word,omitempty"`
 	Comparative []string `bson:"comparative" json:"comparative,omitempty"`
 	Superlative []string `bson:"superlative" json:"superlative,omitempty"`
+	Id          string   `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
@@ -70,7 +71,16 @@ func NewAdjective(german, english, third, user, learned, score, tags string) *Ad
 		NewDefaultWord(german, english, third, "adjective", user, learned, score, tags, errors),
 		comparative,
 		superlative,
+		"",
 	}
+}
+
+func (a *Adjective) GetId() string {
+	return a.Id
+}
+
+func (a *Adjective) SetId(id string) {
+	a.Id = id
 }
 
 func (a *Adjective) GetComparative() []string {
