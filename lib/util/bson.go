@@ -1,24 +1,17 @@
 package util
 
-import (
-	"encoding/hex"
-
-	"gopkg.in/mgo.v2/bson"
-)
+import "gopkg.in/mgo.v2/bson"
 
 func HexToObjectId(wordId string) *bson.ObjectId {
 	var (
-		wordIdBytes []byte
-		err         error
-		objectId    bson.ObjectId
+		objectId bson.ObjectId
 	)
 
-	wordIdBytes, err = hex.DecodeString(wordId)
-	if err != nil {
+	if !bson.IsObjectIdHex(wordId) {
 		return nil
 	}
 
-	objectId = bson.ObjectId(wordIdBytes)
+	objectId = bson.ObjectIdHex(wordId)
 
 	return &objectId
 }

@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/peteraba/d5/lib/general"
 )
 
 func TestMeaningRegexpSuccess(t *testing.T) {
@@ -221,12 +224,28 @@ func TestWordGetErrors(t *testing.T) {
 
 		actual := word.GetErrors()
 		if !reflect.DeepEqual(actual, word.Errors) {
-			t.Fatal(
+			t.Fatalf(
 				"GetErrors test failed for case #%d. Expected: '%v', got: '%v'.",
 				num+1,
 				word.Errors,
 				actual,
 			)
 		}
+	}
+}
+
+func TestAddScoreAddsScore(t *testing.T) {
+	var (
+		sut   = DefaultWord{}
+		score = general.Score{}
+	)
+
+	score.Result = 6
+	score.LearnedAt = time.Now()
+
+	sut.AddScore(&score)
+
+	if len(sut.GetScores()) != 1 {
+		t.Fatalf("Adding score failed. Expected to have 1 score, %d found.", len(sut.GetScores()))
 	}
 }
