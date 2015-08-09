@@ -11,6 +11,11 @@ const (
 	d5_dbname_env = "D5_DBNAME"
 )
 
+var (
+	session *mgo.Session
+	db      *mgo.Database
+)
+
 func ParseEnvs() (string, string) {
 	// Mongo database host
 	hostname := os.Getenv(d5_dbhost_env)
@@ -21,27 +26,38 @@ func ParseEnvs() (string, string) {
 	return hostname, dbName
 }
 
+func SetMgoSession(mgoSession *mgo.Session) {
+	session = mgoSession
+}
+
 func GetMgoSession(url string) (*mgo.Session, error) {
 	var (
-		err     error
-		session *mgo.Session
+		err error
 	)
 
-	session, err = mgo.Dial(url)
-	if err != nil {
-		return session, err
+	if session != nil {
+		return session, nil
 	}
 
-	//session.SetMode(mgo.Monotonic, true)
-	//session.SetSafe(&mgo.Safe{})
+	session, err = mgo.Dial(url)
 
 	return session, err
 }
 
+func SetMgoDb(mgoDatabase *mgo.Database) {
+	db = mgoDatabase
+}
+
 func GetMgoDb(mgoSession *mgo.Session, dbName string) *mgo.Database {
+	if db != nil {
+		return db
+	}
+
 	mgoSession = mgoSession.Clone()
 
-	return mgoSession.DB(dbName)
+	db = mgoSession.DB(dbName)
+
+	return db
 }
 
 func CreateMgoDb() (*mgo.Database, error) {
