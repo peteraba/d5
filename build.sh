@@ -19,3 +19,7 @@ go install
 # Install finder
 cd ../finder
 go install
+
+# Install scorer
+cd ../scorer
+go install

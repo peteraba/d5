@@ -2,7 +2,6 @@ package german
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/peteraba/d5/lib/german/entity"
 	"gopkg.in/mgo.v2/bson"
@@ -33,8 +32,8 @@ type Superword struct {
 	Superlative        []string           `bson:"superlative" json:"superlative,omitempty"`
 }
 
-func (s Superword) GetId() string {
-	return fmt.Sprintf("%x", string(s.Id))
+func (s Superword) GetId() bson.ObjectId {
+	return s.Id
 }
 
 type Dictionary struct {

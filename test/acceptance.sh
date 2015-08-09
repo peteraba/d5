@@ -139,7 +139,7 @@ function test_find_solche_via_server()
 	killall finder
 	
 	if [[ "$result" == *"such"* ]]; then
-		solcheId=$(echo "$result" | grep -o "[0-9a-f\-]\{36,\}")
+		solcheId=$(echo "$result" | grep -o "[0-9a-f\-]\{12,\}")
 
 		test_success
 		print_output "Word 'solche' and its translation were found."
@@ -155,13 +155,22 @@ function test_score_solche()
 {
 	local result=""
 
-	echo "$solcheId"
-
 	if [ "$solcheId" != "" ]; then
-		result=$(scorer --coll=$german_test_collection --wordId=$solcheId --score=7 )
-	
-		echo $solcheId
-		echo $result
+		$(scorer --coll=$german_test_collection --wordId=$solcheId --score=6 )
+
+		local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+
+		result=$(echo $search_expression | finder --coll=$german_test_collection )
+
+		if [[ "$result" == *"\"result\":6,"* ]]; then
+			test_success
+			print_output "Score 6 was found."
+		else
+			test_error
+			print_error "Score 6 was not found."
+			print_error "Result: $result"
+			error=1
+		fi
 	else
 		test_err
 		print_error "Id for word solche is empty."
@@ -173,19 +182,41 @@ function test_score_solche_via_server()
 {
 	local result=""
 
-	if [ "$solcheId" != "" ]; then
-		(scorer --coll=$german_test_collection --server=true --port=11112 & )
 
-		result=$(curl --data 'wordId=$solcheId&score=5' http://localhost:11112/ 2>&1 )
+	if [ "$solcheId" != "" ]; then
+	        (scorer --coll=$german_test_collection --server=true --port=11112 & )
+
+	        result=$(curl --data "wordId=$solcheId&score=7" http://localhost:11112/ 2>&1 )
+
+		if [[ "$result" == *"true"* ]]; then
+			local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+
+			result=$(echo $search_expression | finder --coll=$german_test_collection )
+
+			if [[ "$result" == *"\"result\":7,"* ]]; then
+				test_success
+				print_output "Score 7 was found."
+			else
+				test_error
+				print_error "Score 7 was not found."
+				print_error "Result: $result"
+				error=1
+			fi
+		else
+			test_error
+			print_error "Setting the score failed."
+			print_error "Result: $result"
+			error=1
+		fi
 
 		killall scorer
-		
-		echo $result
+
 	else
 		test_err
 		print_error "Id for word solche is empty."
 		error=1
 	fi
+
 }
 
 function run_task()
@@ -220,11 +251,11 @@ function run_tests()
 	run_task "check json sizes" 50
 	run_task "parse json" 500
 	run_task "insert into db" 2000
-	run_task "find annehmbar" 1000
-	run_task "find aufbauen" 1000
-	run_task "find solche via server" 2000
-	run_task "score solche" 1000
-	#run_task "score solche via server" 2000
+	run_task "find annehmbar" 200
+	run_task "find aufbauen" 200
+	run_task "find solche via server" 200
+	run_task "score solche" 200
+	run_task "score solche via server" 200
 }
 
 function main()

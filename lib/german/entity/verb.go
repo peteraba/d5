@@ -6,6 +6,7 @@ import (
 
 	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type Reflexive string
@@ -301,21 +302,21 @@ func NewPrefix(german string) Prefix {
 
 type Verb struct {
 	DefaultWord    `bson:"word" json:"word,omitempty"`
-	Auxiliary      []Auxiliary `bson:"auxiliary" json:"auxiliary,omitempty"`
-	Prefix         Prefix      `bson:"prefix" json:"prefix,omitempty"`
-	Noun           string      `bson:"noun" json:"noun,omitempty"`
-	Adjective      string      `bson:"adjective" json:"adjective,omitempty"`
-	PastParticiple []string    `bson:"pastParticiple" json:"pastParticiple,omitempty"`
-	Preterite      []string    `bson:"preterite" json:"preterite,omitempty"`
-	S1             []string    `bson:"s1" json:"s1,omitempty"`
-	S2             []string    `bson:"s2" json:"s2,omitempty"`
-	S3             []string    `bson:"s3" json:"s3,omitempty"`
-	P1             []string    `bson:"p1" json:"p1,omitempty"`
-	P2             []string    `bson:"p2" json:"p2,omitempty"`
-	P3             []string    `bson:"p3" json:"p3,omitempty"`
-	Reflexive      Reflexive   `bson:"reflexive" json:"reflexive,omitempty"`
-	Arguments      []Argument  `bson:"arguments" json:"arguments,omitempty"`
-	Id             string      `bson:"_id,omitempty" json:"_id,omitempty"`
+	Auxiliary      []Auxiliary   `bson:"auxiliary" json:"auxiliary,omitempty"`
+	Prefix         Prefix        `bson:"prefix" json:"prefix,omitempty"`
+	Noun           string        `bson:"noun" json:"noun,omitempty"`
+	Adjective      string        `bson:"adjective" json:"adjective,omitempty"`
+	PastParticiple []string      `bson:"pastParticiple" json:"pastParticiple,omitempty"`
+	Preterite      []string      `bson:"preterite" json:"preterite,omitempty"`
+	S1             []string      `bson:"s1" json:"s1,omitempty"`
+	S2             []string      `bson:"s2" json:"s2,omitempty"`
+	S3             []string      `bson:"s3" json:"s3,omitempty"`
+	P1             []string      `bson:"p1" json:"p1,omitempty"`
+	P2             []string      `bson:"p2" json:"p2,omitempty"`
+	P3             []string      `bson:"p3" json:"p3,omitempty"`
+	Reflexive      Reflexive     `bson:"reflexive" json:"reflexive,omitempty"`
+	Arguments      []Argument    `bson:"arguments" json:"arguments,omitempty"`
+	Id             bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func extractNounAdjective(german string) (string, string, string) {
@@ -408,11 +409,11 @@ func NewVerb(auxiliary, german, english, third, user, learned, score, tags strin
 	}
 }
 
-func (v *Verb) GetId() string {
+func (v *Verb) GetId() bson.ObjectId {
 	return v.Id
 }
 
-func (v *Verb) SetId(id string) {
+func (v *Verb) SetId(id bson.ObjectId) {
 	v.Id = id
 }
 

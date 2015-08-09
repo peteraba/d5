@@ -8,6 +8,7 @@ import (
 
 	"github.com/peteraba/d5/lib/general"
 	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const learnedForm = "2006-01-02"
@@ -49,8 +50,8 @@ var (
 )
 
 type Word interface {
-	GetId() string
-	SetId(string)
+	GetId() bson.ObjectId
+	SetId(bson.ObjectId)
 	GetGerman() string
 	GetEnglish() []Meaning
 	GetThird() []Meaning
@@ -164,16 +165,16 @@ func (w *DefaultWord) GetScores() []*general.Score {
 	return w.Scores
 }
 
-func (w *DefaultWord) GetId() string {
+func (w *DefaultWord) GetId() bson.ObjectId {
 	return ""
 }
 
-func (w *DefaultWord) SetId(id string) {
+func (w *DefaultWord) SetId(id bson.ObjectId) {
 }
 
 type Any struct {
 	DefaultWord `bson:"word" json:"word,omitempty"`
-	Id          string `bson:"_id,omitempty" json:"_id,omitempty"`
+	Id          bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewAny(german, english, third, category, user, learned, score, tags string, errors []string) *Any {
@@ -182,10 +183,10 @@ func NewAny(german, english, third, category, user, learned, score, tags string,
 	return &Any{d, ""}
 }
 
-func (a *Any) GetId() string {
+func (a *Any) GetId() bson.ObjectId {
 	return a.Id
 }
 
-func (a *Any) SetId(id string) {
+func (a *Any) SetId(id bson.ObjectId) {
 	a.Id = id
 }

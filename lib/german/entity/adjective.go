@@ -6,6 +6,7 @@ import (
 
 	"github.com/peteraba/d5/lib/german/dict"
 	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -41,9 +42,9 @@ var (
 
 type Adjective struct {
 	DefaultWord `bson:"word" json:"word,omitempty"`
-	Comparative []string `bson:"comparative" json:"comparative,omitempty"`
-	Superlative []string `bson:"superlative" json:"superlative,omitempty"`
-	Id          string   `bson:"_id,omitempty" json:"_id,omitempty"`
+	Comparative []string      `bson:"comparative" json:"comparative,omitempty"`
+	Superlative []string      `bson:"superlative" json:"superlative,omitempty"`
+	Id          bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewAdjective(german, english, third, user, learned, score, tags string) *Adjective {
@@ -75,11 +76,11 @@ func NewAdjective(german, english, third, user, learned, score, tags string) *Ad
 	}
 }
 
-func (a *Adjective) GetId() string {
+func (a *Adjective) GetId() bson.ObjectId {
 	return a.Id
 }
 
-func (a *Adjective) SetId(id string) {
+func (a *Adjective) SetId(id bson.ObjectId) {
 	a.Id = id
 }
 

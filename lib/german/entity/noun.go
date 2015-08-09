@@ -7,6 +7,7 @@ import (
 	"github.com/peteraba/d5/lib/german/dict"
 	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -28,11 +29,11 @@ var (
 
 type Noun struct {
 	DefaultWord  `bson:"word" json:"word,omitempty"`
-	Articles     []Article `bson:"article" json:"article,omitempty"`
-	Plural       []string  `bson:"plural" json:"plural,omitempty"`
-	Genitive     []string  `bson:"genitive" json:"genitive,omitempty"`
-	IsPluralOnly bool      `bson:"plural_only" json:"plural_only,omitempty"`
-	Id           string    `bson:"_id,omitempty" json:"_id,omitempty"`
+	Articles     []Article     `bson:"article" json:"article,omitempty"`
+	Plural       []string      `bson:"plural" json:"plural,omitempty"`
+	Genitive     []string      `bson:"genitive" json:"genitive,omitempty"`
+	IsPluralOnly bool          `bson:"plural_only" json:"plural_only,omitempty"`
+	Id           bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
 }
 
 func NewNoun(articles, german, english, third, user, learned, score, tags string) *Noun {
@@ -71,11 +72,11 @@ func NewNoun(articles, german, english, third, user, learned, score, tags string
 	}
 }
 
-func (n *Noun) GetId() string {
+func (n *Noun) GetId() bson.ObjectId {
 	return n.Id
 }
 
-func (n *Noun) SetId(id string) {
+func (n *Noun) SetId(id bson.ObjectId) {
 	n.Id = id
 }
 
