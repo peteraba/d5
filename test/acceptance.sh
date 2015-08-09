@@ -184,9 +184,9 @@ function test_score_solche_via_server()
 
 
 	if [ "$solcheId" != "" ]; then
-	        (scorer --coll=$german_test_collection --server=true --port=11112 & )
+		(scorer --coll=$german_test_collection --server=true --port=11112 & )
 
-	        result=$(curl --data "wordId=$solcheId&score=7" http://localhost:11112/ 2>&1 )
+		result=$(curl --data "wordId=$solcheId&score=7" http://localhost:11112/ 2>&1 )
 
 		if [[ "$result" == *"true"* ]]; then
 			local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
