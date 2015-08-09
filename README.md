@@ -183,6 +183,15 @@ cat persister/fixture/gerdict.json | persister --coll=german
 Used to find words
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder --coll=german
+echo "query={\"word.german\": \"solche\", \"word.user\": \"peteraba\"}" | finder --coll=german
+```
+
+
+### Scorer
+
+Used to store game scores on words
+
+```bash
+scorer --coll=german --wordId=55c72270288a2139ea45f52e --score=7
 ```
 
