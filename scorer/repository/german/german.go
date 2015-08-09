@@ -45,7 +45,9 @@ func (r *Repo) UpdateWord(collectionName string, objectId bson.ObjectId, result 
 		return false, nil
 	}
 
-	err = collection.UpdateId(objectId, superwords[0])
+	words := german.SuperwordsToWords(superwords)
+
+	err = collection.UpdateId(objectId, words[0])
 	if err != nil {
 		log.Printf("Error happend while updating word id: %v. Err: %v\n", objectId, err)
 
