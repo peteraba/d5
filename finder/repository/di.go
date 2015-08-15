@@ -8,7 +8,7 @@ import (
 
 type QueryRepo interface {
 	SetDb(db *mgo.Database)
-	CreateDictionary(collectionName string, query map[string]string) (interface{}, error)
+	FetchDictionary(collectionName string, query map[string]string) (interface{}, error)
 }
 
 func CreateRepo(mgoSession *mgo.Session, dbName string, isGerman bool) QueryRepo {

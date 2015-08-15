@@ -20,7 +20,7 @@ func (r *Repo) fetchCollection(collectionName string, query map[string]string) (
 	return result, err
 }
 
-func (r *Repo) CreateDictionary(collectionName string, query map[string]string) (interface{}, error) {
+func (r *Repo) FetchDictionary(collectionName string, query map[string]string) (interface{}, error) {
 	return r.fetchCollection(collectionName, query)
 }
 

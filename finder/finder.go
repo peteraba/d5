@@ -42,7 +42,7 @@ func getResponseData(repo repository.QueryRepo, collectionName string, query map
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
 
-	return repo.CreateDictionary(collectionName, query)
+	return repo.FetchDictionary(collectionName, query)
 }
 
 /**
