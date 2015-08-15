@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/peteraba/d5/lib/general"
 	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
 	"gopkg.in/mgo.v2/bson"
@@ -415,6 +416,10 @@ func (v *Verb) GetId() bson.ObjectId {
 
 func (v *Verb) SetId(id bson.ObjectId) {
 	v.Id = id
+}
+
+func (v *Verb) GetScores() []*general.Score {
+	return v.Scores
 }
 
 func (v *Verb) getPresentStem() []string {

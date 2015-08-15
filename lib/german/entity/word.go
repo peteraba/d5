@@ -60,6 +60,7 @@ type Word interface {
 	GetScore() int
 	GetLearned() time.Time
 	GetErrors() []string
+	GetScores() []*general.Score
 }
 
 type Meaning struct {
@@ -189,4 +190,8 @@ func (a *Any) GetId() bson.ObjectId {
 
 func (a *Any) SetId(id bson.ObjectId) {
 	a.Id = id
+}
+
+func (a *Any) GetScores() []*general.Score {
+	return a.Scores
 }

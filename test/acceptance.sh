@@ -95,7 +95,7 @@ function test_insert_into_db()
 function test_find_annehmbar()
 {
 	local result=""
-	local search_expression="{\"word.german\": \"annehmbar\",\"word.user\": \"peteraba\"}"
+	local search_expression="limit=2&query={\"word.german\": \"annehmbar\",\"word.user\": \"peteraba\"}"
 
 	result=$(echo $search_expression | finder --coll=$german_test_collection )
 	
@@ -113,7 +113,7 @@ function test_find_annehmbar()
 function test_find_aufbauen()
 {
 	local result=""
-	local search_expression="{\"word.german\": \"aufbauen\",\"word.user\": \"peteraba\"}"
+	local search_expression="limit=2&query={\"word.german\": \"aufbauen\",\"word.user\": \"peteraba\"}"
 
 	result=$(echo $search_expression | finder --coll=$german_test_collection )
 
@@ -134,7 +134,7 @@ function test_find_solche_via_server()
 
 	(finder --coll=$german_test_collection --server=true --port=11111 & )
 
-	result=$(curl --data 'query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
+	result=$(curl --data 'limit=2&query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
 
 	killall finder
 	
@@ -158,7 +158,7 @@ function test_score_solche()
 	if [ "$solcheId" != "" ]; then
 		$(scorer --coll=$german_test_collection --wordId=$solcheId --score=6 )
 
-		local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 		result=$(echo $search_expression | finder --coll=$german_test_collection )
 
@@ -189,7 +189,7 @@ function test_score_solche_via_server()
 		result=$(curl --data "wordId=$solcheId&score=7" http://localhost:11112/ 2>&1 )
 
 		if [[ "$result" == *"true"* ]]; then
-			local search_expression="{\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+			local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
 			result=$(echo $search_expression | finder --coll=$german_test_collection )
 

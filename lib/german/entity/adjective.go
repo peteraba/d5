@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/peteraba/d5/lib/general"
 	"github.com/peteraba/d5/lib/german/dict"
 	"github.com/peteraba/d5/lib/util"
 	"gopkg.in/mgo.v2/bson"
@@ -82,6 +83,10 @@ func (a *Adjective) GetId() bson.ObjectId {
 
 func (a *Adjective) SetId(id bson.ObjectId) {
 	a.Id = id
+}
+
+func (a *Adjective) GetScores() []*general.Score {
+	return a.Scores
 }
 
 func (a *Adjective) GetComparative() []string {

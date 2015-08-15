@@ -9,7 +9,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/peteraba/d5/finder/repository"
 	"github.com/peteraba/d5/lib/mongo"
@@ -25,10 +27,10 @@ const (
  * MGO
  */
 
-func getSearchQuery(bytes []byte) (map[string]string, error) {
+func getSearchQuery(rawQuery string) (map[string]string, error) {
 	var search = make(map[string]string)
 
-	err := json.Unmarshal(bytes, &search)
+	err := json.Unmarshal([]byte(rawQuery), &search)
 
 	return search, err
 }
@@ -37,12 +39,17 @@ func getSearchQuery(bytes []byte) (map[string]string, error) {
  * DOMAIN
  */
 
-func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string) (interface{}, error) {
+func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string, limit int) (interface{}, error) {
 	if _, ok := query["word.user"]; !ok {
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
 
-	return repo.FetchDictionary(collectionName, query)
+	_, err := repo.FetchDictionary(collectionName, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return repo.FilterDictionary(limit)
 }
 
 /**
@@ -76,24 +83,25 @@ func cliWrapped(
 	debug bool,
 ) (interface{}, error) {
 	var (
-		input []byte
-		query map[string]string
-		err   error
-		data  interface{}
+		query    map[string]string
+		err      error
+		data     interface{}
+		rawQuery string
+		limit    int
 	)
 
-	if input, err = readStdInput(); err != nil {
+	if rawQuery, limit, err = readStdInput(); err != nil {
 		return nil, err
 	}
 
-	query, err = getSearchQuery(input)
+	query, err = getSearchQuery(rawQuery)
 	if err != nil {
 		return nil, err
 	}
 
 	repo := repository.CreateRepo(mgoSession, dbName, isGerman)
 
-	data, err = getResponseData(repo, collectionName, query)
+	data, err = getResponseData(repo, collectionName, query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -101,10 +109,32 @@ func cliWrapped(
 	return dataToJson(data, debug)
 }
 
-func readStdInput() ([]byte, error) {
+func readStdInput() (string, int, error) {
+	var (
+		bytes    []byte
+		rawQuery string
+		limit    int64
+		values   url.Values
+		err      error
+	)
+
 	reader := bufio.NewReader(os.Stdin)
 
-	return ioutil.ReadAll(reader)
+	bytes, err = ioutil.ReadAll(reader)
+	if err != nil {
+		return "", 0, err
+	}
+
+	values, err = url.ParseQuery(string(bytes))
+
+	rawQuery = values.Get("query")
+
+	limit, err = strconv.ParseInt(values.Get("limit"), 10, 0)
+	if err != nil {
+		return rawQuery, 0, err
+	}
+
+	return rawQuery, int(limit), nil
 }
 
 func dataToJson(rawData interface{}, debug bool) (string, error) {
@@ -164,19 +194,19 @@ func findHandle(
 	isGerman bool,
 	debug bool,
 ) error {
-	rawQuery, err := getQueryValue(r)
+	rawQuery, limit, err := getRequestData(r)
 	if err != nil {
 		return err
 	}
 
-	query, err := getSearchQuery([]byte(rawQuery))
+	query, err := getSearchQuery(rawQuery)
 	if err != nil {
 		return err
 	}
 
 	repo := repository.CreateRepo(mgoSession.Clone(), dbName, isGerman)
 
-	data, err := getResponseData(repo, collectionName, query)
+	data, err := getResponseData(repo, collectionName, query, limit)
 	if err != nil {
 		return err
 	}
@@ -188,19 +218,32 @@ func findHandle(
 	return nil
 }
 
-func getQueryValue(r *http.Request) (string, error) {
+func getRequestData(r *http.Request) (string, int, error) {
 	var (
 		rawQuery string
+		rawLimit string
+		limit    int64
+		err      error
 	)
 
 	r.ParseMultipartForm(1024 * 1024 * 10)
 
 	rawQuery = r.Form.Get("query")
 	if rawQuery == "" {
-		return "", errors.New("Query was not posted.")
+		return "", 0, errors.New("Query was not posted.")
 	}
 
-	return rawQuery, nil
+	rawLimit = r.Form.Get("limit")
+	limit, err = strconv.ParseInt(rawLimit, 10, 0)
+	if err != nil {
+		return rawQuery, 0, errors.New("Limit is not valid integer")
+	}
+
+	if limit < 0 {
+		return rawQuery, 0, errors.New("Limit is less than 0")
+	}
+
+	return rawQuery, int(limit), nil
 }
 
 /**

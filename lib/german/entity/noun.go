@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/peteraba/d5/lib/general"
 	"github.com/peteraba/d5/lib/german/dict"
 	germanUtil "github.com/peteraba/d5/lib/german/util"
 	"github.com/peteraba/d5/lib/util"
@@ -78,6 +79,10 @@ func (n *Noun) GetId() bson.ObjectId {
 
 func (n *Noun) SetId(id bson.ObjectId) {
 	n.Id = id
+}
+
+func (n *Noun) GetScores() []*general.Score {
+	return n.Scores
 }
 
 func (n *Noun) GetPlurals() []string {

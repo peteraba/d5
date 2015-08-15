@@ -1,13 +1,40 @@
 package german
 
 import (
+	"sort"
+
 	"gopkg.in/mgo.v2"
 
-	german "github.com/peteraba/d5/lib/german"
+	"github.com/peteraba/d5/lib/general"
+	"github.com/peteraba/d5/lib/german"
+	"github.com/peteraba/d5/lib/german/entity"
 )
 
 type Repo struct {
-	Db *mgo.Database
+	Db         *mgo.Database
+	lastResult []entity.Word
+}
+
+type ByLearned []entity.Word
+
+func (a ByLearned) Len() int {
+	return len(a)
+}
+func (a ByLearned) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByLearned) Less(i, j int) bool {
+	return getScore(a[i]) < getScore(a[j])
+}
+
+func getScore(w entity.Word) int64 {
+	var score int64
+
+	score += general.GetLearnedAtScore(w.GetLearned())
+	score += general.GetProgressScore(w.GetScores())
+	score += general.GetRandomScore()
+
+	return score
 }
 
 func (r *Repo) fetchCollection(collectionName string, query map[string]string) ([]german.Superword, error) {
@@ -24,21 +51,30 @@ func (r *Repo) fetchCollection(collectionName string, query map[string]string) (
 	return result, err
 }
 
-func (r Repo) FetchDictionary(collectionName string, query map[string]string) (interface{}, error) {
+func (r *Repo) FetchDictionary(collectionName string, query map[string]string) (interface{}, error) {
 	var (
 		err          error
 		searchResult []german.Superword
-		dictionary   german.Dictionary
 	)
 
 	searchResult, err = r.fetchCollection(collectionName, query)
 	if err != nil {
-		return dictionary, err
+		return []entity.Word{}, err
 	}
 
-	dictionary = german.SuperwordsToDictionary(searchResult)
+	r.lastResult = german.SuperwordsToWords(searchResult)
 
-	return dictionary, err
+	return r.lastResult, err
+}
+
+func (r *Repo) FilterDictionary(limit int) (interface{}, error) {
+	sort.Sort(ByLearned(r.lastResult))
+
+	if limit > 0 && limit < len(r.lastResult) {
+		r.lastResult = r.lastResult[:limit]
+	}
+
+	return r.lastResult, nil
 }
 
 func (r *Repo) SetDb(db *mgo.Database) {
