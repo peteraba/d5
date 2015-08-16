@@ -214,7 +214,7 @@ func getUpdateData(r *http.Request) (string, int, error) {
 
 func parseFlags() (bool, int, string, string, bool, string, int) {
 	isServer := flag.Bool("server", false, "Starts a server")
-	port := flag.Int("port", 17171, "Port for server")
+	port := flag.Int("port", 17172, "Port for server")
 
 	collectionName := flag.String("coll", "german", "Port for server")
 	collectionType := flag.String("type", COLL_TYPE_GERMAN, "Type of collection (german, anything else)")
