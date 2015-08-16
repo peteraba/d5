@@ -13,8 +13,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/peteraba/d5/finder/repository"
 	"github.com/peteraba/d5/lib/mongo"
+	"github.com/peteraba/d5/lib/repository"
 	"gopkg.in/mgo.v2"
 )
 
