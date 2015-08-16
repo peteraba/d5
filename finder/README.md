@@ -18,11 +18,11 @@ Search query is expected as standard input in JSON format
 
 Requires the following flags:
 
- * **coll *{collectionName}* **
+ * **coll {collectionName} **
  * **debug false ** (optional, false by default)
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder --coll=german
+echo "limit=2&query={\"word.german\": \"solche\"}" | finder --coll=german
 ```
 
 
@@ -33,13 +33,15 @@ Finder also provides a server
 
 Requires the following flags:
 
- * **coll *{collectionName}* **
- * **debug false ** (optional, false by default)
+ * **coll {collectionName}**
+ * **debug false** (optional, false by default)
  * **server true**
- * **port *{portnumber}* ** (optional, 17171 by default)
+ * **port {portnumber}** (optional, 17171 by default)
 
 ```bash
 finder --coll=german --server=true --port=20202
+
+curl --data 'query={"word.user":"peteraba","word.category":"verb","reflexive":"A"}&limit=2' http://localhost:20202/
 ```
 
 Search query should be posted as JSON
