@@ -12,10 +12,12 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
+	"github.com/peteraba/d5/lib/repository"
 	"github.com/peteraba/d5/lib/util"
-	"github.com/peteraba/d5/scorer/repository"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -40,9 +42,27 @@ func getSearchQuery(bytes []byte) (map[string]string, error) {
  */
 
 func getResponseData(repo repository.QueryRepo, collectionName string, wordId string, score int) (bool, error) {
-	objectId := util.HexToObjectId(wordId)
+	var (
+		err      error
+		word     entity.Word
+		objectId *bson.ObjectId
+	)
 
-	return repo.UpdateWord(collectionName, *objectId, score)
+	objectId = util.HexToObjectId(wordId)
+
+	word, err = repo.FetchWord(collectionName, *objectId)
+	if err != nil {
+		return false, err
+	}
+
+	word.NewScore(score)
+
+	err = repo.UpdateWord(collectionName, *objectId, word)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 /**

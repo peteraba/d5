@@ -1,15 +1,15 @@
 package repository
 
 import (
-	generalRepo "github.com/peteraba/d5/scorer/repository/general"
-	germanRepo "github.com/peteraba/d5/scorer/repository/german"
+	"github.com/peteraba/d5/lib/german/entity"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type QueryRepo interface {
+	FetchWord(collectionName string, objectId bson.ObjectId) (entity.Word, error)
+	UpdateWord(collectionName string, objectId bson.ObjectId, data interface{}) error
 	SetDb(db *mgo.Database)
-	UpdateWord(collectionName string, objectId bson.ObjectId, result int) (bool, error)
 }
 
 func CreateRepo(mgoSession *mgo.Session, dbName string, isGerman bool) QueryRepo {
@@ -17,11 +17,7 @@ func CreateRepo(mgoSession *mgo.Session, dbName string, isGerman bool) QueryRepo
 		repo QueryRepo
 	)
 
-	if isGerman {
-		repo = &germanRepo.Repo{}
-	} else {
-		repo = &generalRepo.Repo{}
-	}
+	repo = &Repo{}
 
 	mgoSession = mgoSession.Clone()
 

@@ -61,6 +61,8 @@ type Word interface {
 	GetLearned() time.Time
 	GetErrors() []string
 	GetScores() []*general.Score
+	AddScore(score *general.Score)
+	NewScore(result int)
 }
 
 type Meaning struct {
@@ -164,6 +166,15 @@ func (w *DefaultWord) AddScore(score *general.Score) {
 
 func (w *DefaultWord) GetScores() []*general.Score {
 	return w.Scores
+}
+
+func (w *DefaultWord) NewScore(result int) {
+	score, err := general.NewScore(result)
+	if err != nil {
+		return
+	}
+
+	w.Scores = append(w.Scores, score)
 }
 
 func (w *DefaultWord) GetId() bson.ObjectId {
