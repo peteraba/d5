@@ -15,7 +15,9 @@ import (
 
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
+	"github.com/peteraba/d5/lib/util"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -40,6 +42,14 @@ func getSearchQuery(rawQuery string) (map[string]string, error) {
  */
 
 func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string, limit int) (interface{}, error) {
+	var objectId *bson.ObjectId
+
+	if _, ok := query["__id"]; ok {
+		objectId = util.HexToObjectId(query["__id"])
+
+		return repo.FetchWord(collectionName, *objectId)
+	}
+
 	if _, ok := query["word.user"]; !ok {
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
