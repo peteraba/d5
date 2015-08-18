@@ -23,3 +23,8 @@ go install
 # Install scorer
 cd ../scorer
 go install
+
+# Install derdiedas
+cd ../game/derdiedas
+go install
+

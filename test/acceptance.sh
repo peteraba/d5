@@ -216,7 +216,57 @@ function test_score_solche_via_server()
 		print_error "Id for word solche is empty."
 		error=1
 	fi
+}
 
+function test_play_derdiedas()
+{
+	local result=""
+	local wordId=""
+	local german=""
+	local result1=""
+	local result2=""
+	local result3=""
+	local search_expression
+
+	(finder --coll=$german_test_collection --server=true --port=11111 & )
+	(scorer --coll=$german_test_collection --server=true --port=11112 & )
+	(derdiedas --debug=false --port=11113 --finder=http://localhost:11111/ --scorer=http://localhost:11112/ > /dev/null 2>&1 & )
+
+	result=$(curl http://localhost:11113/game/peteraba 2>&1 )
+
+	wordId=$(echo "$result" | grep -o "[0-9a-f\-]\{12,\}")
+		
+	if [[ "$result" == *"question"* ]]; then
+		result1=$(curl --data "id=$wordId&result=1" http://localhost:11113/answer/peteraba 2>&1 )
+		result2=$(curl --data "id=$wordId&result=2" http://localhost:11113/answer/peteraba 2>&1 )
+		result3=$(curl --data "id=$wordId&result=3" http://localhost:11113/answer/peteraba 2>&1 )
+
+		search_expression="limit=2&query={\"__id\": \"$wordId\",\"word.user\": \"peteraba\"}"
+
+		result=$(echo $search_expression | finder --coll=$german_test_collection )
+		german=$(echo "$result" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
+		german=${german:10:-1}
+
+		if [[ "$result" == *"\"result\":10,"* ]]; then
+			test_success
+			print_output "Score 10 was found."
+			print_output "Word: $german, Id: $wordId"
+		else
+			test_error
+			print_error "Score 10 was not found."
+			print_error "Result: $result"
+			error=1
+		fi
+	else
+		test_error
+		print_error "Initialising a game failed."
+		print_error "Result: $result"
+		error=1
+	fi
+
+	killall finder
+	killall scorer
+	killall derdiedas
 }
 
 function run_task()
@@ -256,6 +306,7 @@ function run_tests()
 	run_task "find solche via server" 200
 	run_task "score solche" 200
 	run_task "score solche via server" 200
+	run_task "play derdiedas" 200
 }
 
 function main()
