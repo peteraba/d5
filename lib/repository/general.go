@@ -12,9 +12,27 @@ import (
 	"github.com/peteraba/d5/lib/german/entity"
 )
 
+type ByLearned []entity.Word
+
+func (a ByLearned) Len() int {
+	return len(a)
+}
+
+func (a ByLearned) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a ByLearned) Less(i, j int) bool {
+	return getScore(a[i]) < getScore(a[j])
+}
+
 type Repo struct {
 	Db         *mgo.Database
 	lastResult []entity.Word
+}
+
+func (r *Repo) SetDb(db *mgo.Database) {
+	r.Db = db
 }
 
 func (r *Repo) FetchWord(collectionName string, objectId bson.ObjectId) (entity.Word, error) {
@@ -60,22 +78,6 @@ func (r *Repo) UpdateWord(collectionName string, objectId bson.ObjectId, data in
 	}
 
 	return nil
-}
-
-func (r *Repo) SetDb(db *mgo.Database) {
-	r.Db = db
-}
-
-type ByLearned []entity.Word
-
-func (a ByLearned) Len() int {
-	return len(a)
-}
-func (a ByLearned) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
-func (a ByLearned) Less(i, j int) bool {
-	return getScore(a[i]) < getScore(a[j])
 }
 
 func getScore(w entity.Word) int64 {
