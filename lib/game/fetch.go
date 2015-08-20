@@ -13,12 +13,63 @@ import (
 	"github.com/peteraba/d5/lib/german/entity"
 )
 
+func FetchDictionary(finderUrl string, query map[string]string, limit int) (german.Dictionary, int, error) {
+	var (
+		dictionary german.Dictionary
+		err        error
+		returnCode int
+		body       []byte
+	)
+
+	body, returnCode, err = retrieveWords(finderUrl, query, limit)
+	if err != nil {
+		return dictionary, returnCode, err
+	}
+
+	dictionary, err = german.ParseDictionary(body)
+	if err != nil {
+		log.Printf("Parsing finder response error: %v\n%v\n", err, string(body))
+
+		return dictionary, 500, errors.New("Parsing finder response failed.")
+	}
+
+	return dictionary, 200, nil
+
+}
+
 func FetchWords(finderUrl string, query map[string]string, limit int) ([]entity.Word, int, error) {
+	var (
+		words      = []entity.Word{}
+		err        error
+		returnCode int
+		body       []byte
+	)
+
+	body, returnCode, err = retrieveWords(finderUrl, query, limit)
+	if err != nil {
+		return words, returnCode, err
+	}
+
+	words, err = german.ParseWords(body)
+	if err != nil {
+		log.Printf("Parsing finder response error: %v\n", err)
+
+		return words, 500, errors.New("Parsing finder response failed.")
+	}
+
+	if len(words) < 1 {
+		return words, 204, errors.New("No words returned.")
+	}
+
+	return words, 200, nil
+
+}
+
+func retrieveWords(finderUrl string, query map[string]string, limit int) ([]byte, int, error) {
 	var (
 		data  = url.Values{}
 		bytes []byte
 		err   error
-		words = []entity.Word{}
 	)
 
 	bytes, err = json.Marshal(query)
@@ -30,28 +81,30 @@ func FetchWords(finderUrl string, query map[string]string, limit int) ([]entity.
 	if err != nil {
 		log.Printf("Finder call error: %v\n", err)
 
-		return words, 503, errors.New("Finder call failed.")
+		return bytes, 503, errors.New("Finder call failed.")
 	}
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	bytes, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Reading finder response error: %v\n", err)
 
-		return words, 500, errors.New("Reading finder response failed.")
+		return bytes, 500, errors.New("Reading finder response failed.")
 	}
 
-	words, err = german.ParseWords(body)
-	if err != nil {
-		log.Printf("Parsing finder response error: %v\n", err)
+	return bytes, 200, nil
+}
 
-		return words, 500, errors.New("Parsing finder response failed.")
+func ScoreWords(scorerUrl string, score int, ids []string) {
+	var (
+		data = url.Values{}
+	)
+
+	for i := 0; i < len(ids); i++ {
+		data.Set("wordId", ids[i])
+		data.Set("score", fmt.Sprintf("%d", score))
+
+		http.PostForm(scorerUrl, data)
 	}
-
-	if len(words) < 0 {
-		return words, 204, errors.New("No words returned.")
-	}
-
-	return words, 200, nil
 }

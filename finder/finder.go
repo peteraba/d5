@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
 	"github.com/peteraba/d5/lib/util"
@@ -42,19 +43,25 @@ func getSearchQuery(rawQuery string) (map[string]string, error) {
  */
 
 func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string, limit int) (interface{}, error) {
-	var objectId *bson.ObjectId
+	var (
+		objectId *bson.ObjectId
+		word     entity.Word
+		err      error
+	)
 
 	if _, ok := query["__id"]; ok {
 		objectId = util.HexToObjectId(query["__id"])
 
-		return repo.FetchWord(collectionName, *objectId)
+		word, err = repo.FetchWord(collectionName, *objectId)
+
+		return []entity.Word{word}, nil
 	}
 
 	if _, ok := query["word.user"]; !ok {
 		return nil, errors.New("word.user key must be defined for searches.")
 	}
 
-	_, err := repo.FetchDictionary(collectionName, query)
+	_, err = repo.FetchDictionary(collectionName, query)
 	if err != nil {
 		return nil, err
 	}

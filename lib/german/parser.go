@@ -65,6 +65,19 @@ func ParseWords(input []byte) ([]entity.Word, error) {
 	return SuperwordsToWords(superwords), nil
 }
 
+func ParseDictionary(input []byte) (Dictionary, error) {
+	var (
+		superwords = []Superword{}
+		err        error
+	)
+
+	if err = json.Unmarshal(input, &superwords); err != nil {
+		return NewDictionary(), err
+	}
+
+	return SuperwordsToDictionary(superwords), nil
+}
+
 func SuperwordsToWords(superwords []Superword) []entity.Word {
 	var (
 		words = []entity.Word{}
@@ -74,25 +87,25 @@ func SuperwordsToWords(superwords []Superword) []entity.Word {
 	for _, superword := range superwords {
 		switch superword.Category {
 		case "verb":
-			verb := superwordToVerb(superword)
+			verb := SuperwordToVerb(superword)
 
 			word = &verb
 
 			break
 		case "noun":
-			noun := superwordToNoun(superword)
+			noun := SuperwordToNoun(superword)
 
 			word = &noun
 
 			break
 		case "adj":
-			adjective := superwordToAdjective(superword)
+			adjective := SuperwordToAdjective(superword)
 
 			word = &adjective
 
 			break
 		default:
-			any := superwordToAny(superword)
+			any := SuperwordToAny(superword)
 
 			word = &any
 
@@ -115,19 +128,19 @@ func SuperwordsToDictionary(superwords []Superword) Dictionary {
 
 		switch cat {
 		case "verb":
-			verb := superwordToVerb(superword)
+			verb := SuperwordToVerb(superword)
 
 			dictionary.Verbs = append(dictionary.Verbs, verb)
 
 			break
 		case "noun":
-			noun := superwordToNoun(superword)
+			noun := SuperwordToNoun(superword)
 
 			dictionary.Nouns = append(dictionary.Nouns, noun)
 
 			break
 		case "adj":
-			adjective := superwordToAdjective(superword)
+			adjective := SuperwordToAdjective(superword)
 
 			dictionary.Adjectives = append(dictionary.Adjectives, adjective)
 
@@ -137,7 +150,7 @@ func SuperwordsToDictionary(superwords []Superword) Dictionary {
 				dictionary.Words[cat] = []entity.Any{}
 			}
 
-			any := superwordToAny(superword)
+			any := SuperwordToAny(superword)
 
 			dictionary.Words[cat] = append(dictionary.Words[cat], any)
 
@@ -148,7 +161,7 @@ func SuperwordsToDictionary(superwords []Superword) Dictionary {
 	return dictionary
 }
 
-func superwordToNoun(superword Superword) entity.Noun {
+func SuperwordToNoun(superword Superword) entity.Noun {
 	noun := entity.Noun{}
 
 	noun.DefaultWord.German = superword.DefaultWord.German
@@ -172,7 +185,7 @@ func superwordToNoun(superword Superword) entity.Noun {
 	return noun
 }
 
-func superwordToVerb(superword Superword) entity.Verb {
+func SuperwordToVerb(superword Superword) entity.Verb {
 	verb := entity.Verb{}
 
 	verb.DefaultWord.German = superword.DefaultWord.German
@@ -206,7 +219,7 @@ func superwordToVerb(superword Superword) entity.Verb {
 	return verb
 }
 
-func superwordToAdjective(superword Superword) entity.Adjective {
+func SuperwordToAdjective(superword Superword) entity.Adjective {
 	adjective := entity.Adjective{}
 
 	adjective.DefaultWord.German = superword.DefaultWord.German
@@ -228,7 +241,7 @@ func superwordToAdjective(superword Superword) entity.Adjective {
 	return adjective
 }
 
-func superwordToAny(superword Superword) entity.Any {
+func SuperwordToAny(superword Superword) entity.Any {
 	any := entity.Any{}
 
 	any.DefaultWord.German = superword.DefaultWord.German

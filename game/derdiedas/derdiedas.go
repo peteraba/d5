@@ -1,13 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/peteraba/d5/lib/game"
@@ -82,73 +77,39 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			id   string
-			word german.Superword
-			err  error
+			query      = map[string]string{}
+			dictionary german.Dictionary
+			noun       entity.Noun
+			err        error
+			returnCode int
 		)
 
-		id = c.PostForm("id")
+		query["__id"] = c.PostForm("id")
 
-		data := getCheckAnswerData(id)
-
-		if word, err = findSuperword(finderUrl, data); err != nil {
-			c.JSON(500, fmt.Sprintf("%v", err))
+		dictionary, returnCode, err = game.FetchDictionary(finderUrl, query, 1)
+		if err != nil {
+			c.JSON(returnCode, fmt.Sprint(err))
 
 			return
 		}
 
-		answeredRight := checkAnswer(word, c.PostForm("result"))
+		if len(dictionary.Nouns) == 0 {
+			c.JSON(returnCode, "No noun was found.")
 
-		scoreAnswer(scorerUrl, id, answeredRight)
+			return
+		}
+
+		noun = dictionary.Nouns[0]
+
+		answeredRight := checkAnswer(noun, c.PostForm("result"))
+
+		game.ScoreWords(scorerUrl, 10, []string{c.PostForm("id")})
 
 		c.JSON(200, answeredRight)
 	}
 }
 
-func getCheckAnswerData(id string) url.Values {
-	var (
-		data  = url.Values{}
-		query = map[string]string{}
-	)
-
-	query["__id"] = id
-	bytes, err := json.Marshal(query)
-	if err != nil {
-		return data
-	}
-
-	data.Set("limit", "1")
-	data.Set("query", string(bytes))
-
-	return data
-}
-
-func findSuperword(finderUrl string, data url.Values) (german.Superword, error) {
-	var (
-		err  error
-		word = german.Superword{}
-	)
-
-	resp, err := http.PostForm(finderUrl, data)
-	if err != nil {
-		return word, errors.New("Finder call failed.")
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return word, errors.New("Fetching word by id failed.")
-	}
-
-	if err = json.Unmarshal([]byte(body), &word); err != nil {
-		return word, errors.New("Parsing word failed.")
-	}
-
-	return word, nil
-}
-
-func checkAnswer(word german.Superword, result string) bool {
+func checkAnswer(word entity.Noun, result string) bool {
 	if word.Articles[0] == entity.Der && result == "1" {
 		return true
 	}
@@ -162,20 +123,4 @@ func checkAnswer(word german.Superword, result string) bool {
 	}
 
 	return false
-}
-
-func scoreAnswer(scorerUrl, id string, answeredRight bool) {
-	var (
-		data  = url.Values{}
-		score = "1"
-	)
-
-	if answeredRight {
-		score = "10"
-	}
-
-	data.Set("wordId", id)
-	data.Set("score", score)
-
-	http.PostForm(scorerUrl, data)
 }
