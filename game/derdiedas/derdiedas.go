@@ -110,16 +110,18 @@ func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 }
 
 func checkAnswer(word entity.Noun, result string) bool {
-	if word.Articles[0] == entity.Der && result == "1" {
-		return true
-	}
+	for _, article := range word.Articles {
+		if article == entity.Der && result == "1" {
+			return true
+		}
 
-	if word.Articles[0] == entity.Die && result == "2" {
-		return true
-	}
+		if article == entity.Die && result == "2" {
+			return true
+		}
 
-	if word.Articles[0] == entity.Das && result == "3" {
-		return true
+		if article == entity.Das && result == "3" {
+			return true
+		}
 	}
 
 	return false
