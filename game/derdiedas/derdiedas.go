@@ -6,23 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/peteraba/d5/lib/game"
 	"github.com/peteraba/d5/lib/german"
 	"github.com/peteraba/d5/lib/german/entity"
 )
-
-type Game struct {
-	Question string `json:"question"`
-	Option1  string `json:"option1"`
-	Option2  string `json:"option2"`
-	Option3  string `json:"option3"`
-	Option4  string `json:"option4"`
-	Id       string `json:"id"`
-}
 
 func parseFlags() (int, bool, string, string) {
 	port := flag.Int("port", 17182, "Port for server")
@@ -56,51 +47,26 @@ func main() {
 func makeGameHandle(finderUrl string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			data  = url.Values{}
-			query = map[string]string{}
-			bytes []byte
-			err   error
-			words []entity.Word
-			word  entity.Word
+			words      []entity.Word
+			word       entity.Word
+			query      = map[string]string{}
+			err        error
+			returnCode int
 		)
 
 		query["word.category"] = "noun"
 		query["word.user"] = c.Param("user")
 
-		bytes, err = json.Marshal(query)
-
-		data.Set("limit", "1")
-		data.Set("query", string(bytes))
-
-		resp, err := http.PostForm(finderUrl, data)
+		words, returnCode, err = game.FetchWords(finderUrl, query, 1)
 		if err != nil {
-			c.JSON(500, "Finder call failed.")
-
-			return
-		}
-
-		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
-
-		words, err = german.ParseWords(body)
-		if err != nil {
-			c.JSON(500, "Error fetching failed.")
-
-			log.Printf("Finder error: %v\n", err)
-
-			return
-		}
-
-		if len(words) == 0 {
-			c.JSON(500, "No word returned.")
+			c.JSON(returnCode, fmt.Sprint(err))
 
 			return
 		}
 
 		word = words[0]
 
-		game := Game{
+		game := game.Game{
 			fmt.Sprintf("What's the article of '%s'?", word.GetGerman()),
 			"der",
 			"die",
