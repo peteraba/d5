@@ -62,14 +62,13 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 
 		word = words[0]
 
-		game := game.Game{
-			fmt.Sprintf("What's the article of '%s'?", word.GetGerman()),
-			"der",
-			"die",
-			"das",
-			"",
-			word.GetId().Hex(),
-		}
+		game := game.GameOption{}
+
+		game.Question = fmt.Sprintf("What's the article of '%s'?", word.GetGerman())
+		game.Option1 = "der"
+		game.Option2 = "die"
+		game.Option3 = "das"
+		game.Id = word.GetId().Hex()
 
 		c.JSON(200, game)
 	}
