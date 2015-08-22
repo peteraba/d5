@@ -8,6 +8,7 @@ import (
 	"github.com/peteraba/d5/lib/game"
 	"github.com/peteraba/d5/lib/german"
 	"github.com/peteraba/d5/lib/german/entity"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func parseFlags() (int, bool, string, string) {
@@ -44,7 +45,7 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 		var (
 			words      []entity.Word
 			word       entity.Word
-			query      = map[string]string{}
+			query      = bson.M{}
 			err        error
 			returnCode int
 		)
@@ -77,7 +78,7 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			query      = map[string]string{}
+			query      = bson.M{}
 			dictionary german.Dictionary
 			noun       entity.Noun
 			err        error

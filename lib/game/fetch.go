@@ -11,9 +11,10 @@ import (
 
 	"github.com/peteraba/d5/lib/german"
 	"github.com/peteraba/d5/lib/german/entity"
+	"gopkg.in/mgo.v2/bson"
 )
 
-func FetchDictionary(finderUrl string, query map[string]string, limit int) (german.Dictionary, int, error) {
+func FetchDictionary(finderUrl string, query bson.M, limit int) (german.Dictionary, int, error) {
 	var (
 		dictionary german.Dictionary
 		err        error
@@ -37,7 +38,7 @@ func FetchDictionary(finderUrl string, query map[string]string, limit int) (germ
 
 }
 
-func FetchWords(finderUrl string, query map[string]string, limit int) ([]entity.Word, int, error) {
+func FetchWords(finderUrl string, query bson.M, limit int) ([]entity.Word, int, error) {
 	var (
 		words      = []entity.Word{}
 		err        error
@@ -65,7 +66,7 @@ func FetchWords(finderUrl string, query map[string]string, limit int) ([]entity.
 
 }
 
-func retrieveWords(finderUrl string, query map[string]string, limit int) ([]byte, int, error) {
+func retrieveWords(finderUrl string, query bson.M, limit int) ([]byte, int, error) {
 	var (
 		data  = url.Values{}
 		bytes []byte
