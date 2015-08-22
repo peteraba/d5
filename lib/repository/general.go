@@ -90,7 +90,7 @@ func getScore(w entity.Word) int64 {
 	return score
 }
 
-func (r *Repo) fetchCollection(collectionName string, query map[string]string) ([]german.Superword, error) {
+func (r *Repo) fetchCollection(collectionName string, query bson.M) ([]german.Superword, error) {
 	var (
 		collection *mgo.Collection
 		err        error
@@ -104,7 +104,7 @@ func (r *Repo) fetchCollection(collectionName string, query map[string]string) (
 	return result, err
 }
 
-func (r *Repo) FetchDictionary(collectionName string, query map[string]string) (interface{}, error) {
+func (r *Repo) FetchDictionary(collectionName string, query bson.M) (interface{}, error) {
 	var (
 		err          error
 		searchResult []german.Superword

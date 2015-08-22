@@ -9,7 +9,7 @@ import (
 type QueryRepo interface {
 	SetDb(db *mgo.Database)
 	FetchWord(collectionName string, objectId bson.ObjectId) (entity.Word, error)
-	FetchDictionary(collectionName string, query map[string]string) (interface{}, error)
+	FetchDictionary(collectionName string, query bson.M) (interface{}, error)
 	FilterDictionary(limit int) (interface{}, error)
 	UpdateWord(collectionName string, objectId bson.ObjectId, data interface{}) error
 }

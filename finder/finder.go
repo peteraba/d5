@@ -30,8 +30,8 @@ const (
  * MGO
  */
 
-func getSearchQuery(rawQuery string) (map[string]string, error) {
-	var search = make(map[string]string)
+func getSearchQuery(rawQuery string) (bson.M, error) {
+	var search = bson.M{}
 
 	err := json.Unmarshal([]byte(rawQuery), &search)
 
@@ -42,7 +42,7 @@ func getSearchQuery(rawQuery string) (map[string]string, error) {
  * DOMAIN
  */
 
-func getResponseData(repo repository.QueryRepo, collectionName string, query map[string]string, limit int) (interface{}, error) {
+func getResponseData(repo repository.QueryRepo, collectionName string, query bson.M, limit int) (interface{}, error) {
 	var (
 		objectId *bson.ObjectId
 		word     entity.Word
@@ -50,7 +50,7 @@ func getResponseData(repo repository.QueryRepo, collectionName string, query map
 	)
 
 	if _, ok := query["__id"]; ok {
-		objectId = util.HexToObjectId(query["__id"])
+		objectId = util.HexToObjectId(query["__id"].(string))
 
 		word, err = repo.FetchWord(collectionName, *objectId)
 
@@ -100,7 +100,7 @@ func cliWrapped(
 	debug bool,
 ) (interface{}, error) {
 	var (
-		query    map[string]string
+		query    bson.M
 		err      error
 		data     interface{}
 		rawQuery string
