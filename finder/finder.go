@@ -287,6 +287,9 @@ func parseFlags() (bool, int, string, string, bool) {
 
 func main() {
 	hostName, dbName := mongo.ParseEnvs()
+	if hostName == "" || dbName == "" {
+		log.Fatalln("Missing environment variables")
+	}
 
 	isServer, port, collectionName, collectionType, debug := parseFlags()
 

@@ -107,6 +107,10 @@ func main() {
 	)
 
 	hostName, dbName := parseEnvs()
+	if hostName == "" || dbName == "" {
+		log.Fatalln("Missing environment variables")
+	}
+
 	collectionName, debug := parseFlags()
 
 	if input, err = readStdInput(); err != nil {
