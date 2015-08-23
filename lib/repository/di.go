@@ -14,16 +14,14 @@ type QueryRepo interface {
 	UpdateWord(collectionName string, objectId bson.ObjectId, data interface{}) error
 }
 
-func CreateRepo(mgoSession *mgo.Session, dbName string, isGerman bool) QueryRepo {
+func CreateRepo(mgoDb *mgo.Database, isGerman bool) QueryRepo {
 	var (
 		repo QueryRepo
 	)
 
 	repo = &Repo{}
 
-	mgoSession = mgoSession.Clone()
-
-	repo.SetDb(mgoSession.DB(dbName))
+	repo.SetDb(mgoDb)
 
 	return repo
 }

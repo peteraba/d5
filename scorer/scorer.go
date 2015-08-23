@@ -21,6 +21,11 @@ import (
 )
 
 const (
+	d5_dbhost_env = "D5_DBHOST"
+	d5_dbname_env = "D5_DBNAME"
+)
+
+const (
 	COLL_TYPE_DEFAULT = "default"
 	COLL_TYPE_GERMAN  = "german"
 )
@@ -70,15 +75,14 @@ func getResponseData(repo repository.QueryRepo, collectionName string, wordId st
  */
 
 func cli(
-	mgoSession *mgo.Session,
-	dbName,
+	mgoDb *mgo.Database,
 	collectionName string,
 	isGerman bool,
 	debug bool,
 	wordId string,
 	score int,
 ) {
-	result, err := cliWrapped(mgoSession, dbName, collectionName, isGerman, debug, wordId, score)
+	result, err := cliWrapped(mgoDb, collectionName, isGerman, debug, wordId, score)
 	if err != nil {
 		if debug {
 			log.Println(err)
@@ -91,8 +95,7 @@ func cli(
 }
 
 func cliWrapped(
-	mgoSession *mgo.Session,
-	dbName,
+	mgoDb *mgo.Database,
 	collectionName string,
 	isGerman bool,
 	debug bool,
@@ -104,7 +107,7 @@ func cliWrapped(
 		data interface{}
 	)
 
-	repo := repository.CreateRepo(mgoSession, dbName, isGerman)
+	repo := repository.CreateRepo(mgoDb, isGerman)
 
 	data, err = getResponseData(repo, collectionName, wordId, score)
 	if err != nil {
@@ -139,16 +142,15 @@ func dataToJson(rawData interface{}, debug bool) (string, error) {
  * SERVER
  */
 
-func server(port int, mgoSession *mgo.Session, dbName, collectionName string, isGerman bool, debug bool) {
-	http.HandleFunc("/", makeHandler(scoreHandle, mgoSession, dbName, collectionName, isGerman, debug))
+func server(port int, mgoDb *mgo.Database, collectionName string, isGerman bool, debug bool) {
+	http.HandleFunc("/", makeHandler(scoreHandle, mgoDb, collectionName, isGerman, debug))
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 func makeHandler(
-	fn func(http.ResponseWriter, *http.Request, *mgo.Session, string, string, bool, bool) error,
-	mgoSession *mgo.Session,
-	dbName string,
+	fn func(http.ResponseWriter, *http.Request, *mgo.Database, string, bool, bool) error,
+	mgoDb *mgo.Database,
 	collectionName string,
 	isGerman bool,
 	debug bool,
@@ -160,7 +162,7 @@ func makeHandler(
 			return
 		}
 
-		err := fn(w, r, mgoSession, dbName, collectionName, isGerman, debug)
+		err := fn(w, r, mgoDb, collectionName, isGerman, debug)
 		if err != nil {
 			json.NewEncoder(w).Encode(fmt.Sprint(err))
 			log.Println(err)
@@ -171,8 +173,7 @@ func makeHandler(
 func scoreHandle(
 	w http.ResponseWriter,
 	r *http.Request,
-	mgoSession *mgo.Session,
-	dbName,
+	mgoDb *mgo.Database,
 	collectionName string,
 	isGerman bool,
 	debug bool,
@@ -182,7 +183,7 @@ func scoreHandle(
 		return err
 	}
 
-	repo := repository.CreateRepo(mgoSession.Clone(), dbName, isGerman)
+	repo := repository.CreateRepo(mgoDb, isGerman)
 
 	data, err := getResponseData(repo, collectionName, wordId, score)
 	if err != nil {
@@ -249,28 +250,38 @@ func parseFlags() (bool, int, string, string, bool, string, int) {
 	return *isServer, *port, *collectionName, *collectionType, *debug, *wordId, *score
 }
 
+func parseEnvs() (string, string) {
+	// Mongo database host
+	hostname := os.Getenv(d5_dbhost_env)
+
+	// Mongo database name
+	dbName := os.Getenv(d5_dbname_env)
+
+	return hostname, dbName
+}
+
 /**
  * MAIN
  */
 
 func main() {
-	hostName, dbName := mongo.ParseEnvs()
+	hostName, dbName := parseEnvs()
 	if hostName == "" || dbName == "" {
 		log.Fatalln("Missing environment variables")
+	}
+
+	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
+	if err != nil {
+		log.Fatalf("MongoDB database could not be created: %v", err)
 	}
 
 	isServer, port, collectionName, collectionType, debug, wordId, score := parseFlags()
 
 	isGerman := !(collectionType == "" || collectionType == COLL_TYPE_DEFAULT)
 
-	mgoSession, err := mongo.GetMgoSession(hostName)
-	if err != nil {
-		log.Fatalf("MongoDB session could not be built")
-	}
-
 	if isServer {
-		server(port, mgoSession, dbName, collectionName, isGerman, debug)
+		server(port, mgoDb, collectionName, isGerman, debug)
 	} else {
-		cli(mgoSession, dbName, collectionName, isGerman, debug, wordId, score)
+		cli(mgoDb, collectionName, isGerman, debug, wordId, score)
 	}
 }

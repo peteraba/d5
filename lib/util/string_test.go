@@ -148,3 +148,17 @@ func TestStringIn(t *testing.T) {
 
 	t.Log(len(stringInCases), "test cases")
 }
+
+func TestGenerateUidIsSomewhatUnique(t *testing.T) {
+	uid, uid2 := GenerateUid(), GenerateUid()
+
+	if uid == "" || uid2 == "" {
+		t.Fatal("Generated uids can not be empty strings")
+	}
+
+	if uid == uid2 {
+		t.Fatalf("Uid should be unique, but uid and uid2 are the same: %s", uid)
+	}
+
+	t.Log(1, "test cases")
+}

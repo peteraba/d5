@@ -13,10 +13,11 @@ import (
 
 	german "github.com/peteraba/d5/lib/german"
 	entity "github.com/peteraba/d5/lib/german/entity"
+	"github.com/peteraba/d5/lib/mongo"
 )
 
 const (
-	d5_dbhost_env = "D5_HOSTNAME"
+	d5_dbhost_env = "D5_DBHOST"
 	d5_dbname_env = "D5_DBNAME"
 )
 
@@ -52,25 +53,16 @@ func insertWords(collection *mgo.Collection, words []entity.Word) error {
 	return nil
 }
 
-func saveCollection(words []entity.Word, url, databaseName, collectionName string) error {
+func saveCollection(words []entity.Word, db *mgo.Database, collectionName string) error {
 	var (
 		collection *mgo.Collection
-		err        error
 	)
-
-	session, err := mgo.Dial(url)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	session.SetMode(mgo.Monotonic, true)
-
-	collection = session.DB(databaseName).C(collectionName)
 
 	if len(words) == 0 {
 		return errors.New("Words list is empty")
 	}
+
+	collection = db.C(collectionName)
 
 	removeUserCollection(collection, words[0].GetUser())
 
@@ -111,6 +103,11 @@ func main() {
 		log.Fatalln("Missing environment variables")
 	}
 
+	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
+	if err != nil {
+		log.Fatalf("MongoDB database could not be created: %s", err)
+	}
+
 	collectionName, debug := parseFlags()
 
 	if input, err = readStdInput(); err != nil {
@@ -122,7 +119,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = saveCollection(words, hostName, dbName, collectionName)
+	err = saveCollection(words, mgoDb, collectionName)
 	if err != nil {
 		log.Fatalln(err)
 	}

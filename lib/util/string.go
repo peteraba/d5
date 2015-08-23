@@ -1,6 +1,10 @@
 package util
 
-import "strings"
+import (
+	crypto "crypto/rand"
+	"fmt"
+	"strings"
+)
 
 func TrimSplit(s, sep string) []string {
 	if strings.Trim(s, " \n\t") == "" {
@@ -46,4 +50,14 @@ func StringIn(s string, options []string) bool {
 	}
 
 	return false
+}
+
+func GenerateUid() string {
+	b := make([]byte, 16)
+
+	crypto.Read(b)
+
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+
+	return uuid
 }
