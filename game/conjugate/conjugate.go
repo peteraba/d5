@@ -1,9 +1,12 @@
 package main
 
 import (
+	crypto "crypto/rand"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +16,22 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func parseFlags() (int, bool, string, string) {
+const (
+	game_dbhost_env = "GAME_HOSTNAME"
+	game_dbname_env = "GAME_DBNAME"
+)
+
+func parseEnvs() (string, string) {
+	// Mongo database host
+	hostname := os.Getenv(game_dbhost_env)
+
+	// Mongo database name
+	dbName := os.Getenv(game_dbname_env)
+
+	return hostname, dbName
+}
+
+func parseFlags() (int, bool, string, string, string) {
 	port := flag.Int("port", 17182, "Port for server")
 
 	debug := flag.Bool("debug", false, "Enables debug logs")
@@ -22,13 +40,20 @@ func parseFlags() (int, bool, string, string) {
 
 	scorer := flag.String("scorer", "http://localhost:17172/", "Scorer address")
 
+	collectionName := flag.String("coll", "result", "Collection name for storing results")
+
 	flag.Parse()
 
-	return *port, *debug, *finder, *scorer
+	return *port, *debug, *finder, *scorer, *collectionName
 }
 
 func main() {
-	port, debug, finderUrl, scorerUrl := parseFlags()
+	port, debug, finderUrl, scorerUrl, collectionName := parseFlags()
+	hostName, dbName := parseEnvs()
+
+	if hostName == "" || dbName == "" {
+		log.Fatalln("Missing environment variables")
+	}
 
 	if debug == false {
 		gin.SetMode(gin.ReleaseMode)
@@ -36,66 +61,75 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/game/:user", makeGameHandle(finderUrl, debug))
-	router.POST("/answer/:user", makeCheckAnswerHandle(finderUrl, scorerUrl))
+	router.GET("/game/:user", makeGameHandle(finderUrl, hostName, dbName, collectionName, debug))
+	router.POST("/answer/:user", makeCheckAnswerHandle(finderUrl, scorerUrl, hostName, dbName, collectionName, debug))
 
 	router.Run(fmt.Sprintf(":%d", port))
 }
 
-func makeGameHandle(finderUrl string, debug bool) func(c *gin.Context) {
+func makeGameHandle(finderUrl, hostName, dbName, collectionName string, debug bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var (
-			dictionary german.Dictionary
-			verb       entity.Verb
-			query      bson.M
-			err        error
-			returnCode int
-			pp         entity.PersonalPronoun
-			tense      entity.Tense
-		)
+		var verb *entity.Verb
 
-		query, pp, tense = getRandomPieces(c.Param("user"))
+		query, pp, tense := getRandomPieces(c.Param("user"))
 
-		dictionary, returnCode, err = game.FetchDictionary(finderUrl, query, 1)
+		dictionary, returnCode, err := game.FetchDictionary(finderUrl, query, 1)
 		if err != nil {
 			c.JSON(returnCode, fmt.Sprint(err))
 
 			return
 		}
 
-		game := game.GameAnswer{}
-
-		if debug {
-			game.Query = &query
+		if len(dictionary.Verbs) > 0 {
+			verb = &dictionary.Verbs[0]
 		}
 
-		if len(dictionary.Verbs) == 0 {
-			game.Error = "No verbs found"
-			if debug {
-				game.Dictionary = &dictionary
-			}
+		gameAnswer, right := getGameAnswer(verb, pp, tense)
+
+		if verb == nil {
+			gameAnswer.SetDebugQuery(debug, &query, &dictionary, verb, &bson.M{"pp": pp, "tense": tense})
 		} else {
-			verb = dictionary.Verbs[0]
+			gameAnswer.SetDebugQuery(debug, &query, nil, verb, &bson.M{"pp": pp, "tense": tense})
+			gameAnswer.SetDebugResult(debug, right, verb.GetEnglish(), verb.GetThird())
 
-			game.Question = getQuestion(verb, pp, tense)
-			game.Id = verb.GetId().Hex()
-
-			right := verb.GetVerb(pp, tense)
-			if len(right) == 0 {
-				if debug {
-					game.Word = &verb
-					game.Options = &bson.M{"pp": pp, "tense": tense}
-				}
-				game.Error = "No right answer found"
-			} else if debug {
-				game.Right = right
-				game.English = verb.GetEnglish()
-				game.Third = verb.GetThird()
+			err := game.SaveAnswer(&gameAnswer, hostName, dbName, collectionName)
+			if err != nil {
+				gameAnswer.Error = fmt.Sprint(err)
 			}
 		}
 
-		c.JSON(200, game)
+		c.JSON(200, gameAnswer)
 	}
+}
+
+func getGameAnswer(verb *entity.Verb, pp entity.PersonalPronoun, tense entity.Tense) (game.GameAnswer, []string) {
+	var right []string
+
+	game := game.GameAnswer{}
+
+	if verb == nil {
+		game.Error = "No verbs found"
+	} else {
+		game.Question = getQuestion(*verb, pp, tense)
+		game.Id = getUid()
+
+		right = verb.GetVerb(pp, tense)
+		if len(right) == 0 {
+			game.Error = "No right answer found"
+		}
+	}
+
+	return game, right
+}
+
+func getUid() string {
+	b := make([]byte, 16)
+
+	crypto.Read(b)
+
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+
+	return uuid
 }
 
 func getRandomPieces(user string) (bson.M, entity.PersonalPronoun, entity.Tense) {
@@ -250,7 +284,7 @@ func getQuestion(verb entity.Verb, pp entity.PersonalPronoun, tense entity.Tense
 	return fmt.Sprintf("What's the %s person, %s of '%s' in %s tense?", order, count, verb.GetGerman(), tenseLower)
 }
 
-func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
+func makeCheckAnswerHandle(finderUrl, scorerUrl, hostName, dbName, collectionName string, debug bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			query      = bson.M{}
