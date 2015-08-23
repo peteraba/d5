@@ -1,7 +1,6 @@
 package main
 
 import (
-	crypto "crypto/rand"
 	"flag"
 	"fmt"
 	"log"
@@ -13,6 +12,9 @@ import (
 	"github.com/peteraba/d5/lib/game"
 	"github.com/peteraba/d5/lib/german"
 	"github.com/peteraba/d5/lib/german/entity"
+	"github.com/peteraba/d5/lib/mongo"
+	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -55,19 +57,24 @@ func main() {
 		log.Fatalln("Missing environment variables")
 	}
 
+	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
+	if err != nil {
+		log.Fatalf("MongoDB database could not be created: %s", err)
+	}
+
 	if debug == false {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
 	router := gin.Default()
 
-	router.GET("/game/:user", makeGameHandle(finderUrl, hostName, dbName, collectionName, debug))
+	router.GET("/game/:user", makeGameHandle(finderUrl, mgoDb, collectionName, debug))
 	router.POST("/answer/:user", makeCheckAnswerHandle(finderUrl, scorerUrl, hostName, dbName, collectionName, debug))
 
 	router.Run(fmt.Sprintf(":%d", port))
 }
 
-func makeGameHandle(finderUrl, hostName, dbName, collectionName string, debug bool) func(c *gin.Context) {
+func makeGameHandle(finderUrl string, mgoDb *mgo.Database, collectionName string, debug bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var verb *entity.Verb
 
@@ -92,7 +99,7 @@ func makeGameHandle(finderUrl, hostName, dbName, collectionName string, debug bo
 			gameAnswer.SetDebugQuery(debug, &query, nil, verb, &bson.M{"pp": pp, "tense": tense})
 			gameAnswer.SetDebugResult(debug, right, verb.GetEnglish(), verb.GetThird())
 
-			err := game.SaveAnswer(&gameAnswer, hostName, dbName, collectionName)
+			err := game.SaveAnswer(&gameAnswer, mgoDb, collectionName)
 			if err != nil {
 				gameAnswer.Error = fmt.Sprint(err)
 			}
@@ -111,7 +118,7 @@ func getGameAnswer(verb *entity.Verb, pp entity.PersonalPronoun, tense entity.Te
 		game.Error = "No verbs found"
 	} else {
 		game.Question = getQuestion(*verb, pp, tense)
-		game.Id = getUid()
+		game.Id = util.GenerateUid()
 
 		right = verb.GetVerb(pp, tense)
 		if len(right) == 0 {
@@ -120,16 +127,6 @@ func getGameAnswer(verb *entity.Verb, pp entity.PersonalPronoun, tense entity.Te
 	}
 
 	return game, right
-}
-
-func getUid() string {
-	b := make([]byte, 16)
-
-	crypto.Read(b)
-
-	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-
-	return uuid
 }
 
 func getRandomPieces(user string) (bson.M, entity.PersonalPronoun, entity.Tense) {
