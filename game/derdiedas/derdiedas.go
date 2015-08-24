@@ -77,11 +77,12 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			query      = bson.M{}
-			dictionary german.Dictionary
-			noun       entity.Noun
-			err        error
-			returnCode int
+			query       = bson.M{}
+			dictionary  german.Dictionary
+			noun        entity.Noun
+			err         error
+			returnCode  int
+			answerScore int
 		)
 
 		query["__id"] = c.PostForm("id")
@@ -101,28 +102,28 @@ func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 
 		noun = dictionary.Nouns[0]
 
-		answeredRight := checkAnswer(noun, c.PostForm("result"))
+		answerScore = checkAnswer(noun, c.PostForm("answer"))
 
-		game.ScoreWords(scorerUrl, 10, []string{c.PostForm("id")})
+		game.ScoreWords(scorerUrl, answerScore, []string{c.PostForm("id")})
 
-		c.JSON(200, answeredRight)
+		c.JSON(200, answerScore)
 	}
 }
 
-func checkAnswer(word entity.Noun, result string) bool {
+func checkAnswer(word entity.Noun, result string) int {
 	for _, article := range word.Articles {
 		if article == entity.Der && result == "1" {
-			return true
+			return 10
 		}
 
 		if article == entity.Die && result == "2" {
-			return true
+			return 10
 		}
 
 		if article == entity.Das && result == "3" {
-			return true
+			return 10
 		}
 	}
 
-	return false
+	return 0
 }

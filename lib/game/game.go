@@ -20,7 +20,7 @@ type GameOption struct {
 	Option2  string `json:"option2,omitempty" bson:"option2,omitempty"`
 	Option3  string `json:"option3,omitempty" bson:"option3,omitempty"`
 	Option4  string `json:"option4,omitempty" bson:"option4,omitempty"`
-	Id       string `json:"_id,omitempty" bson:"_id,omitempty"`
+	Id       string `json:"id,omitempty" bson:"id,omitempty"`
 }
 
 func NewGameOption() GameOption {
@@ -34,13 +34,13 @@ func (g GameOption) GetQuestion() string {
 }
 
 func (g GameOption) GetId() string {
-	return g.Question
+	return g.Id
 }
 
 type GameAnswer struct {
 	GameDebug
 	Question string `bson:"question" json:"question"`
-	Id       string `json:"_id,omitempty" bson:"_id,omitempty"`
+	Id       string `json:"id,omitempty" bson:"id,omitempty"`
 }
 
 func NewGameAnswer() GameAnswer {
@@ -54,7 +54,7 @@ func (g GameAnswer) GetQuestion() string {
 }
 
 func (g GameAnswer) GetId() string {
-	return g.Question
+	return g.Id
 }
 
 type GameDebug struct {

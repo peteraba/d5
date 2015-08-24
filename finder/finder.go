@@ -56,6 +56,9 @@ func getResponseData(repo repository.QueryRepo, collectionName string, query bso
 
 	if _, ok := query["__id"]; ok {
 		objectId = util.HexToObjectId(query["__id"].(string))
+		if objectId == nil {
+			return nil, errors.New(fmt.Sprintf("String can not be turned into hex: %v", objectId))
+		}
 
 		word, err = repo.FetchWord(collectionName, *objectId)
 

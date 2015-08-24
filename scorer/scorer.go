@@ -54,6 +54,9 @@ func getResponseData(repo repository.QueryRepo, collectionName string, wordId st
 	)
 
 	objectId = util.HexToObjectId(wordId)
+	if objectId == nil {
+		return false, errors.New(fmt.Sprintf("WordId could not be converted: %s", wordId))
+	}
 
 	word, err = repo.FetchWord(collectionName, *objectId)
 	if err != nil {

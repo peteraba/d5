@@ -7,11 +7,16 @@ rm output/*
 export D5_DBHOST="localhost"
 export D5_DBNAME="d5_test"
 
+export GAME_DBHOST="localhost"
+export GAME_DBNAME="d5_test"
+
+game_dbname="d5_test"
 german_test_collection="german_test"
+result_test_collection="result_test"
 
 error=0
 
-solcheId=""
+solche_id=""
 
 source util.sh
 
@@ -136,10 +141,10 @@ function test_find_solche_via_server()
 
 	result=$(curl --data 'limit=2&query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
 
-	killall finder
+	(fuser -k 11111/tcp > /dev/null 2>&1 & )
 	
 	if [[ "$result" == *"such"* ]]; then
-		solcheId=$(echo "$result" | grep -o "[0-9a-f\-]\{12,\}")
+		solche_id=$(echo "$result" | grep -o "[0-9a-f\-]\{24\}")
 
 		test_success
 		print_output "Word 'solche' and its translation were found."
@@ -155,8 +160,8 @@ function test_score_solche()
 {
 	local result=""
 
-	if [ "$solcheId" != "" ]; then
-		$(scorer --coll=$german_test_collection --wordId=$solcheId --score=6 )
+	if [ "$solche_id" != "" ]; then
+		$(scorer --coll=$german_test_collection --wordId=$solche_id --score=6 )
 
 		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
 
@@ -182,11 +187,10 @@ function test_score_solche_via_server()
 {
 	local result=""
 
-
-	if [ "$solcheId" != "" ]; then
+	if [ "$solche_id" != "" ]; then
 		(scorer --coll=$german_test_collection --server=true --port=11112 & )
 
-		result=$(curl --data "wordId=$solcheId&score=7" http://localhost:11112/ 2>&1 )
+		result=$(curl --data "wordId=$solche_id&score=7" http://localhost:11112/ 2>&1 )
 
 		if [[ "$result" == *"true"* ]]; then
 			local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
@@ -209,7 +213,7 @@ function test_score_solche_via_server()
 			error=1
 		fi
 
-		killall scorer
+		(fuser -k 11112/tcp > /dev/null 2>&1 & )
 
 	else
 		test_err
@@ -221,27 +225,28 @@ function test_score_solche_via_server()
 function test_play_derdiedas()
 {
 	local result=""
-	local wordId=""
+	local word_id=""
 	local german=""
 	local result1=""
 	local result2=""
 	local result3=""
 	local search_expression
 
-	(finder --coll=$german_test_collection --server=true --port=11111 & )
-	(scorer --coll=$german_test_collection --server=true --port=11112 & )
-	(derdiedas --debug=false --port=11113 --finder=http://localhost:11111/ --scorer=http://localhost:11112/ > /dev/null 2>&1 & )
+	(finder --coll=$german_test_collection --server=true --port=11121 & )
+	(scorer --coll=$german_test_collection --server=true --port=11122 & )
+	(derdiedas --debug=false --port=11123 --finder=http://localhost:11121/ --scorer=http://localhost:11122/ > /dev/null 2>&1 & )
 
-	result=$(curl http://localhost:11113/game/peteraba 2>&1 )
+	sleep 0.1
+	result=$(curl http://localhost:11123/game/peteraba 2>&1 )
 
-	wordId=$(echo "$result" | grep -o "[0-9a-f\-]\{12,\}")
+	word_id=$(echo "$result" | grep -o "[0-9a-f\-]\{24\}")
 		
 	if [[ "$result" == *"question"* ]]; then
-		result1=$(curl --data "id=$wordId&result=1" http://localhost:11113/answer/peteraba 2>&1 )
-		result2=$(curl --data "id=$wordId&result=2" http://localhost:11113/answer/peteraba 2>&1 )
-		result3=$(curl --data "id=$wordId&result=3" http://localhost:11113/answer/peteraba 2>&1 )
+		result1=$(curl --data "id=$word_id&answer=1" http://localhost:11123/answer/peteraba 2>&1 )
+		result2=$(curl --data "id=$word_id&answer=2" http://localhost:11123/answer/peteraba 2>&1 )
+		result3=$(curl --data "id=$word_id&answer=3" http://localhost:11123/answer/peteraba 2>&1 )
 
-		search_expression="limit=2&query={\"__id\": \"$wordId\",\"word.user\": \"peteraba\"}"
+		search_expression="limit=2&query={\"__id\": \"$word_id\",\"word.user\": \"peteraba\"}"
 
 		result=$(echo $search_expression | finder --coll=$german_test_collection )
 		german=$(echo "$result" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
@@ -250,7 +255,7 @@ function test_play_derdiedas()
 		if [[ "$result" == *"\"result\":10,"* ]]; then
 			test_success
 			print_output "Score 10 was found."
-			print_output "Word: $german, Id: $wordId"
+			print_output "Word: $german, Id: $word_id"
 		else
 			test_error
 			print_error "Score 10 was not found."
@@ -264,9 +269,66 @@ function test_play_derdiedas()
 		error=1
 	fi
 
-	killall finder
-	killall scorer
-	killall derdiedas
+	(fuser -k 11121/tcp > /dev/null 2>&1 & )
+	(fuser -k 11122/tcp > /dev/null 2>&1 & )
+	(fuser -k 11123/tcp > /dev/null 2>&1 & )
+}
+
+function test_play_conjugate()
+{
+	local result=""
+	local result_id=""
+	local word_id=""
+	local german=""
+	local mongo=""
+	local result1=""
+	local search_expression
+
+	(finder --coll=$german_test_collection --server=true --port=11131 & )
+	(scorer --coll=$german_test_collection --server=true --port=11132 & )
+	(conjugate --debug=false --port=11133 --finder=http://localhost:11131/ --scorer=http://localhost:11132/ --coll=$result_test_collection > /dev/null 2>&1 & )
+
+	sleep 0.1
+	result=$(curl http://localhost:11133/game/peteraba 2>&1 )
+
+	result_id=$(echo "$result" | grep -o "[0-9a-f\-]\{36\}")
+		
+	if [[ "$result" == *"question"* ]]; then
+		mongo=$(mongo $game_dbname --eval "db.$result_test_collection.find({\"_id\":\"$result_id\"}).shellPrint()")
+	
+		word_id=$(echo "$mongo" | grep -o "[0-9a-f]\{24\}")
+
+		result=$(echo "$mongo" | grep -o "\"right\" \: \[ \"[a-zA-ZäÄöÖüÜß \-]\{4,\}\" \]")
+		result=${result:13:-3}
+
+		result1=$(curl --data "id=$result_id&answer=$result" http://localhost:11133/answer/peteraba 2>&1 )
+
+		search_expression="limit=2&query={\"__id\": \"$word_id\",\"word.user\": \"peteraba\"}"
+
+		result=$(echo $search_expression | finder --coll=$german_test_collection )
+		german=$(echo "$result" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
+		german=${german:10:-1}
+
+		if [[ "$result" == *"\"result\":10,"* ]]; then
+			test_success
+			print_output "Score 10 was found."
+			print_output "Word: $german, Id: $word_id"
+		else
+			test_error
+			print_error "Score 10 was not found."
+			print_error "Result: $result"
+			error=1
+		fi
+	else
+		test_error
+		print_error "Initialising a game failed."
+		print_error "Result: $result"
+		error=1
+	fi
+
+	(fuser -k 11131/tcp > /dev/null 2>&1 & )
+	(fuser -k 11132/tcp > /dev/null 2>&1 & )
+	(fuser -k 11133/tcp > /dev/null 2>&1 & )
 }
 
 function run_task()
@@ -306,7 +368,8 @@ function run_tests()
 	run_task "find solche via server" 200
 	run_task "score solche" 200
 	run_task "score solche via server" 200
-	run_task "play derdiedas" 200
+	run_task "play derdiedas" 500
+	run_task "play conjugate" 1000
 }
 
 function main()
