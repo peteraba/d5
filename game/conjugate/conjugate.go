@@ -140,6 +140,8 @@ func getQuestion(verb entity.Verb, pp entity.PersonalPronoun, tense entity.Tense
 		order      string
 		count      string
 		tenseLower string
+		meanings   []entity.Meaning
+		meaning    entity.Meaning
 	)
 
 	switch pp {
@@ -171,7 +173,14 @@ func getQuestion(verb entity.Verb, pp entity.PersonalPronoun, tense entity.Tense
 
 	tenseLower = strings.ToLower(fmt.Sprint(tense))
 
-	return fmt.Sprintf("What's the %s person, %s of '%s' in %s tense?", order, count, verb.GetGerman(), tenseLower)
+	meanings = verb.GetEnglish()
+	if len(meanings) == 0 {
+		return fmt.Sprintf("What's the %s person, %s of '%s' in %s tense?", order, count, verb.GetGerman(), tenseLower)
+	}
+
+	meaning = meanings[0]
+
+	return fmt.Sprintf("What's the %s person, %s of '%s' in %s tense?", order, count, meaning.Main, tenseLower)
 }
 
 func makeCheckAnswerHandle(finderUrl, scorerUrl string, mgoCollection *mgo.Collection, debug bool) func(c *gin.Context) {
