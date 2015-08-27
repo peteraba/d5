@@ -28,6 +28,11 @@ echo "Install scorer."
 cd ../scorer
 go install
 
+# Install router
+echo "Install router"
+cd ../router
+go install
+
 # Install derdiedas
 echo "Install derdiedas."
 cd ../game/derdiedas
