@@ -33,6 +33,11 @@ echo "Install router"
 cd ../router
 go install
 
+# Install admin
+echo "Install admin"
+cd ../admin
+go install
+
 # Install derdiedas
 echo "Install derdiedas."
 cd ../game/derdiedas

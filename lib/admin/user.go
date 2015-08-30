@@ -12,26 +12,35 @@ const (
 )
 
 type User struct {
-	Username string   `form:"username" json:"username" binding:"required"`
-	MaxWords int      `form:"max-words" json:"maxWords"`
-	Games    []string `form:"games" json:"games" bson:"games,omitempty"`
+	Username string              `json:"username"`
+	MaxWords int                 `json:"maxWords"`
+	Games    map[string]UserGame `json:"userGames"`
+}
+
+type UserForm struct {
+	Id       string `form:"id"`
+	Username string `form:"username"`
+	MaxWords int    `form:"max-words"`
 }
 
 func CreateUser(c *gin.Context) {
 	var (
-		err  error
-		user User
+		err      error
+		user     User
+		userForm UserForm
 	)
 
 	mgoDb := c.MustGet("mgoDb").(*mgo.Database)
 
 	mgoCollection := mgoDb.C(userColl)
 
-	if c.Bind(&user) != nil {
+	if c.Bind(&userForm) != nil {
 		BadRequest(c)
 
 		return
 	}
+
+	user = User{userForm.Username, userForm.MaxWords, make(map[string]UserGame)}
 
 	err = mgoCollection.Insert(user)
 	if err != nil {
@@ -46,33 +55,25 @@ func CreateUser(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	var (
 		err           error
-		userNew       User
-		id            string
+		userForm      UserForm
 		mgoDb         *mgo.Database
 		mgoCollection *mgo.Collection
 		result        []User
-		userOld       User
+		user          User
 		objectId      *bson.ObjectId
 	)
 
-	id = c.PostForm("id")
-	if id == "" {
+	if c.Bind(&userForm) != nil {
 		BadRequest(c)
 
 		return
 	}
 
-	objectId = util.HexToObjectId(id)
+	objectId = util.HexToObjectId(userForm.Id)
 
 	mgoDb = c.MustGet("mgoDb").(*mgo.Database)
 
 	mgoCollection = mgoDb.C(userColl)
-
-	if c.Bind(&userNew) != nil {
-		BadRequest(c)
-
-		return
-	}
 
 	err = mgoCollection.FindId(objectId).All(&result)
 	if err != nil {
@@ -87,18 +88,15 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	userOld = result[0]
+	user = result[0]
 	if c.PostForm("username") != "" {
-		userOld.Username = userNew.Username
+		user.Username = userForm.Username
 	}
 	if c.PostForm("max-words") != "" {
-		userOld.MaxWords = userNew.MaxWords
-	}
-	if c.PostForm("games") != "" {
-		userOld.Games = userNew.Games
+		user.MaxWords = userForm.MaxWords
 	}
 
-	err = mgoCollection.UpdateId(objectId, userOld)
+	err = mgoCollection.UpdateId(objectId, user)
 	if err != nil {
 		InternalServerError(c, err, "Updating user failed")
 
