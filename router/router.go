@@ -165,7 +165,7 @@ func getAnswerData(r *http.Request) (string, string, string) {
  * INPUT PARSING
  */
 func parseFlags() (int, string, bool) {
-	port := flag.Int("port", 17174, "Port for server")
+	port := flag.Int("port", 17173, "Port for server")
 
 	collectionName := flag.String("coll", "german", "Port for server")
 
