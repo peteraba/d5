@@ -62,19 +62,19 @@ func main() {
 
 	router.Use(MgoDb(mgoDb))
 
-	router.POST("/user", admin.CreateUser)
-	router.PATCH("/user", admin.UpdateUser)
-	router.DELETE("/user", admin.DeleteUser)
-	router.GET("/user", admin.ReadUser)
-
-	router.POST("/game", admin.CreateGame)
-	router.PATCH("/game", admin.UpdateGame)
-	router.DELETE("/game", admin.DeleteGame)
 	router.GET("/game", admin.ReadGame)
+	router.POST("/game", admin.CreateGame)
+	router.PATCH("/game/:id", admin.UpdateGame)
+	router.DELETE("/game/:id", admin.DeleteGame)
+
+	router.GET("/user/:id", admin.ReadUser)
+	router.POST("/user", admin.CreateUser)
+	router.PATCH("/user/:id", admin.UpdateUser)
+	router.DELETE("/user/:id", admin.DeleteUser)
 
 	router.POST("/game-user", admin.CreateUpdateUserGame)
-	router.PATCH("/game-user", admin.CreateUpdateUserGame)
-	router.DELETE("/game-user", admin.DeleteUserGame)
+	router.PATCH("/game-user/:userId/:gameName", admin.CreateUpdateUserGame)
+	router.DELETE("/game-user/:userId/:gameName", admin.DeleteUserGame)
 
 	router.Run(fmt.Sprintf(":%d", port))
 }

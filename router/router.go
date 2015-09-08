@@ -106,7 +106,7 @@ func gameHandle(
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	resp, err := http.Get("http://localhost:17182/game/" + user)
+	resp, err := http.Get(findUrl("game", user))
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func answerHandle(
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	resp, err := http.PostForm("http://localhost:17182/answer/"+user, r.Form)
+	resp, err := http.PostForm(findUrl("answer", user), r.Form)
 	if err != nil {
 		return err
 	}
@@ -143,6 +143,11 @@ func answerHandle(
 	io.WriteString(w, string(body))
 
 	return nil
+}
+
+func findUrl(path, user string) string {
+
+	return "http://localhost:1782/" + path + "/" + user
 }
 
 func getAnswerData(r *http.Request) (string, string, string) {

@@ -17,6 +17,7 @@ result_test_collection="result_test"
 error=0
 
 solche_id=""
+game_id=""
 
 source util.sh
 
@@ -291,9 +292,9 @@ function test_play_conjugate()
 	sleep 0.1
 	result=$(curl http://localhost:11133/game/peteraba 2>&1 )
 
-	result_id=$(echo "$result" | grep -o "[0-9a-f\-]\{36\}")
-		
 	if [[ "$result" == *"question"* ]]; then
+		result_id=$(echo "$result" | grep -o "[0-9a-f\-]\{36\}")
+		
 		mongo=$(mongo $game_dbname --eval "db.$result_test_collection.find({\"_id\":\"$result_id\"}).shellPrint()")
 	
 		word_id=$(echo "$mongo" | grep -o "[0-9a-f]\{24\}")
@@ -329,6 +330,97 @@ function test_play_conjugate()
 	(fuser -k 11131/tcp > /dev/null 2>&1 & )
 	(fuser -k 11132/tcp > /dev/null 2>&1 & )
 	(fuser -k 11133/tcp > /dev/null 2>&1 & )
+}
+
+function test_create_game()
+{
+	(admin --port=11141 & )
+
+	result=$(curl --data 'name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0' http://localhost:11111/game 2>&1 )
+
+	if [[ "$result" == *"OK"* ]]; then
+		print_output "Admin responded with OK."
+		
+		game_id=""
+
+		result=$(curl http://localhost:11111/game/$game_id 2>&1 )
+
+		if [[ "$result" == *"OK"* ]]; then
+			test_success
+			print_output "Admin responded with OK."
+		else
+			test_error
+			print_error "Initialising a game failed."
+			print_error "Result: $result"
+			error=1
+		fi
+	else
+		test_error
+		print_error "Initialising a game failed."
+		print_error "Result: $result"
+		error=1
+	fi
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+}
+
+function test_update_game()
+{
+	(admin --port=11141 & )
+
+	result=$(curl --data "name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0" -X "PATCH" http://localhost:11111/game/$game_id 2>&1 )
+
+	if [[ "$result" == *"OK"* ]]; then
+		test_success
+		print_output "Admin responded with OK."
+	else
+		test_error
+		print_error "Initialising a game failed."
+		print_error "Result: $result"
+		error=1
+	fi
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+}
+
+function test_delete_game()
+{
+	(admin --port=11141 & )
+
+	result=$(curl -X "DELETE" http://localhost:11111/game/$game_id 2>&1 )
+
+	if [[ "$result" == *"OK"* ]]; then
+		test_success
+		print_output "Admin responded with OK."
+	else
+		test_error
+		print_error "Initialising a game failed."
+		print_error "Result: $result"
+		error=1
+	fi
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+}
+
+function test_create_user()
+{
+	(admin --port=11141 & )
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+}
+
+function test_update_user()
+{
+	(admin --port=11141 & )
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+}
+
+function test_delete_user()
+{
+	(admin --port=11141 & )
+
+	(fuser -k 11141/tcp > /dev/null 2>&1 & )
 }
 
 function run_task()
@@ -370,6 +462,12 @@ function run_tests()
 	run_task "score solche via server" 200
 	run_task "play derdiedas" 500
 	run_task "play conjugate" 1000
+	run_task "create_game" 300
+	#run_task "update_game" 300
+	#run_task "delete_game" 300
+	#run_task "create_user" 300
+	#run_task "update_user" 300
+	#run_task "delete_user" 300
 }
 
 function main()

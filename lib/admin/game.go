@@ -12,10 +12,11 @@ const (
 )
 
 type Game struct {
-	Name     string `form:"name" json:"name" binding:"required"`
-	Route    string `form:"route" json:"route" binding:"required"`
-	Url      string `form:"url" json:"url" binding:"required"`
-	IsSystem bool   `form:"is-system" json:"isSystem" bson:"isSystem,omitempty"`
+	Id       bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"`
+	Name     string        `form:"name" json:"name" binding:"required"`
+	Route    string        `form:"route" json:"route" binding:"required"`
+	Url      string        `form:"url" json:"url" binding:"required"`
+	IsSystem bool          `form:"is-system" json:"isSystem" bson:"isSystem,omitempty"`
 }
 
 func CreateGame(c *gin.Context) {
@@ -41,7 +42,7 @@ func CreateGame(c *gin.Context) {
 		return
 	}
 
-	Ok(c)
+	OkWithData(c, game.Id.Hex())
 }
 
 func UpdateGame(c *gin.Context) {
@@ -72,6 +73,8 @@ func UpdateGame(c *gin.Context) {
 
 		return
 	}
+
+	game.Id = *objectId
 
 	err = mgoCollection.UpdateId(objectId, game)
 	if err != nil {
