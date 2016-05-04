@@ -16,13 +16,13 @@ import (
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
 	"github.com/peteraba/d5/lib/util"
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	d5_dbhost_env = "D5_DBHOST"
-	d5_dbname_env = "D5_DBNAME"
+	dbhost_env = "D5_DBHOST"
+	dbname_env = "D5_DBNAME"
 )
 
 const (
@@ -255,10 +255,10 @@ func parseFlags() (bool, int, string, string, bool, string, int) {
 
 func parseEnvs() (string, string) {
 	// Mongo database host
-	hostname := os.Getenv(d5_dbhost_env)
+	hostname := os.Getenv(dbhost_env)
 
 	// Mongo database name
-	dbName := os.Getenv(d5_dbname_env)
+	dbName := os.Getenv(dbname_env)
 
 	return hostname, dbName
 }

@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	german "github.com/peteraba/d5/lib/german"
@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	d5_dbhost_env = "D5_DBHOST"
-	d5_dbname_env = "D5_DBNAME"
+	dbhost_env = "D5_DBHOST"
+	dbname_env = "D5_DBNAME"
 )
 
 func readStdInput() ([]byte, error) {
@@ -73,10 +73,10 @@ func saveCollection(words []entity.Word, db *mgo.Database, collectionName string
 
 func parseEnvs() (string, string) {
 	// Mongo database host
-	hostname := os.Getenv(d5_dbhost_env)
+	hostname := os.Getenv(dbhost_env)
 
 	// Mongo database name
-	dbName := os.Getenv(d5_dbname_env)
+	dbName := os.Getenv(dbname_env)
 
 	return hostname, dbName
 }

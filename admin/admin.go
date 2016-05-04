@@ -9,18 +9,17 @@ import (
 	"github.com/namsral/flag"
 	"github.com/peteraba/d5/lib/admin"
 	"github.com/peteraba/d5/lib/mongo"
-	"gopkg.in/mgo.v2"
 )
 
 const (
-	d5DbHostEnv = "D5_DBHOST"
-	d5DbNameEnv = "D5_DBNAME"
+	dbhost_env = "D5_DBHOST"
+	dbname_env = "D5_DBNAME"
 )
 
 func parseEnvs() (string, string) {
-	dbHost := os.Getenv(d5DbHostEnv)
+	dbHost := os.Getenv(dbhost_env)
 
-	dbName := os.Getenv(d5DbNameEnv)
+	dbName := os.Getenv(dbname_env)
 
 	return dbHost, dbName
 }

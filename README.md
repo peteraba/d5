@@ -143,7 +143,7 @@ Utils
 ### Preparations
 
 ```bash
-export D5_HOSTNAME="localhost"
+export D5_DBHOST="localhost"
 export D5_DBNAME="d5"
 ```
 
