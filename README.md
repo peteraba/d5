@@ -199,7 +199,7 @@ echo "limit=2&query={\"word.german\": \"solche\", \"word.user\": \"peteraba\"}" 
 Used to store game scores on words
 
 ```bash
-scorer --coll=german --wordId=55c72270288a2139ea45f52e --score=7
+scorer --coll=german --data='{"wordId":"55c72270288a2139ea45f52e", "score":7}'
 ```
 
 

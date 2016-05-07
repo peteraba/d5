@@ -1,15 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/peteraba/d5/lib/german/entity"
@@ -19,28 +14,6 @@ import (
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
-
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
-
-const (
-	COLL_TYPE_DEFAULT = "default"
-	COLL_TYPE_GERMAN  = "german"
-)
-
-/**
- * MGO
- */
-
-func getSearchQuery(bytes []byte) (map[string]string, error) {
-	var search = make(map[string]string)
-
-	err := json.Unmarshal(bytes, &search)
-
-	return search, err
-}
 
 /**
  * DOMAIN
@@ -86,13 +59,8 @@ func cli(
 	score int,
 ) {
 	result, err := cliWrapped(mgoDb, collectionName, isGerman, debug, wordId, score)
-	if err != nil {
-		if debug {
-			log.Println(err)
-		}
 
-		return
-	}
+	util.LogFatalErr(err, debug)
 
 	fmt.Print(result)
 }
@@ -117,28 +85,7 @@ func cliWrapped(
 		return nil, err
 	}
 
-	return dataToJson(data, debug)
-}
-
-func readStdInput() ([]byte, error) {
-	reader := bufio.NewReader(os.Stdin)
-
-	return ioutil.ReadAll(reader)
-}
-
-func dataToJson(rawData interface{}, debug bool) (string, error) {
-	var (
-		bytes []byte
-		err   error
-	)
-
-	if debug {
-		bytes, err = json.MarshalIndent(rawData, "", "  ")
-	} else {
-		bytes, err = json.Marshal(rawData)
-	}
-
-	return fmt.Sprintf("%s\n", string(bytes)), err
+	return util.DataToJson(data, debug)
 }
 
 /**
@@ -146,31 +93,11 @@ func dataToJson(rawData interface{}, debug bool) (string, error) {
  */
 
 func server(port int, mgoDb *mgo.Database, collectionName string, isGerman bool, debug bool) {
-	http.HandleFunc("/", makeHandler(scoreHandle, mgoDb, collectionName, isGerman, debug))
+	s := util.MakeServer(port, mgoDb, collectionName, isGerman, debug)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-}
+	s.AddHandler("/", scoreHandle, util.PostOnly)
 
-func makeHandler(
-	fn func(http.ResponseWriter, *http.Request, *mgo.Database, string, bool, bool) error,
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" {
-			http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
-
-			return
-		}
-
-		err := fn(w, r, mgoDb, collectionName, isGerman, debug)
-		if err != nil {
-			json.NewEncoder(w).Encode(fmt.Sprint(err))
-			log.Println(err)
-		}
-	}
+	s.Start()
 }
 
 func scoreHandle(
@@ -181,7 +108,7 @@ func scoreHandle(
 	isGerman bool,
 	debug bool,
 ) error {
-	wordId, score, err := getUpdateData(r)
+	wordId, score, err := getFormData(r)
 	if err != nil {
 		return err
 	}
@@ -200,7 +127,7 @@ func scoreHandle(
 	return nil
 }
 
-func getUpdateData(r *http.Request) (string, int, error) {
+func getFormData(r *http.Request) (string, int, error) {
 	var (
 		rawId    string
 		rawScore string
@@ -237,30 +164,14 @@ func getUpdateData(r *http.Request) (string, int, error) {
  */
 
 func parseFlags() (bool, int, string, string, bool, string, int) {
-	isServer := flag.Bool("server", false, "Starts a server")
-	port := flag.Int("port", 17172, "Port for server")
+	isServer, port, collectionName, collectionType, debug, data := util.ParseFlags()
 
-	collectionName := flag.String("coll", "german", "Port for server")
-	collectionType := flag.String("type", COLL_TYPE_GERMAN, "Type of collection (german, anything else)")
+	wordId, _ := data["wordId"]
 
-	debug := flag.Bool("debug", false, "Enables debug logs")
+	tmp, _ := data["score"]
+	score, _ := strconv.ParseInt(tmp, 10, 64)
 
-	wordId := flag.String("wordId", "", "Id of word to update")
-	score := flag.Int("score", 0, "Score")
-
-	flag.Parse()
-
-	return *isServer, *port, *collectionName, *collectionType, *debug, *wordId, *score
-}
-
-func parseEnvs() (string, string) {
-	// Mongo database host
-	hostname := os.Getenv(dbhost_env)
-
-	// Mongo database name
-	dbName := os.Getenv(dbname_env)
-
-	return hostname, dbName
+	return isServer, port, collectionName, collectionType, debug, wordId, int(score)
 }
 
 /**
@@ -268,19 +179,17 @@ func parseEnvs() (string, string) {
  */
 
 func main() {
-	hostName, dbName := parseEnvs()
+	hostName, dbName := util.ParseEnvs()
 	if hostName == "" || dbName == "" {
-		log.Fatalln("Missing environment variables")
+		util.LogMsg("Missing environment variables", true, true)
 	}
 
 	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
-	if err != nil {
-		log.Fatalf("MongoDB database could not be created: %v", err)
-	}
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
 	isServer, port, collectionName, collectionType, debug, wordId, score := parseFlags()
 
-	isGerman := !(collectionType == "" || collectionType == COLL_TYPE_DEFAULT)
+	isGerman := util.IsGerman(collectionType)
 
 	if isServer {
 		server(port, mgoDb, collectionName, isGerman, debug)

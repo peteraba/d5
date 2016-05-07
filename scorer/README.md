@@ -1,28 +1,26 @@
-Finder
+Scorer
 ======
 
-Designed to provide search utilitites
+Saves game play results.
 
 Requires the following environment variables to be set:
 
- * D5_HOSTNAME: mongodb hostname
+ * D5_DBHOST: mongodb hostname
  * D5_DBNAME: mongodb database name
 
 
 CLI
 ---
 
-Finder provides a regular unix interface
-
-Search query is expected as standard input in JSON format
+Scorer provides a regular unix interface
 
 Requires the following flags:
 
- * **coll *{collectionName}* **
+ * **coll *{db collection name}* **
  * **debug false ** (optional, false by default)
 
 ```bash
-echo "{\"word.german\": \"solche\"}" | finder --coll=german
+scorer --coll=german --data='{"wordId":"aabadih29a", "score": 10}'
 ```
 
 
@@ -33,13 +31,14 @@ Finder also provides a server
 
 Requires the following flags:
 
- * **coll *{collectionName}* **
+ * **coll *{db collection name}* **
  * **debug false ** (optional, false by default)
  * **server true**
- * **port *{portnumber}* ** (optional, 17171 by default)
+ * **port *{port number to listen to}* ** (optional, 17171 by default)
 
 ```bash
-finder --coll=german --server=true --port=20202
+scorer --coll=german --server=true --port=20202 --coll=german
 ```
 
-Search query should be posted as JSON
+Scores must be sent via POST with wordId and score form fields.
+
