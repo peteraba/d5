@@ -208,7 +208,7 @@ func getUpdateData(r *http.Request) (string, int, error) {
 		err      error
 	)
 
-	r.ParseMultipartForm(1024 * 1024 * 10)
+	r.ParseForm()
 
 	rawId = r.Form.Get("wordId")
 	if rawId == "" {

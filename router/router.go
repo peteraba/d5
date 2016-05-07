@@ -15,6 +15,7 @@ import (
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
 	"github.com/peteraba/d5/lib/util"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 

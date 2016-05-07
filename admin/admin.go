@@ -9,6 +9,7 @@ import (
 	"github.com/namsral/flag"
 	"github.com/peteraba/d5/lib/admin"
 	"github.com/peteraba/d5/lib/mongo"
+	mgo "gopkg.in/mgo.v2"
 )
 
 const (

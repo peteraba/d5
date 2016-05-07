@@ -12,7 +12,7 @@ import (
 )
 
 func parseFlags() (int, bool, string, string) {
-	port := flag.Int("port", 17182, "Port for server")
+	port := flag.Int("port", 17181, "Port for server")
 
 	debug := flag.Bool("debug", false, "Enables debug logs")
 
