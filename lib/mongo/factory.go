@@ -1,6 +1,9 @@
 package mongo
 
-import "gopkg.in/mgo.v2"
+import (
+	"github.com/peteraba/d5/lib/util"
+	"gopkg.in/mgo.v2"
+)
 
 var (
 	session *mgo.Session
@@ -15,8 +18,16 @@ func SetMgoDb(mgoDatabase *mgo.Database) {
 	db = mgoDatabase
 }
 
-func CreateMgoDb(hostname, dbName string) (*mgo.Database, error) {
-	session, err := getMgoSession(hostname)
+func CreateMgoDbFromEnvs() (*mgo.Database, error) {
+	dbHost, dbName := ParseDbEnvs()
+	util.LogMsg("Missing environment variable: D5_DBHOST", dbHost == "", util.IS_FATAL)
+	util.LogMsg("Missing environment variable: D5_DBNAME", dbName == "", util.IS_FATAL)
+
+	return CreateMgoDb(dbHost, dbName)
+}
+
+func CreateMgoDb(dbHost, dbName string) (*mgo.Database, error) {
+	session, err := getMgoSession(dbHost)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +35,7 @@ func CreateMgoDb(hostname, dbName string) (*mgo.Database, error) {
 	return getMgoDb(session, dbName), nil
 }
 
-func getMgoSession(hostName string) (*mgo.Session, error) {
+func getMgoSession(dbHost string) (*mgo.Session, error) {
 	var (
 		err error
 	)
@@ -33,7 +44,7 @@ func getMgoSession(hostName string) (*mgo.Session, error) {
 		return session, nil
 	}
 
-	session, err = mgo.Dial(hostName)
+	session, err = mgo.Dial(dbHost)
 
 	return session, err
 }

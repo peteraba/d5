@@ -14,7 +14,7 @@ type QueryRepo interface {
 	UpdateWord(collectionName string, objectId bson.ObjectId, data interface{}) error
 }
 
-func CreateRepo(mgoDb *mgo.Database, isGerman bool) QueryRepo {
+func CreateRepo(mgoDb *mgo.Database) QueryRepo {
 	var (
 		repo QueryRepo
 	)

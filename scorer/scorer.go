@@ -10,16 +10,47 @@ import (
 	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
+	"github.com/peteraba/d5/lib/server"
 	"github.com/peteraba/d5/lib/util"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
+const name = "scorer"
+const version = "0.1"
+const usage = `
+Scorer supports CLI and Server mode.
+
+In CLI mode it expects input data on standard input as JSON, in server mode as a standard form.
+
+Usage:
+  scorer [--server] [--port=<n>] [--debug]
+  scorer -h | --help
+  scorer -v | --version
+
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10050]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
+
+Accepted input data:
+  - wordId  Word id to find
+  - score   Score to associate
+
+Environment variables:
+  - D5_DBHOST             host or ip of mongodb
+  - D5_DBNAME             database name
+  - D5_COLLECTION_NAME    collection name
+  - D5_COLLECTION_TYPE    collection type
+`
+
 /**
  * DOMAIN
  */
 
-func getResponseData(repo repository.QueryRepo, collectionName string, wordId string, score int) (bool, error) {
+func getScoreResponse(repo repository.QueryRepo, collectionName string, wordId string, score int) (bool, error) {
 	var (
 		err      error
 		word     entity.Word
@@ -28,7 +59,7 @@ func getResponseData(repo repository.QueryRepo, collectionName string, wordId st
 
 	objectId = util.HexToObjectId(wordId)
 	if objectId == nil {
-		return false, errors.New(fmt.Sprintf("WordId could not be converted: %s", wordId))
+		return false, errors.New(fmt.Sprintf("Word not found: %s", wordId))
 	}
 
 	word, err = repo.FetchWord(collectionName, *objectId)
@@ -39,83 +70,68 @@ func getResponseData(repo repository.QueryRepo, collectionName string, wordId st
 	word.NewScore(score)
 
 	err = repo.UpdateWord(collectionName, *objectId, word)
-	if err != nil {
-		return false, err
-	}
 
-	return true, nil
+	return err == nil, err
+}
+
+func saveScore(mgoDb *mgo.Database, collectionName string, wordId string, score int) (bool, error) {
+	repo := repository.CreateRepo(mgoDb)
+
+	return getScoreResponse(repo, collectionName, wordId, score)
 }
 
 /**
  * CLI
  */
 
-func cli(
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-	wordId string,
-	score int,
-) {
-	result, err := cliWrapped(mgoDb, collectionName, isGerman, debug, wordId, score)
+func cli(mgoDb *mgo.Database, isDebug bool) {
+	result, err := cliHandler(mgoDb, isDebug)
 
-	util.LogFatalErr(err, debug)
+	util.LogFatalErr(err, isDebug)
 
 	fmt.Print(result)
 }
 
-func cliWrapped(
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-	wordId string,
-	score int,
-) (interface{}, error) {
-	var (
-		err  error
-		data interface{}
-	)
-
-	repo := repository.CreateRepo(mgoDb, isGerman)
-
-	data, err = getResponseData(repo, collectionName, wordId, score)
+func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
+	wordId, score, collectionName, err := getCliScoreData(util.GetCliArguments(usage, name, version))
 	if err != nil {
 		return nil, err
 	}
 
-	return util.DataToJson(data, debug)
+	data, err := saveScore(mgoDb, collectionName, wordId, score)
+	if err != nil {
+		return nil, err
+	}
+
+	return util.DataToJson(data, isDebug)
+}
+
+func getCliScoreData(data map[string]interface{}) (string, int, string, error) {
+	wordId, _ := data["wordId"].(string)
+	rawScore, _ := data["score"].(string)
+
+	return getScoreData(wordId, rawScore)
 }
 
 /**
  * SERVER
  */
 
-func server(port int, mgoDb *mgo.Database, collectionName string, isGerman bool, debug bool) {
-	s := util.MakeServer(port, mgoDb, collectionName, isGerman, debug)
+func startServer(port int, mgoDb *mgo.Database, isDebug bool) {
+	s := server.MakeServer(port, mgoDb, isDebug)
 
-	s.AddHandler("/", scoreHandle, util.PostOnly)
+	s.AddHandler("/", scoreHandle, server.PostOnly)
 
 	s.Start()
 }
 
-func scoreHandle(
-	w http.ResponseWriter,
-	r *http.Request,
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) error {
-	wordId, score, err := getFormData(r)
+func scoreHandle(w http.ResponseWriter, r *http.Request, mgoDb *mgo.Database, isDebug bool) error {
+	wordId, score, collectionName, err := getServerScoreData(r)
 	if err != nil {
 		return err
 	}
 
-	repo := repository.CreateRepo(mgoDb, isGerman)
-
-	data, err := getResponseData(repo, collectionName, wordId, score)
+	data, err := saveScore(mgoDb, collectionName, wordId, score)
 	if err != nil {
 		return err
 	}
@@ -127,51 +143,42 @@ func scoreHandle(
 	return nil
 }
 
-func getFormData(r *http.Request) (string, int, error) {
-	var (
-		rawId    string
-		rawScore string
-		score    int64
-		err      error
-	)
+func getServerScoreData(r *http.Request) (string, int, string, error) {
+	wordId := r.FormValue("wordId")
+	score := r.FormValue("score")
 
-	r.ParseForm()
-
-	rawId = r.Form.Get("wordId")
-	if rawId == "" {
-		return "", 0, errors.New("Word id was not posted.")
-	}
-
-	rawScore = r.Form.Get("score")
-	if rawScore == "" {
-		return "", 0, errors.New("Score was not posted.")
-	}
-
-	score, err = strconv.ParseInt(rawScore, 10, 0)
-	if err != nil {
-		return "", 0, errors.New("Score is not valid integer")
-	}
-
-	if score < -10 || score > 10 {
-		return "", 0, errors.New("Score is not between -10 and 10")
-	}
-
-	return rawId, int(score), nil
+	return getScoreData(wordId, score)
 }
 
 /**
  * INPUT PARSING
  */
 
-func parseFlags() (bool, int, string, string, bool, string, int) {
-	isServer, port, collectionName, collectionType, debug, data := util.ParseFlags()
+func getScoreData(wordId, rawScore string) (string, int, string, error) {
+	collectionName, _ := mongo.ParseCollectionEnvs()
 
-	wordId, _ := data["wordId"]
+	return filterData(wordId, rawScore, collectionName)
+}
 
-	tmp, _ := data["score"]
-	score, _ := strconv.ParseInt(tmp, 10, 64)
+func filterData(wordId, rawScore, collectionName string) (string, int, string, error) {
+	if wordId == "" {
+		return "", 0, "", errors.New("Word id was not posted.")
+	}
 
-	return isServer, port, collectionName, collectionType, debug, wordId, int(score)
+	if rawScore == "" {
+		return "", 0, "", errors.New("Score was not posted.")
+	}
+
+	score, err := strconv.ParseInt(rawScore, 10, 0)
+	if err != nil {
+		return "", 0, "", errors.New("Score is not a valid integer")
+	}
+
+	if score < -10 || score > 10 {
+		return "", 0, "", errors.New("Score is not between -10 and 10")
+	}
+
+	return wordId, int(score), collectionName, nil
 }
 
 /**
@@ -179,21 +186,14 @@ func parseFlags() (bool, int, string, string, bool, string, int) {
  */
 
 func main() {
-	hostName, dbName := mongo.ParseEnvs()
-	if hostName == "" || dbName == "" {
-		util.LogMsg("Missing environment variables", true, true)
-	}
+	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
 
-	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
 	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
-	isServer, port, collectionName, collectionType, debug, wordId, score := parseFlags()
-
-	isGerman := util.IsGerman(collectionType)
-
 	if isServer {
-		server(port, mgoDb, collectionName, isGerman, debug)
+		startServer(port, mgoDb, isDebug)
 	} else {
-		cli(mgoDb, collectionName, isGerman, debug, wordId, score)
+		cli(mgoDb, isDebug)
 	}
 }

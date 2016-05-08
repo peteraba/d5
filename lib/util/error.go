@@ -2,6 +2,16 @@ package util
 
 import "log"
 
+const (
+	IS_DEBUG = true
+	NO_DEBUG = false
+)
+
+const (
+	IS_FATAL  = true
+	NON_FATAL = false
+)
+
 func LogFatalErr(err error, debug bool) {
 	if err == nil || !debug {
 		return
@@ -48,7 +58,7 @@ func LogMsg(msg string, debug bool, fatal bool) {
 	}
 
 	if fatal {
-		log.Fatalln(fatal)
+		log.Fatalln(msg)
 	}
 
 	log.Println(msg)
