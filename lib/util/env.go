@@ -1,14 +1,6 @@
 package util
 
-import (
-	"flag"
-	"os"
-)
-
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
+import "flag"
 
 const (
 	coll_type_default = "default"
@@ -31,16 +23,6 @@ func ParseFlags() (bool, int, string, string, bool, map[string]string) {
 	data, _ := JsonToStringMap([]byte(*json))
 
 	return *isServer, *port, *collectionName, *collectionType, *debug, data
-}
-
-func ParseEnvs() (string, string) {
-	// Mongo database host
-	dbHost := os.Getenv(dbhost_env)
-
-	// Mongo database name
-	dbName := os.Getenv(dbname_env)
-
-	return dbHost, dbName
 }
 
 func IsGerman(collectionType string) bool {

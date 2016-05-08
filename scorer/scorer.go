@@ -179,7 +179,7 @@ func parseFlags() (bool, int, string, string, bool, string, int) {
  */
 
 func main() {
-	hostName, dbName := util.ParseEnvs()
+	hostName, dbName := mongo.ParseEnvs()
 	if hostName == "" || dbName == "" {
 		util.LogMsg("Missing environment variables", true, true)
 	}
