@@ -52,13 +52,13 @@ Regular verbs define only 1 word which is the plural, first person conjugation (
 | A/A | German                              | English                    | Third                                    | Category | Date       | Score  |
 |-----|-------------------------------------|----------------------------|------------------------------------------|----------|------------|--------|
 | h   | ausprobieren                        | to try out                 | kipróbálni                               | verb     | 2015-03-29 | 5      |
-| h/s | durch|drehen                        | to freak out               | megőrülni; meghülyülni                   | verb     | 2014-06-04 | 5      |
+| h/s | durch\|drehen                       | to freak out               | megőrülni; meghülyülni                   | verb     | 2014-06-04 | 5      |
 | h   | diskutieren + über (A)              | to discuss sth             | megvitatni vmit; megbeszélni vmit        | verb     | 2014-05-08 | 5      |
 | h   | beeilen + sich (A)                  | to hurry                   | sietni                                   | verb     | 2014-08-20 | 5      |
 | h   | Sorgen machen + sich (A) + über (A) | to worry about sth.        | aggódni vmi miatt                        | verb     | 2014-05-10 | 5      |
 | h   | verlassen + sich (A) + auf (A)      | to trust, to rely on       | elhagyni                                 | verb     | 2014-05-05 | 5      |
-| h   | vor|machen + (D)                    | to fool, to deceive (coll) | megtéveszteni vkit                       | verb     | 2014-08-31 | 5      |
-| h   | vor|machen + sich (D)               | to lie to oneself          | beképzelni magának vmit, hazudni magának | verb     | 2014-08-31 | 5      |
+| h   | vor\|machen + (D)                   | to fool, to deceive (coll) | megtéveszteni vkit                       | verb     | 2014-08-31 | 5      |
+| h   | vor\|machen + sich (D)              | to lie to oneself          | beképzelni magának vmit, hazudni magának | verb     | 2014-08-31 | 5      |
 
 #### Verbs with irregular past tense
 
