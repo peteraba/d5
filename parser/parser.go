@@ -184,7 +184,7 @@ func getParserData(rawInput []byte, user string) ([]germanEntity.Word, []string)
 	var dictionary = [][8]string{}
 
 	err := json.Unmarshal(rawInput, &dictionary)
-	if err {
+	if err != nil {
 		return []germanEntity.Word{}, []string{}
 	}
 
