@@ -84,7 +84,7 @@ func saveScore(mgoDb *mgo.Database, collectionName string, wordId string, score 
  * CLI
  */
 
-func cli(mgoDb *mgo.Database, isDebug bool) {
+func serveCli(mgoDb *mgo.Database, isDebug bool) {
 	result, err := cliHandler(mgoDb, isDebug)
 
 	util.LogFatalErr(err, isDebug)
@@ -93,7 +93,8 @@ func cli(mgoDb *mgo.Database, isDebug bool) {
 }
 
 func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
-	wordId, score, collectionName, err := getCliScoreData(util.GetCliArguments(usage, name, version))
+	arguments := util.GetCliArguments(usage, name, version)
+	wordId, score, collectionName, err := getCliScoreData(arguments)
 	if err != nil {
 		return nil, err
 	}
@@ -169,16 +170,16 @@ func filterData(wordId, rawScore, collectionName string) (string, int, string, e
 		return "", 0, "", errors.New("Score was not posted.")
 	}
 
-	score, err := strconv.ParseInt(rawScore, 10, 0)
+	score64, err := strconv.ParseInt(rawScore, 10, 0)
 	if err != nil {
 		return "", 0, "", errors.New("Score is not a valid integer")
 	}
 
-	if score < -10 || score > 10 {
+	if score64 < -10 || score64 > 10 {
 		return "", 0, "", errors.New("Score is not between -10 and 10")
 	}
 
-	return wordId, int(score), collectionName, nil
+	return wordId, int(score64), collectionName, nil
 }
 
 /**
@@ -194,6 +195,6 @@ func main() {
 	if isServer {
 		startServer(port, mgoDb, isDebug)
 	} else {
-		cli(mgoDb, isDebug)
+		serveCli(mgoDb, isDebug)
 	}
 }

@@ -1,31 +1,54 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
 	"errors"
-	"flag"
 	"io/ioutil"
-	"log"
-	"os"
+
+	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	german "github.com/peteraba/d5/lib/german"
-	entity "github.com/peteraba/d5/lib/german/entity"
+	"github.com/peteraba/d5/lib/german"
+	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
+	"github.com/peteraba/d5/lib/server"
+	"github.com/peteraba/d5/lib/util"
 )
 
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
+const name = "persister"
+const version = "0.1"
+const usage = `
+Persister supports CLI and Server mode.
 
-func readStdInput() ([]byte, error) {
-	reader := bufio.NewReader(os.Stdin)
+In CLI mode it expects input data on standard input, in server mode as raw POST body
 
-	return ioutil.ReadAll(reader)
-}
+Usage:
+  persister [--server] [--port=<n>] [--debug]
+  persister -h | --help
+  persister -v | --version
+
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10020]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
+
+Accepted input data:
+  - Raw JSON data to persist
+
+Used environment variables:
+  - D5_DBHOST             host or ip of mongodb
+  - D5_DBNAME             database name
+  - D5_COLLECTION_NAME    collection name
+  - D5_COLLECTION_TYPE    collection type
+`
+
+/**
+ * DOMAIN
+ */
 
 func removeUserCollection(collection *mgo.Collection, user string) error {
 	if _, err := collection.RemoveAll(bson.M{"word.user": user}); err != nil {
@@ -53,7 +76,7 @@ func insertWords(collection *mgo.Collection, words []entity.Word) error {
 	return nil
 }
 
-func saveCollection(words []entity.Word, db *mgo.Database, collectionName string) error {
+func getPersistResponse(db *mgo.Database, collectionName string, words []entity.Word) error {
 	var (
 		collection *mgo.Collection
 	)
@@ -64,67 +87,99 @@ func saveCollection(words []entity.Word, db *mgo.Database, collectionName string
 
 	collection = db.C(collectionName)
 
-	removeUserCollection(collection, words[0].GetUser())
+	err := removeUserCollection(collection, words[0].GetUser())
+	if err != nil {
+		return err
+	}
 
-	insertWords(collection, words)
+	return insertWords(collection, words)
+}
+
+/**
+ * CLI
+ */
+
+func serveCli(mgoDb *mgo.Database, isDebug bool) {
+	err := cliHandler(mgoDb, isDebug)
+
+	util.LogFatalErr(err, isDebug)
+}
+
+func cliHandler(mgoDb *mgo.Database, isDebug bool) error {
+	rawInput, err := util.ReadStdInput()
+	if err != nil {
+		return err
+	}
+
+	words, collectionName, err := getPersistData(rawInput)
+	if err != nil {
+		return err
+	}
+
+	return getPersistResponse(mgoDb, collectionName, words)
+}
+
+/**
+ * SERVER
+ */
+
+func startServer(port int, mgoDb *mgo.Database, isDebug bool) {
+	s := server.MakeServer(port, mgoDb, isDebug)
+
+	s.AddHandler("/", persistHandle, server.PostOnly)
+
+	s.Start()
+}
+
+func persistHandle(w http.ResponseWriter, r *http.Request, mgoDb *mgo.Database, isDebug bool) error {
+	words, collectionName, err := getServerPersistData(r)
+	if err != nil {
+		return err
+	}
+
+	err = getPersistResponse(mgoDb, collectionName, words)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	json.NewEncoder(w).Encode(true)
 
 	return nil
 }
 
-func parseEnvs() (string, string) {
-	// Mongo database host
-	hostname := os.Getenv(dbhost_env)
+func getServerPersistData(r *http.Request) ([]entity.Word, string, error) {
+	rawBody, _ := ioutil.ReadAll(r.Body)
 
-	// Mongo database name
-	dbName := os.Getenv(dbname_env)
-
-	return hostname, dbName
+	return getPersistData(rawBody)
 }
 
-func parseFlags() (string, bool) {
-	collectionName := flag.String("coll", "german", "Port for server")
+/**
+ * INPUT PARSING
+ */
 
-	debug := flag.Bool("debug", false, "Enables debug logs")
+func getPersistData(rawInput []byte) ([]entity.Word, string, error) {
+	collectionName, _ := mongo.ParseCollectionEnvs()
 
-	flag.Parse()
+	words, err := german.ParseWords(rawInput)
 
-	return *collectionName, *debug
+	return words, collectionName, err
 }
+
+/**
+ * MAIN
+ */
 
 func main() {
-	var (
-		words []entity.Word
-		input []byte
-		err   error
-	)
+	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
 
-	hostName, dbName := parseEnvs()
-	if hostName == "" || dbName == "" {
-		log.Fatalln("Missing environment variables")
-	}
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
-	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
-	if err != nil {
-		log.Fatalf("MongoDB database could not be created: %s", err)
-	}
-
-	collectionName, debug := parseFlags()
-
-	if input, err = readStdInput(); err != nil {
-		log.Fatalln(err)
-	}
-
-	words, err = german.ParseWords(input)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = saveCollection(words, mgoDb, collectionName)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if debug {
-		log.Printf("Words count: %d\n", len(words))
+	if isServer {
+		startServer(port, mgoDb, isDebug)
+	} else {
+		serveCli(mgoDb, isDebug)
 	}
 }

@@ -1,21 +1,54 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
+	"net/http"
+
+	"gopkg.in/mgo.v2"
 
 	germanEntity "github.com/peteraba/d5/lib/german/entity"
+	"github.com/peteraba/d5/lib/server"
+	"github.com/peteraba/d5/lib/util"
 )
 
-func readStdInput() ([]byte, error) {
-	reader := bufio.NewReader(os.Stdin)
+const name = "parser"
+const version = "0.1"
+const usage = `
+Parser supports CLI and Server mode.
 
-	return ioutil.ReadAll(reader)
+In CLI mode it expects input data on standard input, in server mode as raw POST body
+
+Usage:
+  parser [--server] [--port=<n>] [--debug] [--user]
+  parser -h | --help
+  parser -v | --version
+
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10010]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
+  -u, --user      user the data belongs to (cli mode only)
+
+Accepted input data:
+  - Raw JSON data to parse
+`
+
+/**
+* DOMAIN
+ */
+func logParseErrors(isDebug bool, parseErrors []string) {
+	if !isDebug {
+		return
+	}
+
+	for _, word := range parseErrors {
+		log.Printf("Failed: %v\n", word)
+	}
 }
 
 func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, []string) {
@@ -24,104 +57,154 @@ func parseDictionary(dictionary [][8]string, user string) ([]germanEntity.Word, 
 		parseErrors = []string{}
 	)
 
-	for _, word := range dictionary {
-		var (
-			w                  germanEntity.Word
-			articleOrAuxiliary = word[0]
-			german             = word[1]
-			english            = word[2]
-			third              = word[3]
-			category           = word[4]
-			learned            = word[5]
-			score              = word[6]
-			tags               = word[7]
-		)
+	for _, rawWord := range dictionary {
+		word, german := createWord(rawWord, user)
 
-		if english == "" {
+		words = append(words, word)
+
+		if german == "" {
 			continue
 		}
 
-		switch category {
-		case "adj":
-			w = germanEntity.NewAdjective(german, english, third, user, learned, score, tags)
-			break
-		case "noun":
-			if germanEntity.NounRegexp.MatchString(german) {
-				w = germanEntity.NewNoun(articleOrAuxiliary, german, english, third, user, learned, score, tags)
-			}
-			break
-		case "verb":
-			if germanEntity.VerbRegexp.MatchString(german) {
-				w = germanEntity.NewVerb(articleOrAuxiliary, german, english, third, user, learned, score, tags)
-			}
-			break
-		default:
-			w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{})
-		}
-
-		if w == nil {
-
-			w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
-			if w == nil {
-				parseErrors = append(parseErrors, german)
-				continue
-			} else {
-				parseErrors = append(parseErrors, german+"!!!!!")
-			}
-		}
-
-		words = append(words, w)
+		parseErrors = append(parseErrors, german)
 	}
 
 	return words, parseErrors
 }
 
-func parseFlags() (string, bool) {
-	user := flag.String("user", "", "User to whom the data belongs")
-	debug := flag.Bool("debug", false, "Enables debug logs")
-
-	flag.Parse()
-
-	return *user, *debug
-}
-
-func main() {
+func createWord(word [8]string, user string) (germanEntity.Word, string) {
 	var (
-		dictionary = [][8]string{}
+		w                  germanEntity.Word
+		articleOrAuxiliary = word[0]
+		german             = word[1]
+		english            = word[2]
+		third              = word[3]
+		category           = word[4]
+		learned            = word[5]
+		score              = word[6]
+		tags               = word[7]
 	)
 
-	user, debug := parseFlags()
+	if english == "" {
+		return w, german
+	}
 
-	if user == "" {
-		if debug {
-			log.Fatalf("Username is not defined")
+	switch category {
+	case "adj":
+		w = germanEntity.NewAdjective(german, english, third, user, learned, score, tags)
+		break
+	case "noun":
+		if germanEntity.NounRegexp.MatchString(german) {
+			w = germanEntity.NewNoun(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 		}
-		return
-	}
-
-	input, err := readStdInput()
-	if err != nil && debug {
-		log.Println(err)
-	}
-
-	json.Unmarshal(input, &dictionary)
-
-	words, parseErrors := parseDictionary(dictionary, user)
-
-	if debug && len(parseErrors) > 0 {
-		for _, word := range parseErrors {
-			log.Printf("Failed: %v\n", word)
+		break
+	case "verb":
+		if germanEntity.VerbRegexp.MatchString(german) {
+			w = germanEntity.NewVerb(articleOrAuxiliary, german, english, third, user, learned, score, tags)
 		}
+		break
+	default:
+		w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{})
 	}
+
+	if w != nil {
+		return w, ""
+	}
+
+	w = germanEntity.NewAny(german, english, third, category, user, learned, score, tags, []string{"Parsing failed."})
+
+	return w, german
+}
+
+/**
+ * CLI
+ */
+
+func serveCli(isDebug bool, user string) {
+	err := cliHandler(isDebug, user)
+
+	util.LogFatalErr(err, isDebug)
+}
+
+func cliHandler(isDebug bool, user string) error {
+	input, err := util.ReadStdInput()
+	if err != nil {
+		return err
+	}
+
+	words, parseErrors := getParserData(input, user)
+
+	logParseErrors(isDebug, parseErrors)
 
 	b, err := json.Marshal(words)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
-	if !debug {
-		fmt.Println(string(b))
+	fmt.Println(string(b))
+
+	return nil
+}
+
+/**
+ * SERVER
+ */
+
+func startServer(port int, isDebug bool) {
+	s := server.MakeServer(port, nil, isDebug)
+
+	s.AddHandler("/", parseHandle, server.PostOnly)
+
+	s.Start()
+}
+
+func parseHandle(w http.ResponseWriter, r *http.Request, mgoDb *mgo.Database, isDebug bool) error {
+	words, parseErrors := getServerParserData(r)
+	logParseErrors(isDebug, parseErrors)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	err := json.NewEncoder(w).Encode(words)
+
+	return err
+}
+
+func getServerParserData(r *http.Request) ([]germanEntity.Word, []string) {
+	rawBody, _ := ioutil.ReadAll(r.Body)
+	user := r.FormValue("user")
+
+	return getParserData(rawBody, user)
+}
+
+/**
+ * INPUT PARSING
+ */
+
+func getParserData(rawInput []byte, user string) ([]germanEntity.Word, []string) {
+	var dictionary = [][8]string{}
+
+	err := json.Unmarshal(rawInput, &dictionary)
+	if err {
+		return []germanEntity.Word{}, []string{}
+	}
+
+	words, parseErrors := parseDictionary(dictionary, user)
+
+	return words, parseErrors
+}
+
+/**
+ * MAIN
+ */
+
+func main() {
+	cliArguments := util.GetCliArguments(usage, name, version)
+	isServer, port, isDebug := util.GetServerOptions(cliArguments)
+	user, _ := cliArguments["--server"].(string)
+
+	if isServer {
+		startServer(port, isDebug)
 	} else {
-		log.Println("Parsing is done.")
+		serveCli(isDebug, user)
 	}
 }

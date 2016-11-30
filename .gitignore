@@ -5,3 +5,6 @@ test/output
 test/coverage
 
 gin-bin
+
+# IDE / Editor
+.idea

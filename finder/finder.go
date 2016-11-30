@@ -1,53 +1,56 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"net/url"
-	"os"
 	"strconv"
 
 	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
 	"github.com/peteraba/d5/lib/repository"
+	"github.com/peteraba/d5/lib/server"
 	"github.com/peteraba/d5/lib/util"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
+const name = "finder"
+const version = "0.1"
+const usage = `
+Finder supports CLI and Server mode.
 
-const (
-	COLL_TYPE_DEFAULT = "default"
-	COLL_TYPE_GERMAN  = "german"
-)
+In CLI mode it expects input data on standard input as JSON, in server mode as a standard form.
 
-/**
- * MGO
- */
+Usage:
+  finder [--server] [--port=<n>] [--debug]
+  finder -h | --help
+  finder -v | --version
 
-func getSearchQuery(rawQuery string) (bson.M, error) {
-	var search = bson.M{}
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10040]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
 
-	err := json.Unmarshal([]byte(rawQuery), &search)
+Accepted input data:
+  - query  Search query as JSON string
+  - limit  Maximum number of items to be returned [default: 100]
 
-	return search, err
-}
+Environment variables:
+  - D5_DBHOST           host or ip of mongodb
+  - D5_DBNAME           database name
+  - D5_COLLECTION_NAME  collection name
+  - D5_COLLECTION_TYPE  collection type
+`
 
 /**
  * DOMAIN
  */
 
-func getResponseData(repo repository.QueryRepo, collectionName string, query bson.M, limit int) (interface{}, error) {
+func getFinderResponse(repo repository.QueryRepo, collectionName string, query bson.M, limit int) (interface{}, error) {
 	var (
 		objectId *bson.ObjectId
 		word     entity.Word
@@ -77,157 +80,65 @@ func getResponseData(repo repository.QueryRepo, collectionName string, query bso
 	return repo.FilterDictionary(limit)
 }
 
+func findWords(mgoDb *mgo.Database, collectionName string, query bson.M, limit int) (interface{}, error) {
+	repo := repository.CreateRepo(mgoDb)
+
+	return getFinderResponse(repo, collectionName, query, limit)
+}
+
 /**
  * CLI
  */
 
-func cli(
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) {
-	result, err := cliWrapped(mgoDb, collectionName, isGerman, debug)
-	if err != nil {
-		if debug {
-			log.Println(err)
-		}
+func serveCli(mgoDb *mgo.Database, isDebug bool) {
+	result, err := cliHandler(mgoDb, isDebug)
 
-		return
-	}
+	util.LogFatalErr(err, isDebug)
 
 	fmt.Print(result)
 }
 
-func cliWrapped(
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) (interface{}, error) {
-	var (
-		query    bson.M
-		err      error
-		data     interface{}
-		rawQuery string
-		limit    int
-	)
-
-	if rawQuery, limit, err = readStdInput(); err != nil {
-		return nil, err
-	}
-
-	query, err = getSearchQuery(rawQuery)
+func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
+	arguments := util.GetCliArguments(usage, name, version)
+	query, limit, collectionName, err := getCliFinderData(arguments)
 	if err != nil {
 		return nil, err
 	}
 
-	repo := repository.CreateRepo(mgoDb, isGerman)
-
-	data, err = getResponseData(repo, collectionName, query, limit)
+	data, err := findWords(mgoDb, collectionName, query, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	return dataToJson(data, debug)
+	return util.DataToJson(data, isDebug)
 }
 
-func readStdInput() (string, int, error) {
-	var (
-		bytes    []byte
-		rawQuery string
-		limit    int64
-		values   url.Values
-		err      error
-	)
+func getCliFinderData(data map[string]interface{}) (bson.M, int, string, error) {
+	rawQuery, _ := data["query"].(string)
+	rawLimit, _ := data["limit"].(string)
 
-	reader := bufio.NewReader(os.Stdin)
-
-	bytes, err = ioutil.ReadAll(reader)
-	if err != nil {
-		return "", 0, err
-	}
-
-	values, err = url.ParseQuery(string(bytes))
-
-	rawQuery = values.Get("query")
-
-	limit, err = strconv.ParseInt(values.Get("limit"), 10, 0)
-	if err != nil {
-		return rawQuery, 0, err
-	}
-
-	return rawQuery, int(limit), nil
-}
-
-func dataToJson(rawData interface{}, debug bool) (string, error) {
-	var (
-		bytes []byte
-		err   error
-	)
-
-	if debug {
-		bytes, err = json.MarshalIndent(rawData, "", "  ")
-	} else {
-		bytes, err = json.Marshal(rawData)
-	}
-
-	return fmt.Sprintf("%s\n", string(bytes)), err
+	return getFinderData(rawQuery, rawLimit)
 }
 
 /**
  * SERVER
  */
 
-func server(port int, mgoDb *mgo.Database, collectionName string, isGerman bool, debug bool) {
-	http.HandleFunc("/", makeHandler(findHandle, mgoDb, collectionName, isGerman, debug))
+func startServer(port int, mgoDb *mgo.Database, isDebug bool) {
+	s := server.MakeServer(port, mgoDb, isDebug)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	s.AddHandler("/", findHandle, server.PostOnly)
+
+	s.Start()
 }
 
-func makeHandler(
-	fn func(http.ResponseWriter, *http.Request, *mgo.Database, string, bool, bool) error,
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" {
-			http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
-
-			return
-		}
-
-		err := fn(w, r, mgoDb, collectionName, isGerman, debug)
-		if err != nil {
-			json.NewEncoder(w).Encode(fmt.Sprint(err))
-			log.Println(err)
-		}
-	}
-}
-
-func findHandle(
-	w http.ResponseWriter,
-	r *http.Request,
-	mgoDb *mgo.Database,
-	collectionName string,
-	isGerman bool,
-	debug bool,
-) error {
-	rawQuery, limit, err := getRequestData(r)
+func findHandle(w http.ResponseWriter, r *http.Request, mgoDb *mgo.Database, isDebug bool) error {
+	query, limit, collectionName, err := getServerFinderData(r)
 	if err != nil {
 		return err
 	}
 
-	query, err := getSearchQuery(rawQuery)
-	if err != nil {
-		return err
-	}
-
-	repo := repository.CreateRepo(mgoDb, isGerman)
-
-	data, err := getResponseData(repo, collectionName, query, limit)
+	data, err := findWords(mgoDb, collectionName, query, limit)
 	if err != nil {
 		return err
 	}
@@ -239,60 +150,46 @@ func findHandle(
 	return nil
 }
 
-func getRequestData(r *http.Request) (string, int, error) {
-	var (
-		rawQuery string
-		rawLimit string
-		limit    int64
-		err      error
-	)
+func getServerFinderData(r *http.Request) (bson.M, int, string, error) {
+	rawQuery := r.FormValue("query")
+	rawLimit := r.FormValue("limit")
 
-	r.ParseMultipartForm(1024 * 1024 * 10)
-
-	rawQuery = r.Form.Get("query")
-	if rawQuery == "" {
-		return "", 0, errors.New("Query was not posted.")
-	}
-
-	rawLimit = r.Form.Get("limit")
-	limit, err = strconv.ParseInt(rawLimit, 10, 0)
-	if err != nil {
-		return rawQuery, 0, errors.New("Limit is not valid integer")
-	}
-
-	if limit < 0 {
-		return rawQuery, 0, errors.New("Limit is less than 0")
-	}
-
-	return rawQuery, int(limit), nil
+	return getFinderData(rawQuery, rawLimit)
 }
 
 /**
  * INPUT PARSING
  */
 
-func parseFlags() (bool, int, string, string, bool) {
-	isServer := flag.Bool("server", false, "Starts a server")
-	port := flag.Int("port", 17171, "Port for server")
+func getFinderData(rawQuery, rawLimit string) (bson.M, int, string, error) {
+	collectionName, _ := mongo.ParseCollectionEnvs()
 
-	collectionName := flag.String("coll", "german", "Port for server")
-	collectionType := flag.String("type", COLL_TYPE_GERMAN, "Type of collection (german, anything else)")
-
-	debug := flag.Bool("debug", false, "Enables debug logs")
-
-	flag.Parse()
-
-	return *isServer, *port, *collectionName, *collectionType, *debug
+	return filterData(rawQuery, rawLimit, collectionName)
 }
 
-func parseEnvs() (string, string) {
-	// Mongo database host
-	hostname := os.Getenv(dbhost_env)
+func filterData(rawQuery, rawLimit, collectionName string) (bson.M, int, string, error) {
+	search := bson.M{}
 
-	// Mongo database name
-	dbName := os.Getenv(dbname_env)
+	if rawQuery == "" {
+		return search, 0, "", errors.New("Query was not posted.")
+	}
 
-	return hostname, dbName
+	if rawLimit == "" {
+		return search, 0, "", errors.New("Limit was not posted.")
+	}
+
+	limit64, err := strconv.ParseInt(rawLimit, 10, 0)
+	if err != nil {
+		return search, 0, "", errors.New("Limit is not a valid integer")
+	}
+
+	if limit64 < 0 {
+		return search, 0, "", errors.New("Limit is not smaller than 0")
+	}
+
+	err = json.Unmarshal([]byte(rawQuery), &search)
+
+	return search, int(limit64), collectionName, err
 }
 
 /**
@@ -300,23 +197,14 @@ func parseEnvs() (string, string) {
  */
 
 func main() {
-	hostName, dbName := parseEnvs()
-	if hostName == "" || dbName == "" {
-		log.Fatalln("Missing environment variables")
-	}
+	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
 
-	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
-	if err != nil {
-		log.Fatalf("MongoDB database could not be created. %v", err)
-	}
-
-	isServer, port, collectionName, collectionType, debug := parseFlags()
-
-	isGerman := !(collectionType == "" || collectionType == COLL_TYPE_DEFAULT)
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
 	if isServer {
-		server(port, mgoDb, collectionName, isGerman, debug)
+		startServer(port, mgoDb, isDebug)
 	} else {
-		cli(mgoDb, collectionName, isGerman, debug)
+		serveCli(mgoDb, isDebug)
 	}
 }
