@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-rm output/*
+rm -f output/*
 
 export D5_DBHOST="localhost"
 export D5_DBNAME="d5_test"
@@ -428,12 +428,15 @@ function run_task()
 	local task="$(echo $1 | tr "[:upper:]" "[:lower:]" | sed 's/ /_/g')"
 	local max_time=$2
 
-	local start_time=`date +%s%N | cut -b1-13`
+	get_time
+	local start_time="${last_time}"
 
 	print_title "Starting test: $1"
 	test_"$task"
 	
-	local end_time=`date +%s%N | cut -b1-13`
+	get_time
+	local end_time="${last_time}"
+
 	local delta_time=$(($end_time - $start_time))
 
 	if [ "$delta_time" -gt "$max_time" ]; then
@@ -474,11 +477,13 @@ function main()
 {
 	../build.sh
 
-	local start_time=`date +%s%N | cut -b1-13`
+	get_time
+	local start_time="${last_time}"
 
 	run_tests
 
-	local end_time=`date +%s%N | cut -b1-13`
+	get_time
+	local end_time="${last_time}"
 	
 	local delta_time=$(($end_time - $start_time))
 	
