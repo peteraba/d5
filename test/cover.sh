@@ -10,22 +10,23 @@ source util.sh
 
 function run_test()
 {
-	dir=$(dirname $1)
-	mkdir -p coverage/lib/$dir
+  filename=$1
+	directory=$(dirname ${filename})
+	mkdir -p "coverage/lib/${directory}"
 
 	# Generate coverage file
-	go test github.com/peteraba/d5/lib/$1 -coverprofile=/tmp/coverage.out
+	go test "github.com/peteraba/d5/lib/${filename}" -coverprofile=/tmp/coverage.out
 
 	# Generate html output
-	go tool cover -html=/tmp/coverage.out -o=coverage/lib/$f.html
+	go tool cover -html=/tmp/coverage.out -o=coverage/lib/${filename}.html
 
 	# Open file in browser
-	if [[ -n $browser ]]; then
-		if [[ $browser != "silent" ]]; then
-			$browser "$PWD"/coverage/lib/"$1".html
+	if [[ -n ${browser} ]]; then
+		if [[ ${browser} != "silent" ]]; then
+			${browser} "${PWD}/coverage/lib/${filename}.html"
 		fi
 	else
-		x-www-browser "$PWD"/coverage/lib/"$1".html
+		x-www-browser "${PWD}/coverage/lib/${filename}.html"
 	fi
 }
 
@@ -33,10 +34,10 @@ function main()
 {
 	rm -rf coverage/*
 
-	for f in $(find ../lib -type d -printf '%d\t%P\n' | sort -r -nk1 | cut -f2-); 
+	for filename in $(find ../lib -type d -printf '%d\t%P\n' | sort -r -nk1 | cut -f2-);
 	do 
-		print_title "Generating coverage data: $f"
-		run_test $f
+		print_title "Generating coverage data: ${filename}"
+		run_test "${filename}"
 	done
 }
 
