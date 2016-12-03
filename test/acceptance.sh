@@ -10,9 +10,10 @@ export D5_DBNAME="d5_test"
 export GAME_DBHOST="localhost"
 export GAME_DBNAME="d5_test"
 
-game_dbname="d5_test"
-german_test_collection="german_test"
-result_test_collection="result_test"
+export D5_COLLECTION_NAME="german"
+export D5_COLLECTION_TYPE="german"
+
+user_name="john_doe"
 
 error=0
 
@@ -24,6 +25,7 @@ source util.sh
 function test_convert_ods_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.ods ]; then
+		touch output/ods.json
 		../spreadsheet/ods ../spreadsheet/fixture/gerdict.ods 8 | python -m json.tool > output/ods.json
 	fi
 }
@@ -31,6 +33,7 @@ function test_convert_ods_to_json()
 function test_convert_xlsx_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.xlsx ]; then
+		touch output/ods.json
 		../spreadsheet/xlsx ../spreadsheet/fixture/gerdict.xlsx 8 | python -m json.tool > output/xlsx.json
 	fi
 }
@@ -38,6 +41,7 @@ function test_convert_xlsx_to_json()
 function test_convert_csv_to_json()
 {
 	if [ -f ../spreadsheet/fixture/gerdict.csv ]; then
+		touch output/ods.json
 		../spreadsheet/csv ../spreadsheet/fixture/gerdict.csv 8 | python -m json.tool > output/csv.json
 	fi
 }
@@ -79,7 +83,7 @@ function test_check_json_sizes()
 function test_parse_json()
 {
 	if [ -f ../parser/parser.go ]; then
-		cat output/csv.json | parser --user=peteraba > output/parsed.json
+		cat output/csv.json | parser --user=${user_name} -d > output/parsed.json
 	else
 		test_error
 		print_error "parser is missing"
@@ -90,7 +94,7 @@ function test_parse_json()
 function test_insert_into_db()
 {
 	if [ -f ../persister/persister.go ]; then
-		cat output/parsed.json | persister --coll=${german}_test_collection
+		cat output/parsed.json | persister -d
 	else
 		test_error
 		print_error "persister is missing"
@@ -101,9 +105,9 @@ function test_insert_into_db()
 function test_find_annehmbar()
 {
 	local result=""
-	local search_expression="limit=2&query={\"word.german\": \"annehmbar\",\"word.user\": \"peteraba\"}"
+	local search_expression="limit=2&query={\"word.german\": \"annehmbar\",\"word.user\": \"${user_name}\"}"
 
-	result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+	result=$(echo ${search_expression} | finder -d)
 	
 	if [[ "${result}" == *"acceptable"* ]]; then
 		test_success
@@ -119,9 +123,9 @@ function test_find_annehmbar()
 function test_find_aufbauen()
 {
 	local result=""
-	local search_expression="limit=2&query={\"word.german\": \"aufbauen\",\"word.user\": \"peteraba\"}"
+	local search_expression="limit=2&query={\"word.german\": \"aufbauen\",\"word.user\": \"${user_name}\"}"
 
-	result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+	result=$(echo ${search_expression} | finder -d)
 
 	if [[ "${result}" == *"build"* ]]; then
 		test_success
@@ -138,9 +142,9 @@ function test_find_solche_via_server()
 {
 	local result=""
 
-	(finder --coll=${german}_test_collection --server=true --port=11111 & )
+	(finder --server --port=11111 -d & )
 
-	result=$(curl --data 'limit=2&query={"word.german":"solche","word.user":"peteraba"}' http://localhost:11111/ 2>&1 )
+	result=$(curl --data "limit=2&query={\"word.german\":\"solche\",\"word.user\":\"${user_name}\"}" http://localhost:11111/ 2>&1 )
 
 	(fuser -k 11111/tcp > /dev/null 2>&1 & )
 	
@@ -162,11 +166,11 @@ function test_score_solche()
 	local result=""
 
 	if [ "${solche_id}" != "" ]; then
-		$(scorer --coll=${german}_test_collection --wordId=${solche_id} --score=6 )
+		$(scorer --wordId=${solche_id} --score=6 -d)
 
-		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+		result=$(echo ${search_expression} | finder -d)
 
 		if [[ "${result}" == *"\"result\":6,"* ]]; then
 			test_success
@@ -189,14 +193,14 @@ function test_score_solche_via_server()
 	local result=""
 
 	if [ "${solche_id}" != "" ]; then
-		(scorer --coll=${german}_test_collection --server=true --port=11112 & )
+		(scorer --server=true --port=11112 -d & )
 
 		result=$(curl --data "wordId=${solche_id}&score=7" http://localhost:11112/ 2>&1 )
 
 		if [[ "${result}" == *"true"* ]]; then
-			local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"peteraba\"}"
+			local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"${user_name}\"}"
 
-			result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+			result=$(echo ${search_expression} | finder -d)
 
 			if [[ "${result}" == *"\"result\":7,"* ]]; then
 				test_success
@@ -233,23 +237,23 @@ function test_play_derdiedas()
 	local result3=""
 	local search_expression
 
-	(finder --coll=${german}_test_collection --server=true --port=11121 & )
-	(scorer --coll=${german}_test_collection --server=true --port=11122 & )
-	(derdiedas --debug=false --port=11123 --finder=http://localhost:11121/ --scorer=http://localhost:11122/ > /dev/null 2>&1 & )
+	(finder --server=true --port=11121 -d & )
+	(scorer --server=true --port=11122 -d & )
+	(derdiedas -d --port=11123 --finder=http://localhost:11121/ --scorer=http://localhost:11122/ > /dev/null 2>&1 & )
 
 	sleep 0.1
-	result=$(curl http://localhost:11123/game/peteraba 2>&1 )
+	result=$(curl http://localhost:11123/game/${user_name} 2>&1 )
 
 	word_id=$(echo "${result}" | grep -o "[0-9a-f\-]\{24\}")
 		
 	if [[ "${result}" == *"question"* ]]; then
-		result1=$(curl --data "id=${word_id}&answer=1" http://localhost:11123/answer/peteraba 2>&1 )
-		result2=$(curl --data "id=${word_id}&answer=2" http://localhost:11123/answer/peteraba 2>&1 )
-		result3=$(curl --data "id=${word_id}&answer=3" http://localhost:11123/answer/peteraba 2>&1 )
+		result1=$(curl --data "id=${word_id}&answer=1" http://localhost:11123/answer/${user_name} 2>&1 )
+		result2=$(curl --data "id=${word_id}&answer=2" http://localhost:11123/answer/${user_name} 2>&1 )
+		result3=$(curl --data "id=${word_id}&answer=3" http://localhost:11123/answer/${user_name} 2>&1 )
 
-		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"peteraba\"}"
+		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+		result=$(echo ${search_expression} | finder -d)
 		german=$(echo "${result}" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
 		german=${german:10:-1}
 
@@ -283,30 +287,30 @@ function test_play_conjugate()
 	local german=""
 	local mongo=""
 	local result1=""
-	local search_expression
+	local search_expression=''
 
-	(finder --coll=${german}_test_collection --server=true --port=11131 & )
-	(scorer --coll=${german}_test_collection --server=true --port=11132 & )
-	(conjugate --debug=false --port=11133 --finder=http://localhost:11131/ --scorer=http://localhost:11132/ --coll=${result_test_collection} > /dev/null 2>&1 & )
+	(finder --server=true --port=11131 & )
+	(scorer --server=true --port=11132 & )
+	(conjugate -d --port=11133 --finder=http://localhost:11131/ --scorer=http://localhost:11132/ > /dev/null 2>&1 & )
 
 	sleep 0.1
-	result=$(curl http://localhost:11133/game/peteraba 2>&1 )
+	result=$(curl "http://localhost:11133/game/${user_name}" 2>&1 )
 
 	if [[ "${result}" == *"question"* ]]; then
 		result_id=$(echo "${result}" | grep -o "[0-9a-f\-]\{36\}")
 		
-		mongo=$(mongo ${game_dbname} --eval "db.${result_test_collection}.find({\"_id\":\"${result}_id\"}).shellPrint()")
+		mongo=$(mongo ${GAME_DBNAME} --eval "db.${D5_COLLECTION_NAME}.find({\"_id\":\"${result}_id\"}).shellPrint()")
 	
 		word_id=$(echo "${mongo}" | grep -o "[0-9a-f]\{24\}")
 
 		result=$(echo "${mongo}" | grep -o "\"right\" \: \[ \"[a-zA-ZäÄöÖüÜß \-]\{4,\}\" \]")
 		result=${result:13:-3}
 
-		result1=$(curl --data "id=${result}_id&answer=${result}" http://localhost:11133/answer/peteraba 2>&1 )
+		result1=$(curl --data "id=${result}_id&answer=${result}" "http://localhost:11133/answer/${user_name}" 2>&1 )
 
-		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"peteraba\"}"
+		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder --coll=${german}_test_collection )
+		result=$(echo ${search_expression} | finder -d)
 		german=$(echo "${result}" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
 		german=${german:10:-1}
 
@@ -334,7 +338,7 @@ function test_play_conjugate()
 
 function test_create_game()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	result=$(curl --data 'name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0' http://localhost:11111/game 2>&1 )
 
@@ -366,7 +370,7 @@ function test_create_game()
 
 function test_update_game()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	result=$(curl --data "name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0" -X "PATCH" http://localhost:11111/game/${game_id} 2>&1 )
 
@@ -385,7 +389,7 @@ function test_update_game()
 
 function test_delete_game()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	result=$(curl -X "DELETE" http://localhost:11111/game/${game_id} 2>&1 )
 
@@ -404,21 +408,21 @@ function test_delete_game()
 
 function test_create_user()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	(fuser -k 11141/tcp > /dev/null 2>&1 & )
 }
 
 function test_update_user()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	(fuser -k 11141/tcp > /dev/null 2>&1 & )
 }
 
 function test_delete_user()
 {
-	(admin --port=11141 & )
+	(admin --port=11141 -d & )
 
 	(fuser -k 11141/tcp > /dev/null 2>&1 & )
 }
@@ -455,22 +459,22 @@ function run_tests()
 	run_task "convert ods to json" 2000
 	run_task "convert csv to json" 400
 	run_task "convert xlsx to json" 2000
-	run_task "check json sizes" 50
+	run_task "check json sizes" 100
 	run_task "parse json" 500
 	run_task "insert into db" 2000
 	run_task "find annehmbar" 200
 	run_task "find aufbauen" 200
 	run_task "find solche via server" 200
-	run_task "score solche" 200
-	run_task "score solche via server" 200
-	run_task "play derdiedas" 500
-	run_task "play conjugate" 1000
-	run_task "create_game" 300
-	#run_task "update_game" 300
-	#run_task "delete_game" 300
-	#run_task "create_user" 300
-	#run_task "update_user" 300
-	#run_task "delete_user" 300
+	# run_task "score solche" 200
+	# run_task "score solche via server" 200
+	# run_task "play derdiedas" 500
+	# run_task "play conjugate" 1000
+	# run_task "create_game" 300
+	# run_task "update_game" 300
+	# run_task "delete_game" 300
+	# run_task "create_user" 300
+	# run_task "update_user" 300
+	# run_task "delete_user" 300
 }
 
 function main()

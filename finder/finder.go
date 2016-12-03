@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/peteraba/d5/lib/german/entity"
@@ -99,8 +100,12 @@ func serveCli(mgoDb *mgo.Database, isDebug bool) {
 }
 
 func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
-	arguments := util.GetCliArguments(usage, name, version)
-	query, limit, collectionName, err := getCliFinderData(arguments)
+	stdInput, err := util.ReadStdInput()
+	if err != nil {
+		return nil, err
+	}
+
+	query, limit, collectionName, err := getCliFinderData(stdInput)
 	if err != nil {
 		return nil, err
 	}
@@ -113,9 +118,15 @@ func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
 	return util.DataToJson(data, isDebug)
 }
 
-func getCliFinderData(data map[string]interface{}) (bson.M, int, string, error) {
-	rawQuery, _ := data["query"].(string)
-	rawLimit, _ := data["limit"].(string)
+func getCliFinderData(stdInput []byte) (bson.M, int, string, error) {
+	values, err := url.ParseQuery(string(stdInput))
+
+	if err != nil {
+		return bson.M{}, 0, "", err
+	}
+
+	rawQuery := values.Get("query")
+	rawLimit := values.Get("limit")
 
 	return getFinderData(rawQuery, rawLimit)
 }

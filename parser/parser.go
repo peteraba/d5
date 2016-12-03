@@ -22,7 +22,7 @@ Parser supports CLI and Server mode.
 In CLI mode it expects input data on standard input, in server mode as raw POST body
 
 Usage:
-  parser [--server] [--port=<n>] [--debug] [--user]
+  parser [--server] [--port=<n>] [--debug] [--user=<s>]
   parser -h | --help
   parser -v | --version
 
@@ -32,7 +32,7 @@ Options:
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
-  -u, --user      user the data belongs to (cli mode only)
+  -u, --user=<s>  user the data belongs to (cli mode only)
 
 Accepted input data:
   - Raw JSON data to parse
@@ -185,7 +185,7 @@ func getParserData(rawInput []byte, user string) ([]germanEntity.Word, []string)
 
 	err := json.Unmarshal(rawInput, &dictionary)
 	if err != nil {
-		return []germanEntity.Word{}, []string{}
+		return []germanEntity.Word{}, []string{err.Error()}
 	}
 
 	words, parseErrors := parseDictionary(dictionary, user)
@@ -200,7 +200,7 @@ func getParserData(rawInput []byte, user string) ([]germanEntity.Word, []string)
 func main() {
 	cliArguments := util.GetCliArguments(usage, name, version)
 	isServer, port, isDebug := util.GetServerOptions(cliArguments)
-	user, _ := cliArguments["--server"].(string)
+	user, _ := cliArguments["--user"].(string)
 
 	if isServer {
 		startServer(port, isDebug)
