@@ -8,11 +8,10 @@ source util.sh
 
 function run_test()
 {
-  filename="$1"
+	filename="$1"
 	line=$(go test "github.com/peteraba/d5/lib/${filename}" -cover)
+
 	if [ ${line:0:2} == "ok" ]; then
-		line="Dir:\t\t$(echo -e "${line:2}" | sed -e 's/^[[:space:]]*//')"
-		line="$(echo ${line} | sed -r 's/ 0/ \nTime:\t\t0/g' | sed -r 's/ coverage: /\nCoverage:\t/g')"
 		if [[ "${line}" == *"100.0%"* ]]; then
 			test_success
 		else
@@ -28,13 +27,27 @@ function run_test()
 
 function run_tests()
 {
-	for filename in $(find ../lib -type d -printf '%d\t%P\n' | sort -r -nk1 | cut -f2-);
+	local filenames=''
+
+	filenames=$(find ../lib -type d | sort -r -nk1 | cut -f2-)
+
+	for filename in ${filenames}
 	do
-		count=`ls -1 "../lib/${filename}/*.go" 2>/dev/null | wc -l`
-		if [ ${count} != 0 ]
+		go_files=`ls -1 ${filename}/*.go 2> /dev/null | wc -l | tr -d '[:space:]'`
+		if [ ${go_files} == 0 ]
 		then
-			print_title "Starting test: ${filename}"
+			continue
+		fi
+
+		test_files=`ls -1 ${filename}/*_test.go 2> /dev/null | wc -l | tr -d '[:space:]'`
+    source_files=`expr ${go_files} - ${test_files}`
+		print_title "Checking: ${filename} (${test_files} tests for ${source_files} source files)"
+
+		if [ ${test_files} != 0 ]
+		then
 			run_test "${filename}"
+		else
+			echo
 		fi
 	done
 }
