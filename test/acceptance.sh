@@ -166,13 +166,13 @@ function test_score_solche()
 	local result=""
 
 	if [ "${solche_id}" != "" ]; then
-		$(scorer --wordId=${solche_id} --score=6 -d)
+		$(echo "wordId=${solche_id}&score=6" | scorer -d)
 
 		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"${user_name}\"}"
 
 		result=$(echo ${search_expression} | finder -d)
 
-		if [[ "${result}" == *"\"result\":6,"* ]]; then
+		if [[ "${result}" == *"\"result\": 6,"* ]]; then
 			test_success
 			print_output "Score 6 was found."
 		else
@@ -193,7 +193,7 @@ function test_score_solche_via_server()
 	local result=""
 
 	if [ "${solche_id}" != "" ]; then
-		(scorer --server=true --port=11112 -d & )
+		(scorer --server --port=11112 -d & )
 
 		result=$(curl --data "wordId=${solche_id}&score=7" http://localhost:11112/ 2>&1 )
 
@@ -202,7 +202,7 @@ function test_score_solche_via_server()
 
 			result=$(echo ${search_expression} | finder -d)
 
-			if [[ "${result}" == *"\"result\":7,"* ]]; then
+			if [[ "${result}" == *"\"result\": 7,"* ]]; then
 				test_success
 				print_output "Score 7 was found."
 			else
@@ -465,8 +465,8 @@ function run_tests()
 	run_task "find annehmbar" 200
 	run_task "find aufbauen" 200
 	run_task "find solche via server" 200
-	# run_task "score solche" 200
-	# run_task "score solche via server" 200
+	run_task "score solche" 200
+	run_task "score solche via server" 200
 	# run_task "play derdiedas" 500
 	# run_task "play conjugate" 1000
 	# run_task "create_game" 300

@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
@@ -93,8 +96,12 @@ func serveCli(mgoDb *mgo.Database, isDebug bool) {
 }
 
 func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
-	arguments := util.GetCliArguments(usage, name, version)
-	wordId, score, collectionName, err := getCliScoreData(arguments)
+	stdInput, err := util.ReadStdInput()
+	if err != nil {
+		return nil, err
+	}
+
+	wordId, score, collectionName, err := getCliScoreData(stdInput)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +114,16 @@ func cliHandler(mgoDb *mgo.Database, isDebug bool) (interface{}, error) {
 	return util.DataToJson(data, isDebug)
 }
 
-func getCliScoreData(data map[string]interface{}) (string, int, string, error) {
-	wordId, _ := data["wordId"].(string)
-	rawScore, _ := data["score"].(string)
+func getCliScoreData(stdInput []byte) (string, int, string, error) {
+	input := strings.Trim(string(stdInput), "\n\t ")
+	values, err := url.ParseQuery(input)
+
+	if err != nil {
+		return "", 0, "", err
+	}
+
+	wordId := values.Get("wordId")
+	rawScore := values.Get("score")
 
 	return getScoreData(wordId, rawScore)
 }
@@ -171,6 +185,8 @@ func filterData(wordId, rawScore, collectionName string) (string, int, string, e
 	}
 
 	score64, err := strconv.ParseInt(rawScore, 10, 0)
+	log.Println(rawScore)
+	log.Println(score64)
 	if err != nil {
 		return "", 0, "", errors.New("Score is not a valid integer")
 	}
