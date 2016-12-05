@@ -39,6 +39,22 @@ Accepted input data:
 `
 
 /**
+ * MAIN
+ */
+
+func main() {
+	cliArguments := util.GetCliArguments(usage, name, version)
+	isServer, port, isDebug := util.GetServerOptions(cliArguments)
+	user, _ := cliArguments["--user"].(string)
+
+	if isServer {
+		startServer(port, isDebug)
+	} else {
+		serveCli(isDebug, user)
+	}
+}
+
+/**
 * DOMAIN
  */
 func logParseErrors(isDebug bool, parseErrors []string) {
@@ -191,20 +207,4 @@ func getParserData(rawInput []byte, user string) ([]germanEntity.Word, []string)
 	words, parseErrors := parseDictionary(dictionary, user)
 
 	return words, parseErrors
-}
-
-/**
- * MAIN
- */
-
-func main() {
-	cliArguments := util.GetCliArguments(usage, name, version)
-	isServer, port, isDebug := util.GetServerOptions(cliArguments)
-	user, _ := cliArguments["--user"].(string)
-
-	if isServer {
-		startServer(port, isDebug)
-	} else {
-		serveCli(isDebug, user)
-	}
 }

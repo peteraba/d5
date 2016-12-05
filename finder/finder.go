@@ -31,7 +31,7 @@ Usage:
 
 Options:
   -s, --server    run in server mode
-  -p, --port=<n>  port to open (server mode only) [default: 10040]
+  -p, --port=<n>  port to open (server mode only) [default: 10110]
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
@@ -41,11 +41,30 @@ Accepted input data:
   - limit  Maximum number of items to be returned [default: 100]
 
 Environment variables:
-  - D5_DBHOST           host or ip of mongodb
-  - D5_DBNAME           database name
-  - D5_COLLECTION_NAME  collection name
-  - D5_COLLECTION_TYPE  collection type
+  - D5_DB_HOST                  database host or ip
+  - D5_DB_NAME                  database name
+  - D5_GAME_TYPE                game type
+  - D5_COLLECTION_DATA_GENERAL  name of general collection
+  - D5_COLLECTION_DATA_GERMAN   name of german collection
+  - D5_COLLECTION_DATA_RESULT   name of result collection
 `
+
+/**
+ * MAIN
+ */
+
+func main() {
+	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
+
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
+
+	if isServer {
+		startServer(port, mgoDb, isDebug)
+	} else {
+		serveCli(mgoDb, isDebug)
+	}
+}
 
 /**
  * DOMAIN
@@ -173,7 +192,7 @@ func getServerFinderData(r *http.Request) (bson.M, int, string, error) {
  */
 
 func getFinderData(rawQuery, rawLimit string) (bson.M, int, string, error) {
-	collectionName, _ := mongo.ParseCollectionEnvs()
+	collectionName := mongo.ParseDataCollection()
 
 	return filterData(rawQuery, rawLimit, collectionName)
 }
@@ -201,21 +220,4 @@ func filterData(rawQuery, rawLimit, collectionName string) (bson.M, int, string,
 	err = json.Unmarshal([]byte(rawQuery), &search)
 
 	return search, int(limit64), collectionName, err
-}
-
-/**
- * MAIN
- */
-
-func main() {
-	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
-
-	mgoDb, err := mongo.CreateMgoDbFromEnvs()
-	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
-
-	if isServer {
-		startServer(port, mgoDb, isDebug)
-	} else {
-		serveCli(mgoDb, isDebug)
-	}
 }

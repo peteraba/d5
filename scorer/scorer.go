@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -33,7 +32,7 @@ Usage:
 
 Options:
   -s, --server    run in server mode
-  -p, --port=<n>  port to open (server mode only) [default: 10050]
+  -p, --port=<n>  port to open (server mode only) [default: 10120]
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
@@ -43,10 +42,12 @@ Accepted input data:
   - score   Score to associate
 
 Environment variables:
-  - D5_DBHOST             host or ip of mongodb
-  - D5_DBNAME             database name
-  - D5_COLLECTION_NAME    collection name
-  - D5_COLLECTION_TYPE    collection type
+  - D5_DB_HOST                  database host or ip
+  - D5_DB_NAME                  database name
+  - D5_GAME_TYPE                game type
+  - D5_COLLECTION_DATA_GENERAL  name of general collection
+  - D5_COLLECTION_DATA_GERMAN   name of german collection
+  - D5_COLLECTION_DATA_RESULT   name of result collection
 `
 
 /**
@@ -170,7 +171,7 @@ func getServerScoreData(r *http.Request) (string, int, string, error) {
  */
 
 func getScoreData(wordId, rawScore string) (string, int, string, error) {
-	collectionName, _ := mongo.ParseCollectionEnvs()
+	collectionName := mongo.ParseDataCollection()
 
 	return filterData(wordId, rawScore, collectionName)
 }
@@ -185,8 +186,6 @@ func filterData(wordId, rawScore, collectionName string) (string, int, string, e
 	}
 
 	score64, err := strconv.ParseInt(rawScore, 10, 0)
-	log.Println(rawScore)
-	log.Println(score64)
 	if err != nil {
 		return "", 0, "", errors.New("Score is not a valid integer")
 	}

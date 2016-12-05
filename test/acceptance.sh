@@ -2,16 +2,16 @@
 
 cd "$(dirname "$0")"
 
+
 rm -f output/*
 
-export D5_DBHOST="localhost"
-export D5_DBNAME="d5_test"
+export D5_DB_HOST="mongo.local"
+export D5_DB_NAME="d5_test"
 
-export GAME_DBHOST="localhost"
-export GAME_DBNAME="d5_test"
-
-export D5_COLLECTION_NAME="german"
-export D5_COLLECTION_TYPE="german"
+export D5_GAME_TYPE="german"
+export D5_COLLECTION_DATA_GENERAL="general"
+export D5_COLLECTION_DATA_GERMAN="german"
+export D5_COLLECTION_RESULT="result"
 
 user_name="john_doe"
 
@@ -21,6 +21,29 @@ solche_id=""
 game_id=""
 
 source util.sh
+
+parser_port=10110
+persister_port=10120
+finder_port=10210
+router_port=10220
+scorer_port=10230
+admin_port=10310
+derdiedas_port=10410
+conjugate_port=10420
+
+parser_host='parser.local'
+persister_host='persister.local'
+finder_host='finder.local'
+router_host='router.local'
+scorer_host='scorer.local'
+admin_host='admin.local'
+derdiedas_host='derdiedas.local'
+conjugate_host='conjugate.local'
+
+function kill_app_listening_on_port()
+{
+	ps -ef | grep "$1" | egrep -v grep | awk '{print $2}' | xargs kill -9
+}
 
 function test_convert_ods_to_json()
 {
@@ -55,19 +78,19 @@ function test_check_json_sizes()
 		csv_xlsx_diff=$(diff output/csv.json output/xlsx.json)
 		csv_ods_diff=$(diff output/csv.json output/ods.json)
 
-		if [ "$csv_xlsx_diff" != "" ]; then
+		if [ "${csv_xlsx_diff}" != "" ]; then
 			test_error
 			print_error ".xlsx and .csv files are different"
-			print_error "$csv_xlsx_diff"
+			print_error "${csv_xlsx_diff}"
 			error=1
 		else
 			test_success
 			print_output ".xlsx and .csv files are the same"
 		fi
-		if [ "$csv_ods_diff" != "" ]; then
+		if [ "${csv_ods_diff}" != "" ]; then
 			test_error
 			print_error ".ods and .csv files are different"
-			print_error "$csv_ods_diff"
+			print_error "${csv_ods_diff}"
 			error=1
 		else
 			test_success
@@ -83,7 +106,7 @@ function test_check_json_sizes()
 function test_parse_json()
 {
 	if [ -f ../parser/parser.go ]; then
-		cat output/csv.json | parser --user=${user_name} -d > output/parsed.json
+		cat output/csv.json | parser "--user=${user_name}" -d > output/parsed.json
 	else
 		test_error
 		print_error "parser is missing"
@@ -107,7 +130,7 @@ function test_find_annehmbar()
 	local result=""
 	local search_expression="limit=2&query={\"word.german\": \"annehmbar\",\"word.user\": \"${user_name}\"}"
 
-	result=$(echo ${search_expression} | finder -d)
+	result=$(echo "${search_expression}" | finder -d)
 	
 	if [[ "${result}" == *"acceptable"* ]]; then
 		test_success
@@ -125,7 +148,7 @@ function test_find_aufbauen()
 	local result=""
 	local search_expression="limit=2&query={\"word.german\": \"aufbauen\",\"word.user\": \"${user_name}\"}"
 
-	result=$(echo ${search_expression} | finder -d)
+	result=$(echo "${search_expression}" | finder -d)
 
 	if [[ "${result}" == *"build"* ]]; then
 		test_success
@@ -142,11 +165,11 @@ function test_find_solche_via_server()
 {
 	local result=""
 
-	(finder --server --port=11111 -d & )
+	finder --server "--port=${finder_port}" -d &
 
-	result=$(curl --data "limit=2&query={\"word.german\":\"solche\",\"word.user\":\"${user_name}\"}" http://localhost:11111/ 2>&1 )
+	result=$(curl --data "limit=2&query={\"word.german\":\"solche\",\"word.user\":\"${user_name}\"}" "http://${finder_host}:${finder_port}/" 2>&1 )
 
-	(fuser -k 11111/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${finder_port}"
 	
 	if [[ "${result}" == *"such"* ]]; then
 		solche_id=$(echo "${result}" | grep -o "[0-9a-f\-]\{24\}")
@@ -170,7 +193,7 @@ function test_score_solche()
 
 		local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder -d)
+		result=$(echo "${search_expression}" | finder -d)
 
 		if [[ "${result}" == *"\"result\": 6,"* ]]; then
 			test_success
@@ -182,7 +205,7 @@ function test_score_solche()
 			error=1
 		fi
 	else
-		test_err
+		test_error
 		print_error "Id for word solche is empty."
 		error=1
 	fi
@@ -193,14 +216,14 @@ function test_score_solche_via_server()
 	local result=""
 
 	if [ "${solche_id}" != "" ]; then
-		(scorer --server --port=11112 -d & )
+		(scorer --server "--port=${scorer_port}" -d & )
 
-		result=$(curl --data "wordId=${solche_id}&score=7" http://localhost:11112/ 2>&1 )
+		result=$(curl --data "wordId=${solche_id}&score=7" "http://${scorer_host}:${scorer_port}/" 2>&1 )
 
 		if [[ "${result}" == *"true"* ]]; then
 			local search_expression="limit=2&query={\"word.german\": \"solche\",\"word.user\": \"${user_name}\"}"
 
-			result=$(echo ${search_expression} | finder -d)
+			result=$(echo "${search_expression}" | finder -d)
 
 			if [[ "${result}" == *"\"result\": 7,"* ]]; then
 				test_success
@@ -218,10 +241,10 @@ function test_score_solche_via_server()
 			error=1
 		fi
 
-		(fuser -k 11112/tcp > /dev/null 2>&1 & )
+		kill_app_listening_on_port "${scorer_port}"
 
 	else
-		test_err
+		test_error
 		print_error "Id for word solche is empty."
 		error=1
 	fi
@@ -229,35 +252,35 @@ function test_score_solche_via_server()
 
 function test_play_derdiedas()
 {
-	local result=""
-	local word_id=""
-	local german=""
-	local result1=""
-	local result2=""
-	local result3=""
-	local search_expression
+	local result=''
+	local word_id=''
+	local german=''
+	local result1=''
+	local result2=''
+	local result3=''
+	local search_expression=''
 
-	(finder --server=true --port=11121 -d & )
-	(scorer --server=true --port=11122 -d & )
-	(derdiedas -d --port=11123 --finder=http://localhost:11121/ --scorer=http://localhost:11122/ > /dev/null 2>&1 & )
+	finder --server "--port=${finder_port}" -d &
+	scorer --server "--port=${scorer_port}" -d &
+	derdiedas -d "--port=${derdiedas_port}" "--finder=http://${finder_host}:${finder_port}/" "--scorer=http://${scorer_host}:${scorer_port}/" > /dev/null 2>&1 &
 
 	sleep 0.1
-	result=$(curl http://localhost:11123/game/${user_name} 2>&1 )
+	result=$(curl "http://${derdiedas_host}:${derdiedas_port}/game/${user_name}" 2>&1 )
 
 	word_id=$(echo "${result}" | grep -o "[0-9a-f\-]\{24\}")
 		
 	if [[ "${result}" == *"question"* ]]; then
-		result1=$(curl --data "id=${word_id}&answer=1" http://localhost:11123/answer/${user_name} 2>&1 )
-		result2=$(curl --data "id=${word_id}&answer=2" http://localhost:11123/answer/${user_name} 2>&1 )
-		result3=$(curl --data "id=${word_id}&answer=3" http://localhost:11123/answer/${user_name} 2>&1 )
+		result1=$(curl --data "id=${word_id}&answer=1" "http://${derdiedas_host}:${derdiedas_port}/answer/${user_name}" 2>&1 )
+		result2=$(curl --data "id=${word_id}&answer=2" "http://${derdiedas_host}:${derdiedas_port}/answer/${user_name}" 2>&1 )
+		result3=$(curl --data "id=${word_id}&answer=3" "http://${derdiedas_host}:1${derdiedas_port}/answer/${user_name}" 2>&1 )
 
 		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder -d)
+		result=$(echo "${search_expression}" | finder -d)
 		german=$(echo "${result}" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
-		german=${german:10:-1}
+		german="${german:10:-1}"
 
-		if [[ "${result}" == *"\"result\":10,"* ]]; then
+		if [[ "${result}" == *"\"result\": 10,"* ]]; then
 			test_success
 			print_output "Score 10 was found."
 			print_output "Word: ${german}, Id: ${word_id}"
@@ -274,9 +297,9 @@ function test_play_derdiedas()
 		error=1
 	fi
 
-	(fuser -k 11121/tcp > /dev/null 2>&1 & )
-	(fuser -k 11122/tcp > /dev/null 2>&1 & )
-	(fuser -k 11123/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${finder_port}"
+	kill_app_listening_on_port "${scorer_port}"
+	kill_app_listening_on_port "${derdiedas_port}"
 }
 
 function test_play_conjugate()
@@ -289,32 +312,32 @@ function test_play_conjugate()
 	local result1=""
 	local search_expression=''
 
-	(finder --server=true --port=11131 & )
-	(scorer --server=true --port=11132 & )
-	(conjugate -d --port=11133 --finder=http://localhost:11131/ --scorer=http://localhost:11132/ > /dev/null 2>&1 & )
+	finder --server "--port=${finder_port}" -d &
+	scorer --server "--port=${scorer_port}" -d &
+	conjugate -d --server "--port=${conjugate_port}" "--finder=http://${finder_host}:${finder_port}/" "--scorer=http://${scorer_host}:${scorer_port}/" > /dev/null 2>&1 &
 
 	sleep 0.1
-	result=$(curl "http://localhost:11133/game/${user_name}" 2>&1 )
+	result=$(curl "http://${conjugate_host}:${conjugate_port}/game/${user_name}" 2>&1 )
 
 	if [[ "${result}" == *"question"* ]]; then
 		result_id=$(echo "${result}" | grep -o "[0-9a-f\-]\{36\}")
 		
-		mongo=$(mongo ${GAME_DBNAME} --eval "db.${D5_COLLECTION_NAME}.find({\"_id\":\"${result}_id\"}).shellPrint()")
-	
+		mongo=$(mongo ${D5_DB_NAME} --eval "db.${D5_COLLECTION_DATA_GERMAN}.find({\"_id\":\"${result}_id\"}).shellPrint()")
+
 		word_id=$(echo "${mongo}" | grep -o "[0-9a-f]\{24\}")
 
 		result=$(echo "${mongo}" | grep -o "\"right\" \: \[ \"[a-zA-ZäÄöÖüÜß \-]\{4,\}\" \]")
 		result=${result:13:-3}
 
-		result1=$(curl --data "id=${result}_id&answer=${result}" "http://localhost:11133/answer/${user_name}" 2>&1 )
+		result1=$(curl --data "id=${result}_id&answer=${result}" "http://${conjugate_host}:${conjugate_port}/answer/${user_name}" 2>&1 )
 
 		search_expression="limit=2&query={\"__id\": \"${word_id}\",\"word.user\": \"${user_name}\"}"
 
-		result=$(echo ${search_expression} | finder -d)
+		result=$(echo "${search_expression}" | finder -d)
 		german=$(echo "${result}" | grep -o "\"german\":\"[a-zA-ZäÄöÖüÜß -]*\"")
 		german=${german:10:-1}
 
-		if [[ "${result}" == *"\"result\":10,"* ]]; then
+		if [[ "${result}" == *"\"result\": 10,"* ]]; then
 			test_success
 			print_output "Score 10 was found."
 			print_output "Word: ${german}, Id: ${word_id}"
@@ -331,23 +354,23 @@ function test_play_conjugate()
 		error=1
 	fi
 
-	(fuser -k 11131/tcp > /dev/null 2>&1 & )
-	(fuser -k 11132/tcp > /dev/null 2>&1 & )
-	(fuser -k 11133/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${finder_port}"
+	kill_app_listening_on_port "${scorer_port}"
+	kill_app_listening_on_port "${conjugate_port}"
 }
 
 function test_create_game()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	result=$(curl --data 'name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0' http://localhost:11111/game 2>&1 )
+	result=$(curl --data "name=Der%20die%20das&route=derdiedas&url=http://${derdiedas_host}:${derdiedas_port}/&is-system=0" "http://${admin_host}:${admin_port}/game" 2>&1 )
 
 	if [[ "${result}" == *"OK"* ]]; then
 		print_output "Admin responded with OK."
 		
 		game_id=""
 
-		result=$(curl http://localhost:11111/game/${game_id} 2>&1 )
+		result=$(curl "http://${admin_host}:${admin_port}/game/${game_id}" 2>&1 )
 
 		if [[ "${result}" == *"OK"* ]]; then
 			test_success
@@ -364,15 +387,13 @@ function test_create_game()
 		print_error "Result: ${result}"
 		error=1
 	fi
-
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
 }
 
 function test_update_game()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	result=$(curl --data "name=Der%20die%20das&route=derdiedas&url=http://localhost:12345/&is-system=0" -X "PATCH" http://localhost:11111/game/${game_id} 2>&1 )
+	result=$(curl --data "name=Der%20die%20das&route=derdiedas&url=http://${derdiedas_host}:${derdiedas_port}/&is-system=0" -X PATCH "http://${admin_host}:${admin_port}/game/${game_id}" 2>&1 )
 
 	if [[ "${result}" == *"OK"* ]]; then
 		test_success
@@ -384,14 +405,15 @@ function test_update_game()
 		error=1
 	fi
 
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${admin_port}"
+	# kill_app_listening_on_port "${derdiedas_port}"
 }
 
 function test_delete_game()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	result=$(curl -X "DELETE" http://localhost:11111/game/${game_id} 2>&1 )
+	result=$(curl -X "DELETE" "http://${admin_host}:${admin_port}/game/${game_id}" 2>&1 )
 
 	if [[ "${result}" == *"OK"* ]]; then
 		test_success
@@ -403,28 +425,29 @@ function test_delete_game()
 		error=1
 	fi
 
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${admin_port}"
+	# kill_app_listening_on_port "${derdiedas_port}"
 }
 
 function test_create_user()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${admin_port}"
 }
 
 function test_update_user()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${admin_port}"
 }
 
 function test_delete_user()
 {
-	(admin --port=11141 -d & )
+	admin "--port=${admin_port}" -d &
 
-	(fuser -k 11141/tcp > /dev/null 2>&1 & )
+	kill_app_listening_on_port "${admin_port}"
 }
 
 function run_task()
@@ -459,7 +482,7 @@ function run_tests()
 	run_task "convert ods to json" 2000
 	run_task "convert csv to json" 400
 	run_task "convert xlsx to json" 2000
-	run_task "check json sizes" 100
+	run_task "check json sizes" 200
 	run_task "parse json" 500
 	run_task "insert into db" 2000
 	run_task "find annehmbar" 200
@@ -467,8 +490,8 @@ function run_tests()
 	run_task "find solche via server" 200
 	run_task "score solche" 200
 	run_task "score solche via server" 200
-	# run_task "play derdiedas" 500
-	# run_task "play conjugate" 1000
+	run_task "play derdiedas" 500
+	run_task "play conjugate" 1000
 	# run_task "create_game" 300
 	# run_task "update_game" 300
 	# run_task "delete_game" 300

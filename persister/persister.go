@@ -40,10 +40,12 @@ Accepted input data:
   - Raw JSON data to persist
 
 Used environment variables:
-  - D5_DBHOST             host or ip of mongodb
-  - D5_DBNAME             database name
-  - D5_COLLECTION_NAME    collection name
-  - D5_COLLECTION_TYPE    collection type
+  - D5_DB_HOST                  database host or ip
+  - D5_DB_NAME                  database name
+  - D5_GAME_TYPE                game type
+  - D5_COLLECTION_DATA_GENERAL  name of general collection
+  - D5_COLLECTION_DATA_GERMAN   name of german collection
+  - D5_COLLECTION_DATA_RESULT   name of result collection
 `
 
 /**
@@ -160,7 +162,7 @@ func getServerPersistData(r *http.Request) ([]entity.Word, string, error) {
  */
 
 func getPersistData(rawInput []byte) ([]entity.Word, string, error) {
-	collectionName, _ := mongo.ParseCollectionEnvs()
+	collectionName := mongo.ParseDataCollection()
 
 	words, err := german.ParseWords(rawInput)
 

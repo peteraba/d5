@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/peteraba/d5/lib/german/entity"
 	"github.com/peteraba/d5/lib/mongo"
@@ -19,15 +18,37 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
+const name = "finder"
+const version = "0.1"
+const usage = `
+Router supports CLI and Server mode.
 
-const (
-	COLL_TYPE_DEFAULT = "default"
-	COLL_TYPE_GERMAN  = "german"
-)
+In CLI mode it expects input data on standard input as JSON, in server mode as a standard form.
+
+Usage:
+  router [--server] [--port=<n>] [--debug]
+  router -h | --help
+  router -v | --version
+
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10130]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
+
+Accepted input data:
+  - query  Search query as JSON string
+  - limit  Maximum number of items to be returned [default: 100]
+
+Environment variables:
+  - D5_DB_HOST                  database host or ip
+  - D5_DB_NAME                  database name
+  - D5_GAME_TYPE                game type
+  - D5_COLLECTION_DATA_GENERAL  name of general collection
+  - D5_COLLECTION_DATA_GERMAN   name of german collection
+  - D5_COLLECTION_DATA_RESULT   name of result collection
+`
 
 /**
  * MGO
@@ -181,26 +202,16 @@ func parseFlags() (int, string, bool) {
 	return *port, *collectionName, *debug
 }
 
-func parseEnvs() (string, string) {
-	// Mongo database host
-	hostname := os.Getenv(dbhost_env)
-
-	// Mongo database name
-	dbName := os.Getenv(dbname_env)
-
-	return hostname, dbName
-}
-
 /**
  * MAIN
  */
 func main() {
-	hostName, dbName := parseEnvs()
-	if hostName == "" || dbName == "" {
+	dbHost, dbName := mongo.ParseDbEnvs()
+	if dbHost == "" || dbName == "" {
 		log.Fatalln("Missing environment variables")
 	}
 
-	mgoDb, err := mongo.CreateMgoDb(hostName, dbName)
+	mgoDb, err := mongo.CreateMgoDb(dbHost, dbName)
 	if err != nil {
 		log.Fatalf("MongoDB database could not be created: %v", err)
 	}

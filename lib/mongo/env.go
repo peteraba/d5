@@ -3,31 +3,67 @@ package mongo
 import "os"
 
 const (
-	env_dbhost   = "D5_DBHOST"
-	env_dbname   = "D5_DBNAME"
-	env_collname = "D5_COLLECTION_NAME"
-	env_colltype = "D5_COLLECTION_TYPE"
+	envDbHost            = "D5_DB_HOST"
+	envDbName            = "D5_DB_NAME"
+	envGameType          = "D5_GAME_TYPE"
+	envCollectionGeneral = "D5_COLLECTION_DATA_GENERAL"
+	envCollectionGerman  = "D5_COLLECTION_DATA_GERMAN"
+	envCollectionResult  = "D5_COLLECTION_RESULT"
 )
 
 const (
-	coll_type_default = "default"
-	coll_type_german  = "german"
+	german  = "german"
+	general = "general"
 )
 
 func ParseDbEnvs() (string, string) {
-	dbHost := os.Getenv(env_dbhost)
-	dbName := os.Getenv(env_dbname)
+	dbHost := os.Getenv(envDbHost)
+	dbName := os.Getenv(envDbName)
 
 	return dbHost, dbName
 }
 
-func ParseCollectionEnvs() (string, string) {
-	collectionName := os.Getenv(env_collname)
-	collectionType := os.Getenv(env_colltype)
+func ParseGameType() string {
+	gameType := os.Getenv(envGameType)
 
-	return collectionName, collectionType
+	return gameType
 }
 
-func IsGerman(collectionType string) bool {
-	return collectionType == coll_type_german
+func IsGameGerman(collectionType string) bool {
+	return collectionType == ParseGameType()
+}
+
+func ParseDataCollection() string {
+	var collectionName string
+
+	gameType := os.Getenv(envGameType)
+
+	switch gameType {
+	case german:
+		collectionName = os.Getenv(envCollectionGerman)
+		break
+	case general:
+		collectionName = os.Getenv(envCollectionGeneral)
+		break
+	}
+
+	return collectionName
+}
+
+func ParseGeneralCollection() string {
+	collectionName := os.Getenv(envCollectionGeneral)
+
+	return collectionName
+}
+
+func ParseGermalCollection() string {
+	collectionName := os.Getenv(envCollectionGerman)
+
+	return collectionName
+}
+
+func ParseResultCollection() string {
+	collectionName := os.Getenv(envCollectionResult)
+
+	return collectionName
 }

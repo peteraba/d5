@@ -1,0 +1,120 @@
+version: "2"
+
+services:
+  mongo:
+    image: mongo
+    networks:
+      d5:
+        aliases:
+         - mongo.local
+    env_file:
+      - ./common.env
+
+  spreadsheet:
+    image: peteraba/d5-spreadsheet
+    working_dir: /src
+    networks:
+      d5:
+        aliases:
+         - cache.local
+    env_file:
+      - ./common.env
+
+  parser:
+    image: peteraba/d5-parser
+    networks:
+      d5:
+        aliases:
+         - parser.local
+    env_file:
+      - ./common.env
+
+  persister:
+    image: peteraba/d5-persister
+    networks:
+      d5:
+        aliases:
+         - persister.local
+    env_file:
+      - ./common.env
+
+  finder:
+    image: peteraba/d5-finder
+    networks:
+      d5:
+        aliases:
+         - finder.local
+    env_file:
+      - ./common.env
+
+  scorer:
+    image: peteraba/d5-scorer
+    networks:
+      d5:
+        aliases:
+         - scorer.local
+    env_file:
+      - ./common.env
+
+  router:
+    image: peteraba/d5-router
+    networks:
+      d5:
+        aliases:
+         - router.local
+    env_file:
+      - ./common.env
+
+  admin:
+    image: peteraba/d5-admin
+    networks:
+      d5:
+        aliases:
+         - admin.local
+    env_file:
+      - ./common.env
+
+  derdiedas:
+    image: peteraba/d5-derdiedas
+    networks:
+      d5:
+        aliases:
+         - derdiedas.local
+    env_file:
+      - ./common.env
+
+  conjugate:
+    image: peteraba/d5-conjugate
+    networks:
+      d5:
+        aliases:
+         - conjugate.local
+    env_file:
+      - ./common.env
+
+  d5:
+    image: peteraba/d5
+    links:
+      - mongo
+      - spreadsheet
+      - parser
+      - persister
+      - finder
+      - scorer
+      - router
+      - admin
+      - derdiedas
+      - conjugate
+    volumes:
+      - ./test/acceptance.sh:/src/acceptance.sh
+    working_dir: /src
+    networks:
+      d5:
+        aliases:
+         - d5.local
+    env_file:
+      - ./common.env
+
+networks:
+  d5:
+    driver: bridge

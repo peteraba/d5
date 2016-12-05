@@ -29,7 +29,7 @@ function run_tests()
 {
 	local filenames=''
 
-	filenames=$(find ../lib -type d | sort -r -nk1 | cut -f2-)
+	filenames=$(find .. -type d | sort -r -nk1 | cut -f2-)
 
 	for filename in ${filenames}
 	do

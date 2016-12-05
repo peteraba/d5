@@ -1,46 +1,32 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/peteraba/d5/lib/game"
+	game "github.com/peteraba/d5/game/lib"
 	"github.com/peteraba/d5/lib/german"
 	"github.com/peteraba/d5/lib/german/entity"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-func parseFlags() (int, bool, string, string) {
-	port := flag.Int("port", 17181, "Port for server")
+const name = "DerDieDas"
+const version = "0.1"
+const defaultPort = "10410"
 
-	debug := flag.Bool("debug", false, "Enables debug logs")
+type DerDieDas struct{}
 
-	finder := flag.String("finder", "http://localhost:17171/", "Finder address")
-
-	scorer := flag.String("scorer", "http://localhost:17172/", "Scorer address")
-
-	flag.Parse()
-
-	return *port, *debug, *finder, *scorer
-}
+/**
+ * MAIN
+ */
 
 func main() {
-	port, debug, finderUrl, scorerUrl := parseFlags()
-
-	if debug == false {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	router := gin.Default()
-
-	router.GET("/game/:user", makeGameHandle(finderUrl))
-	router.POST("/answer/:user", makeCheckAnswerHandle(finderUrl, scorerUrl))
-
-	router.Run(fmt.Sprintf(":%d", port))
+	gameServer := DerDieDas{}
+	game.Main(name, version, defaultPort, gameServer)
 }
 
-func makeGameHandle(finderUrl string) func(c *gin.Context) {
+func (d DerDieDas) MakeGameHandle(finderUrl string, mgoCollection *mgo.Collection, debug bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			words      []entity.Word
@@ -74,7 +60,7 @@ func makeGameHandle(finderUrl string) func(c *gin.Context) {
 	}
 }
 
-func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
+func (d DerDieDas) MakeCheckAnswerHandle(finderUrl, scorerUrl string, mgoCollection *mgo.Collection, isDebug bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			query       = bson.M{}
@@ -102,7 +88,7 @@ func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 
 		noun = dictionary.Nouns[0]
 
-		answerScore = checkAnswer(noun, c.PostForm("answer"))
+		answerScore = d.CheckAnswer(noun, c.PostForm("answer"))
 
 		game.ScoreWords(scorerUrl, answerScore, []string{c.PostForm("id")})
 
@@ -110,7 +96,7 @@ func makeCheckAnswerHandle(finderUrl, scorerUrl string) func(c *gin.Context) {
 	}
 }
 
-func checkAnswer(word entity.Noun, result string) int {
+func (d DerDieDas) CheckAnswer(word entity.Noun, result string) int {
 	for _, article := range word.Articles {
 		if article == entity.Der && result == "1" {
 			return 10

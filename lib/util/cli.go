@@ -32,3 +32,10 @@ func GetServerOptions(arguments map[string]interface{}) (bool, int, bool) {
 
 	return isServer, int(port64), isDebug
 }
+
+func GetGameOptions(arguments map[string]interface{}) (string, string) {
+	finder, _ := arguments["--finder"].(string)
+	scorer, _ := arguments["--scorer"].(string)
+
+	return finder, scorer
+}

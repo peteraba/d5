@@ -143,8 +143,8 @@ Utils
 ### Preparations
 
 ```bash
-export D5_DBHOST="localhost"
-export D5_DBNAME="d5"
+export D5_DB_HOST="localhost"
+export D5_DB_NAME="d5"
 ```
 
 
@@ -220,8 +220,8 @@ Games
 =====
 
 ```bash
-export GAME_HOSTNAME="localhost"
-export GAME_DBNAME="d5"
+export GAME_DB_HOST="localhost"
+export GAME_DB_NAME="d5"
 ```
 
 

@@ -2,57 +2,56 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
+
+	"gopkg.in/mgo.v2"
 
 	"github.com/gin-gonic/gin"
-	"github.com/namsral/flag"
-	"github.com/peteraba/d5/lib/admin"
+	admin "github.com/peteraba/d5/admin/lib"
 	"github.com/peteraba/d5/lib/mongo"
-	mgo "gopkg.in/mgo.v2"
+	"github.com/peteraba/d5/lib/util"
 )
 
-const (
-	dbhost_env = "D5_DBHOST"
-	dbname_env = "D5_DBNAME"
-)
+const name = "admin"
+const version = "0.1"
+const usage = `
+Admin supports CLI and Server mode.
 
-func parseEnvs() (string, string) {
-	dbHost := os.Getenv(dbhost_env)
+In CLI mode it expects input data on standard input, in server mode as raw POST body
 
-	dbName := os.Getenv(dbname_env)
+Usage:
+  admin [--server] [--port=<n>] [--debug] [--user=<s>]
+  admin -h | --help
+  admin -v | --version
 
-	return dbHost, dbName
-}
+Options:
+  -s, --server    run in server mode
+  -p, --port=<n>  port to open (server mode only) [default: 10310]
+  -d, --debug     skip ticks and generate fake data concurrently
+  -v, --version   show version information
+  -h, --help      show help information
+  -u, --user=<s>  user the data belongs to (cli mode only)
+`
 
-func parseFlags() (int, bool) {
-	port := flag.Int("port", 17174, "Port for server")
-
-	debug := flag.Bool("debug", false, "Enables debug logs")
-
-	flag.Parse()
-
-	return *port, *debug
-}
-
-func MgoDb(mgoDb *mgo.Database) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("mgoDb", mgoDb)
-
-		c.Next()
-	}
-}
+/**
+ * MAIN
+ */
 
 func main() {
-	port, debug := parseFlags()
+	cliArguments := util.GetCliArguments(usage, name, version)
+	_, port, isDebug := util.GetServerOptions(cliArguments)
 
-	dbHost, dbName := parseEnvs()
-	mgoDb, err := mongo.CreateMgoDb(dbHost, dbName)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
-	if !debug {
+	startServer(port, mgoDb, isDebug)
+}
+
+/**
+ * SERVER
+ */
+
+func startServer(port int, mgoDb *mgo.Database, isDebug bool) {
+	if !isDebug {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -60,7 +59,7 @@ func main() {
 	// logger and recovery (crash-free) middlewares
 	router := gin.Default()
 
-	router.Use(MgoDb(mgoDb))
+	router.Use(util.MgoDb(mgoDb))
 
 	router.GET("/game", admin.ReadGame)
 	router.POST("/game", admin.CreateGame)
