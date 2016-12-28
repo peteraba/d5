@@ -38,12 +38,18 @@ Options:
 
 func main() {
 	cliArguments := util.GetCliArguments(usage, name, version)
-	_, port, isDebug := util.GetServerOptions(cliArguments)
+	isServer, port, isDebug := util.GetServerOptions(cliArguments)
 
 	mgoDb, err := mongo.CreateMgoDbFromEnvs()
-	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
 
-	startServer(port, mgoDb, isDebug)
+	if isServer {
+		// startServer(port, mgoDb, isDebug)
+		return
+	}
+
+	user, _ := cliArguments["--user"].(string)
+	action, _ := cliArguments["--action"].(string)
+	// serveCli call
 }
 
 /**

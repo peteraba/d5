@@ -54,17 +54,17 @@ func Main(name, version, defaultPort string, gameServer GameServer) {
 	isServer, port, isDebug := util.GetServerOptions(cliArguments)
 	finderUrl, scorerUrl := util.GetGameOptions(cliArguments)
 
-	mgoDb, err := mongo.CreateMgoDbFromEnvs()
-	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
+	mgoDb := mongo.CreateMgoDbFromEnvs()
 	mgoCollection := mgoDb.C(mongo.ParseResultCollection())
 
 	if isServer {
 		startServer(gameServer, port, mgoCollection, finderUrl, scorerUrl, isDebug)
-	} else {
-		user, _ := cliArguments["--user"].(string)
-		action, _ := cliArguments["--action"].(string)
-		serveCli(gameServer, mgoCollection, user, action, finderUrl, scorerUrl, isDebug)
+		return
 	}
+
+	user, _ := cliArguments["--user"].(string)
+	action, _ := cliArguments["--action"].(string)
+	serveCli(gameServer, mgoCollection, user, action, finderUrl, scorerUrl, isDebug)
 }
 
 /**

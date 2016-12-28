@@ -18,12 +18,16 @@ func SetMgoDb(mgoDatabase *mgo.Database) {
 	db = mgoDatabase
 }
 
-func CreateMgoDbFromEnvs() (*mgo.Database, error) {
+func CreateMgoDbFromEnvs() *mgo.Database {
 	dbHost, dbName := ParseDbEnvs()
-	util.LogMsg("Missing environment variable: D5_DBHOST", dbHost == "", util.IS_FATAL)
-	util.LogMsg("Missing environment variable: D5_DBNAME", dbName == "", util.IS_FATAL)
 
-	return CreateMgoDb(dbHost, dbName)
+	mgoDb, err := CreateMgoDb(dbHost, dbName)
+
+	if err != nil {
+		util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
+	}
+
+	return mgoDb
 }
 
 func CreateMgoDb(dbHost, dbName string) (*mgo.Database, error) {

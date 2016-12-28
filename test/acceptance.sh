@@ -502,8 +502,6 @@ function run_tests()
 
 function main()
 {
-	../build.sh
-
 	get_time
 	local start_time="${last_time}"
 

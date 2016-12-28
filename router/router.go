@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,7 +31,7 @@ Usage:
 
 Options:
   -s, --server    run in server mode
-  -p, --port=<n>  port to open (server mode only) [default: 10130]
+  -p, --port=<n>  port to open (server mode only) [default: 10220]
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
@@ -49,6 +48,26 @@ Environment variables:
   - D5_COLLECTION_DATA_GERMAN   name of german collection
   - D5_COLLECTION_DATA_RESULT   name of result collection
 `
+
+/**
+ * MAIN
+ */
+
+func main() {
+	cliArguments := util.GetCliArguments(usage, name, version)
+	_, port, isDebug := util.GetServerOptions(cliArguments)
+
+	mgoDb := mongo.CreateMgoDbFromEnvs()
+
+	if isServer {
+		// startServer call
+		return
+	}
+
+	user, _ := cliArguments["--user"].(string)
+	action, _ := cliArguments["--action"].(string)
+	// serveCli call
+}
 
 /**
  * MGO
@@ -185,38 +204,4 @@ func getAnswerData(r *http.Request) (string, string, string) {
 	answer = r.PostForm.Get("answer")
 
 	return user, id, answer
-}
-
-/**
- * INPUT PARSING
- */
-func parseFlags() (int, string, bool) {
-	port := flag.Int("port", 17173, "Port for server")
-
-	collectionName := flag.String("coll", "german", "Port for server")
-
-	debug := flag.Bool("debug", false, "Enables debug logs")
-
-	flag.Parse()
-
-	return *port, *collectionName, *debug
-}
-
-/**
- * MAIN
- */
-func main() {
-	dbHost, dbName := mongo.ParseDbEnvs()
-	if dbHost == "" || dbName == "" {
-		log.Fatalln("Missing environment variables")
-	}
-
-	mgoDb, err := mongo.CreateMgoDb(dbHost, dbName)
-	if err != nil {
-		log.Fatalf("MongoDB database could not be created: %v", err)
-	}
-
-	port, collectionName, debug := parseFlags()
-
-	server(port, mgoDb, collectionName, debug)
 }

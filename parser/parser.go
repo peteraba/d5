@@ -49,9 +49,10 @@ func main() {
 
 	if isServer {
 		startServer(port, isDebug)
-	} else {
-		serveCli(isDebug, user)
+		return
 	}
+
+	serveCli(isDebug, user)
 }
 
 /**

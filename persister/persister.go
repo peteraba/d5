@@ -31,7 +31,7 @@ Usage:
 
 Options:
   -s, --server    run in server mode
-  -p, --port=<n>  port to open (server mode only) [default: 10020]
+  -p, --port=<n>  port to open (server mode only) [default: 10120]
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
@@ -47,6 +47,24 @@ Used environment variables:
   - D5_COLLECTION_DATA_GERMAN   name of german collection
   - D5_COLLECTION_DATA_RESULT   name of result collection
 `
+
+/**
+ * MAIN
+ */
+
+func main() {
+	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
+
+	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
+
+	if isServer {
+		startServer(port, mgoDb, isDebug)
+		return
+	}
+
+	serveCli(mgoDb, isDebug)
+}
 
 /**
  * DOMAIN
@@ -167,21 +185,4 @@ func getPersistData(rawInput []byte) ([]entity.Word, string, error) {
 	words, err := german.ParseWords(rawInput)
 
 	return words, collectionName, err
-}
-
-/**
- * MAIN
- */
-
-func main() {
-	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
-
-	mgoDb, err := mongo.CreateMgoDbFromEnvs()
-	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
-
-	if isServer {
-		startServer(port, mgoDb, isDebug)
-	} else {
-		serveCli(mgoDb, isDebug)
-	}
 }

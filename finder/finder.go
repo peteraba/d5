@@ -31,7 +31,7 @@ Usage:
 
 Options:
   -s, --server    run in server mode
-  -p, --port=<n>  port to open (server mode only) [default: 10110]
+  -p, --port=<n>  port to open (server mode only) [default: 10210]
   -d, --debug     skip ticks and generate fake data concurrently
   -v, --version   show version information
   -h, --help      show help information
@@ -61,9 +61,10 @@ func main() {
 
 	if isServer {
 		startServer(port, mgoDb, isDebug)
-	} else {
-		serveCli(mgoDb, isDebug)
+		return
 	}
+
+	serveCli(mgoDb, isDebug)
 }
 
 /**
