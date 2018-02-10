@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY finder /usr/bin/
+COPY bin/finder /usr/bin/
 
 EXPOSE 10210
 

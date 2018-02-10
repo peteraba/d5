@@ -1,9 +1,9 @@
 FROM peteraba/d5-python
 
-COPY csv /usr/bin/
-COPY xlsx /usr/bin/
-COPY ods /usr/bin/
-COPY spreadsheet /usr/bin/
+COPY bin/csv /usr/bin/
+COPY bin/xlsx /usr/bin/
+COPY bin/ods /usr/bin/
+COPY bin/spreadsheet /usr/bin/
 
 EXPOSE 10100
 

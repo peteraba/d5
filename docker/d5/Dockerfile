@@ -1,17 +1,17 @@
 FROM peteraba/d5-python
 
-COPY csv /usr/bin/
-COPY xlsx /usr/bin/
-COPY ods /usr/bin/
-COPY spreadsheet /usr/bin/
-COPY parser /usr/bin/
-COPY persister /usr/bin/
-COPY finder /usr/bin/
-COPY scorer /usr/bin/
-COPY router /usr/bin/
-COPY admin /usr/bin/
-COPY derdiedas /usr/bin/
-COPY conjugate /usr/bin/
+COPY bin/csv /usr/bin/
+COPY bin/xlsx /usr/bin/
+COPY bin/ods /usr/bin/
+COPY bin/spreadsheet /usr/bin/
+COPY bin/parser /usr/bin/
+COPY bin/persister /usr/bin/
+COPY bin/finder /usr/bin/
+COPY bin/scorer /usr/bin/
+COPY bin/router /usr/bin/
+COPY bin/admin /usr/bin/
+COPY bin/derdiedas /usr/bin/
+COPY bin/conjugate /usr/bin/
 
 EXPOSE 10100
 EXPOSE 10110

@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY router /usr/bin/
+COPY bin/router /usr/bin/
 
 EXPOSE 10220
 

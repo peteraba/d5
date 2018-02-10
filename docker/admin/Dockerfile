@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY admin /usr/bin/
+COPY bin/admin /usr/bin/
 
 EXPOSE 10310
 

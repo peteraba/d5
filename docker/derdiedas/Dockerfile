@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY derdiedas /usr/bin/
+COPY bin/derdiedas /usr/bin/
 
 EXPOSE 10410
 

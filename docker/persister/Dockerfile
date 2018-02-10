@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY persister /usr/bin/
+COPY bin/persister /usr/bin/
 
 EXPOSE 10120
 

@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY scorer /usr/bin/
+COPY bin/scorer /usr/bin/
 
 EXPOSE 10330
 

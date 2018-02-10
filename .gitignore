@@ -8,3 +8,6 @@ gin-bin
 
 # IDE / Editor
 .idea
+
+**/bin
+
