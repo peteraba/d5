@@ -150,7 +150,7 @@ export D5_DB_NAME="d5"
 
 ### Convert Excel to Plain JSON
 
-Convert excel file into a json file.
+Convert excel file into a json file. Optionally you can define how many entries to process. (8 in all the examples below.)
 
 ```bash
 # .ods to .json, 8 columns processed, file saved into parser/fixture/gerdict.json

@@ -55,8 +55,7 @@ Used environment variables:
 func main() {
 	isServer, port, isDebug := util.GetServerOptions(util.GetCliArguments(usage, name, version))
 
-	mgoDb, err := mongo.CreateMgoDbFromEnvs()
-	util.LogFatalfMsg(err, "MongoDB database could not be created: %v", true)
+	mgoDb := mongo.CreateMgoDbFromEnvs()
 
 	if isServer {
 		startServer(port, mgoDb, isDebug)

@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY admin /usr/bin/
+COPY derdiedas /usr/bin/
 
 EXPOSE 10410
 

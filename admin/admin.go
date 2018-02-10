@@ -38,18 +38,11 @@ Options:
 
 func main() {
 	cliArguments := util.GetCliArguments(usage, name, version)
-	isServer, port, isDebug := util.GetServerOptions(cliArguments)
+	_, port, isDebug := util.GetServerOptions(cliArguments)
 
-	mgoDb, err := mongo.CreateMgoDbFromEnvs()
+	mgoDb := mongo.CreateMgoDbFromEnvs()
 
-	if isServer {
-		// startServer(port, mgoDb, isDebug)
-		return
-	}
-
-	user, _ := cliArguments["--user"].(string)
-	action, _ := cliArguments["--action"].(string)
-	// serveCli call
+	startServer(port, mgoDb, isDebug)
 }
 
 /**

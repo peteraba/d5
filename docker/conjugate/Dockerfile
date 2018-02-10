@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY admin /usr/bin/
+COPY conjugate /usr/bin/
 
 EXPOSE 10420
 
